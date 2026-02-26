@@ -3,6 +3,9 @@ package com.back.demo.service;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.ArrayList;
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import com.back.demo.exception.ItemNotFoundException;
@@ -27,6 +30,33 @@ public class PedidoSvc {
     @Autowired
     private ItemRepository itemRepo;
 
+
+
+    public List<Pedido> getListPedidos(Integer mesa, Integer estado){
+
+        List<Pedido> pedidos = new ArrayList<>();
+
+        if(estado != null && estado != 0) pedidos = pedidoRepo.findByEstado(estado);
+        else pedidos = pedidoRepo.findAll();
+        
+        if(mesa != null && mesa != 0) {
+            List<Pedido> pedidosMesa = pedidoRepo.findByMesa(mesa);
+
+            for (Pedido pedidoMesa : pedidosMesa) {
+                if(!pedidos.contains(pedidoMesa)) pedidos.remove(pedidoMesa);
+            }
+        }
+
+        return pedidos;
+    }
+
+    public List<PedidoItem> getItensPedidos(Long pedidoId){
+        return pedidoItemRepo.findAllItensByPedido(pedidoId);
+    }
+
+
+
+    //CRIAR, ALTERAR e EXCLUIR os pedidos
 
     public void criarAlterarPedido(Long       id,
                                    String     observacao,
@@ -53,6 +83,14 @@ public class PedidoSvc {
 
         pedidoRepo.save(pedido);
     }
+
+    public void excluiPedido(Long id){
+        Pedido pedido = pedidoRepo.findPedidoById(id);
+        if(pedido == null) throw new PedidoNotFoundException("Não encontrado o Pedido");
+
+        pedidoRepo.delete(pedido);
+    }
+
 
     public void vinculaItemPedido(Long   pedidoId,
                                   Long   itemId,
@@ -84,4 +122,25 @@ public class PedidoSvc {
 
         pedidoItemRepo.save(vinculoPedidoItem);
     }
+
+    public void excluiItemPedido(Long   pedidoId,
+                                 Long   itemId)
+                                 {        
+
+        if(pedidoId == null || pedidoId == Long.valueOf(0)) throw new PedidoException("É preciso informar o número do pedido para remover o item!");
+        if(itemId == null || itemId == Long.valueOf(0)) throw new PedidoException("É preciso informar o código do item para remover o pedido!");
+
+        Pedido pedido = pedidoRepo.findPedidoById(pedidoId);
+        if(pedido == null) throw new PedidoNotFoundException("Não encontrado o Pedido");
+
+        Item item = itemRepo.findItemById(itemId);
+        if(item == null) throw new ItemNotFoundException("Não encontrado o Item");
+
+        PedidoItem vinculoPedidoItem = pedidoItemRepo.findPedidoItemById(pedidoId, itemId);
+        if(vinculoPedidoItem == null) return;
+
+        pedidoItemRepo.delete(vinculoPedidoItem);
+    }
+
+
 }
