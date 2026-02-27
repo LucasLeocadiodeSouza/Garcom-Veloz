@@ -16,15 +16,11 @@ import lombok.Setter;
 @IdClass(ItemMediaId.class)
 public class ItemMedia {
 
-    @Id
-    @Column(name = "id_item")
-    private Long idItem;
-
-    @Id
-    @Column(name = "seq")
-    private Integer seq;
+    @EmbeddedId
+    private ItemMediaId id;
 
     @ManyToOne
+    @MapsId("idItem")
     @JoinColumn(name = "id_item", insertable = false, updatable = false)
     private Item item;
 

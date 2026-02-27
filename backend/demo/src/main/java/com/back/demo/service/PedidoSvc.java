@@ -19,6 +19,8 @@ import com.back.demo.repository.ItemRepository;
 import com.back.demo.repository.PedidoItemRepository;
 import com.back.demo.repository.PedidoRepository;
 
+import jakarta.transaction.Transactional;
+
 @Service
 public class PedidoSvc {
     @Autowired
@@ -58,6 +60,7 @@ public class PedidoSvc {
 
     //CRIAR, ALTERAR e EXCLUIR os pedidos
 
+    @Transactional
     public void criarAlterarPedido(Long       id,
                                    String     observacao,
                                    BigDecimal gorgeta,
@@ -84,6 +87,7 @@ public class PedidoSvc {
         pedidoRepo.save(pedido);
     }
 
+    @Transactional
     public void excluiPedido(Long id){
         Pedido pedido = pedidoRepo.findPedidoById(id);
         if(pedido == null) throw new PedidoNotFoundException("Não encontrado o Pedido");
@@ -91,7 +95,7 @@ public class PedidoSvc {
         pedidoRepo.delete(pedido);
     }
 
-
+    @Transactional
     public void vinculaItemPedido(Long   pedidoId,
                                   Long   itemId,
                                   String ideusu)
@@ -123,6 +127,7 @@ public class PedidoSvc {
         pedidoItemRepo.save(vinculoPedidoItem);
     }
 
+    @Transactional
     public void excluiItemPedido(Long   pedidoId,
                                  Long   itemId)
                                  {        

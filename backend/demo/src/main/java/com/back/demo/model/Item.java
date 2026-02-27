@@ -33,6 +33,9 @@ public class Item {
     @Column(name = "desconto", precision = 10, scale = 2)
     private BigDecimal desconto;
 
+    @Column(columnDefinition = "TINYINT(1)")
+    private Boolean ativo;
+
     @Column(name = "criado_em")
     private LocalDate criadoEm;
 
