@@ -33,6 +33,14 @@ public class Item {
     @Column(name = "desconto", precision = 10, scale = 2)
     private BigDecimal desconto;
 
+    @ManyToOne
+    @JoinColumn(name = "id_categoria", insertable = false, updatable = false)
+    private Categoria categoria;
+
+    private Integer estoque;
+
+    private Long referencia_ext;
+
     @Column(columnDefinition = "TINYINT(1)")
     private Boolean ativo;
 

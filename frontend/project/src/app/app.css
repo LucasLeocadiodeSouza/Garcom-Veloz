@@ -1,0 +1,12 @@
+.app-shell {
+    display: flex;
+    min-height: 100vh;
+}
+
+.main-content {
+    flex: 1;
+    margin-left: var(--sidebar-width);
+    min-width: 0;
+    background: var(--surface-bg);
+    transition: margin-left 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}

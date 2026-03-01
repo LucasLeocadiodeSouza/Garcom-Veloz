@@ -1,0 +1,76 @@
+<aside class="sidebar" [class.collapsed]="collapsed()">
+    <div class="sidebar-header">
+        <div class="logo-wrap">
+            <div class="logo-icon">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+                    <path
+                        d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14H9V8h2v8zm4 0h-2V8h2v8z"
+                        fill="currentColor" />
+                </svg>
+            </div>
+            @if (!collapsed()) {
+            <div class="logo-text">
+                <span class="logo-title">GarçomVeloz</span>
+                <span class="logo-subtitle">CRM</span>
+            </div>
+            }
+        </div>
+        <button class="collapse-btn" (click)="toggleCollapse()" [title]="collapsed() ? 'Expandir' : 'Recolher'">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+                @if (collapsed()) {
+                <path d="M9 18l6-6-6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                } @else {
+                <path d="M15 18l-6-6 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                }
+            </svg>
+        </button>
+    </div>
+
+    <nav class="sidebar-nav">
+        <div class="nav-section">
+            @if (!collapsed()) {
+            <span class="nav-section-label">Principal</span>
+            }
+            @for (item of mainNav; track item.route) {
+            <a class="nav-item" [routerLink]="item.route" routerLinkActive="active" [title]="item.label">
+                <span class="nav-icon" [innerHTML]="item.icon"></span>
+                @if (!collapsed()) {
+                <span class="nav-label">{{ item.label }}</span>
+                }
+            </a>
+            }
+        </div>
+
+        <div class="nav-section">
+            @if (!collapsed()) {
+            <span class="nav-section-label">Administração</span>
+            }
+            @for (item of adminNav; track item.route) {
+            <a class="nav-item" [routerLink]="item.route" routerLinkActive="active" [title]="item.label">
+                <span class="nav-icon" [innerHTML]="item.icon"></span>
+                @if (!collapsed()) {
+                <span class="nav-label">{{ item.label }}</span>
+                }
+            </a>
+            }
+        </div>
+    </nav>
+
+    <div class="sidebar-footer">
+        <div class="user-info" [class.centered]="collapsed()">
+            <div class="avatar">A</div>
+            @if (!collapsed()) {
+            <div class="user-details">
+                <span class="user-name">Administrador</span>
+                <span class="user-role">Admin</span>
+            </div>
+            <button class="logout-btn" title="Sair">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                    <path d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                </svg>
+            </button>
+            }
+        </div>
+    </div>
+</aside>

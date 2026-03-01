@@ -1,0 +1,109 @@
+<div class="home-page">
+    <app-topbar [pageTitle]="'Dashboard'" />
+
+    <div class="page-content">
+        <!-- Welcome Banner -->
+        <div class="welcome-banner">
+            <div class="welcome-text">
+                <h1>Bem-vindo ao GarçomVeloz CRM</h1>
+                <p>Gerencie produtos, usuários e relatórios do seu sistema em um só lugar.</p>
+            </div>
+            <div class="welcome-illustration">
+                <svg width="120" height="100" viewBox="0 0 120 100" fill="none">
+                    <rect x="10" y="20" width="100" height="65" rx="8" fill="rgba(255,255,255,0.15)" />
+                    <rect x="20" y="30" width="40" height="6" rx="3" fill="rgba(255,255,255,0.6)" />
+                    <rect x="20" y="42" width="28" height="4" rx="2" fill="rgba(255,255,255,0.4)" />
+                    <rect x="20" y="54" width="35" height="4" rx="2" fill="rgba(255,255,255,0.4)" />
+                    <rect x="68" y="30" width="32" height="45" rx="4" fill="rgba(255,255,255,0.2)" />
+                    <rect x="73" y="36" width="22" height="4" rx="2" fill="rgba(255,255,255,0.5)" />
+                    <rect x="73" y="46" width="18" height="4" rx="2" fill="rgba(255,255,255,0.35)" />
+                    <rect x="73" y="56" width="22" height="4" rx="2" fill="rgba(255,255,255,0.35)" />
+                    <circle cx="96" cy="18" r="10" fill="rgba(255,255,255,0.25)" />
+                    <path d="M92 18l3 3 6-6" stroke="rgba(255,255,255,0.9)" stroke-width="2" stroke-linecap="round" />
+                </svg>
+            </div>
+        </div>
+
+        <!-- Stats Row -->
+        <div class="stats-grid">
+            @for (stat of stats; track stat.label) {
+            <div class="stat-card">
+                <div class="stat-icon" [style.background]="stat.iconBg" [style.color]="stat.iconColor"></div>
+                <div class="stat-info">
+                    <span class="stat-value">{{ stat.value }}</span>
+                    <span class="stat-label">{{ stat.label }}</span>
+                </div>
+                <div class="stat-trend" [class.up]="stat.trendUp" [class.down]="!stat.trendUp">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none">
+                        @if (stat.trendUp) {
+                        <path d="M7 17L17 7M17 7H7M17 7v10" stroke="currentColor" stroke-width="2.5"
+                            stroke-linecap="round" />
+                        } @else {
+                        <path d="M7 7l10 10M17 17H7M17 17V7" stroke="currentColor" stroke-width="2.5"
+                            stroke-linecap="round" />
+                        }
+                    </svg>
+                    <span>{{ stat.trendText }}</span>
+                </div>
+            </div>
+            }
+        </div>
+
+        <!-- Navigation Cards -->
+        <div class="section-title">
+            <h2>Acesso Rápido</h2>
+            <p>Navegue pelas principais seções do sistema</p>
+        </div>
+
+        <div class="nav-cards-grid">
+            @for (card of quickNavCards; track card.title) {
+            <a class="nav-card" [routerLink]="card.route">
+                <div class="nav-card-icon" [style.background]="card.iconBg"></div>
+                <div class="nav-card-content">
+                    <h3>{{ card.title }}</h3>
+                    <p>{{ card.description }}</p>
+                </div>
+                <div class="nav-card-arrow">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+                        <path d="M9 18l6-6-6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                    </svg>
+                </div>
+            </a>
+            }
+        </div>
+
+        <!-- Recent Activity -->
+        <div class="bottom-grid">
+            <div class="card activity-card">
+                <div class="card-header">
+                    <h3>Atividade Recente</h3>
+                    <button class="btn btn-ghost btn-sm">Ver tudo</button>
+                </div>
+                <div class="activity-list">
+                    @for (item of recentActivity; track item.time) {
+                    <div class="activity-item">
+                        <div class="activity-dot" [style.background]="item.color"></div>
+                        <div class="activity-content">
+                            <span class="activity-text">{{ item.text }}</span>
+                            <span class="activity-time">{{ item.time }}</span>
+                        </div>
+                    </div>
+                    }
+                </div>
+            </div>
+
+            <div class="card quick-actions-card">
+                <div class="card-header">
+                    <h3>Ações Rápidas</h3>
+                </div>
+                <div class="quick-actions-list">
+                    @for (action of quickActions; track action.label) {
+                    <a class="quick-action-btn" [routerLink]="action.route">
+                        <span>{{ action.label }}</span>
+                    </a>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

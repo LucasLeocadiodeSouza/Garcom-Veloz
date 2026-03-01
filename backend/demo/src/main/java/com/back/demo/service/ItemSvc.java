@@ -9,18 +9,19 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
-
+import com.back.demo.exception.CategoriaException;
+import com.back.demo.exception.CategoriaNotFoundException;
 import com.back.demo.exception.ItemException;
+import com.back.demo.model.Categoria;
 import com.back.demo.model.Item;
 import com.back.demo.model.ItemMedia;
 import com.back.demo.model.ItemMediaId;
+import com.back.demo.repository.CategoriaRepository;
 import com.back.demo.repository.ItemMediaRepository;
 import com.back.demo.repository.ItemRepository;
-
 import jakarta.transaction.Transactional;
 
 @Service
@@ -32,26 +33,101 @@ public class ItemSvc {
     @Autowired
     private ItemMediaRepository itemImgRepo;
 
+    @Autowired
+    private CategoriaRepository categoriaRepo;
+
     private String itensDirectory = System.getProperty("user.dir") + "/media/itens";
 
+    
 
-    public List<Item> getListItem(String nome, Boolean ativo){
+    public List<Categoria> getListCategoria(String descricao, Boolean ativo){
+        List<Categoria> categorias = new ArrayList<>();
+
+        Boolean temDescricao = descricao != null && !descricao.isBlank();
+
+        if(temDescricao) categorias = categoriaRepo.findCategoriaByDescricao(descricao);
+        if(ativo != null){
+            List<Categoria> categoriasAtivos = categoriaRepo.findAllCategoriaByStatus(ativo);
+
+            if(categorias != null){
+                for (Categoria categoriaAtiva : categoriasAtivos) {
+                    if(!categorias.contains(categoriaAtiva)) categorias.remove(categoriaAtiva);
+                }
+            }
+        }
+
+        if(!temDescricao && ativo == null) categorias = categoriaRepo.findAll();
+
+        return categorias;
+    }
+
+    @Transactional
+    public void criarAlterarCategoria(Long       id,
+                                      String     descricao,
+                                      Long       referencia_ext,
+                                      String     ideusu)
+                                      {        
+
+        if(descricao == null || descricao.isBlank()) throw new CategoriaException("É preciso informar a descrição do item!");
+
+        Categoria categoria = categoriaRepo.findCategoriaById(id);
+
+        if(categoria == null){
+            categoria = new Categoria();
+            categoria.setIdeusu(ideusu);
+            categoria.setCriadoEm(LocalDate.now());
+            categoria.setAtivo(true);
+        }
+
+        categoria.setDescricao(descricao);
+        categoria.setRefereciaExt(referencia_ext);
+
+        categoriaRepo.save(categoria);
+    }
+
+    @Transactional
+    public void ativarInativarCategoria(Long id, Boolean ativar){
+        Categoria categoria = categoriaRepo.findCategoriaById(id);
+        if(categoria == null) throw new CategoriaNotFoundException("Não encontrado o Item");
+
+        categoria.setAtivo(ativar);
+
+        categoriaRepo.save(categoria);
+    }
+
+
+
+
+    public List<Item> getListItem(String nome, Boolean ativo, Long categoriaId){
         List<Item> itens = new ArrayList<>();
 
-        if(nome != null && !nome.isBlank()) itens = itemRepo.findItemByNome(nome);
-        if(ativo){
+        Boolean porDescricao = nome != null && !nome.isBlank();
+        Boolean porCategoria = categoriaId != null && categoriaId != 0;
+
+        if(porDescricao) itens = itemRepo.findItemByNome(nome);
+        if(porCategoria){
+            List<Item> itensCategoria = itemRepo.findItemByCategoria(categoriaId);
+
+            if(porDescricao){
+                for (Item itemCategoria : itensCategoria) {
+                    if(!itens.contains(itemCategoria)) itens.remove(itemCategoria);
+                }
+            }else itens = itensCategoria;
+        }
+        if(ativo != null){
             List<Item> itensAtivos = itemRepo.findItemByStatus(ativo);
 
             if(itens != null){
                 for (Item itemAtivo : itensAtivos) {
                     if(!itens.contains(itemAtivo)) itens.remove(itemAtivo);
                 }
-            }
-        } else itens = itemRepo.findAll();
+            }else if(!porDescricao && !porCategoria) itens = itensAtivos;
+        } 
+
+        if(!porDescricao && !porCategoria && ativo == null) itens = itemRepo.findAll();
 
         return itens;
     }
-
 
     //CRIAR, ALTERAR e EXCLUIR os itens
 
@@ -61,6 +137,9 @@ public class ItemSvc {
                                  String     descricao,
                                  BigDecimal valor,
                                  BigDecimal desconto,
+                                 Integer    estoque,
+                                 Long       categoriaId,
+                                 Long       referencia_ext,
                                  String     ideusu)
                                  {        
 
@@ -78,10 +157,21 @@ public class ItemSvc {
             item.setAtivo(true);
         }
 
+        if(categoriaId != null && categoriaId != 0){
+            Categoria categoria = categoriaRepo.findCategoriaById(categoriaId);
+            if(categoria == null) throw new CategoriaNotFoundException("Categoria informada não encontrada!");
+
+            if(!categoria.getAtivo()) throw new CategoriaException("Categoria do Item esta inativa!");
+
+            item.setCategoria(categoria);
+        }
+
         item.setNome(nome);
         item.setDescricao(descricao);
-        item.setDesconto(desconto);
         item.setValor(valor);
+        item.setDesconto(desconto);
+        item.setEstoque(estoque);
+        item.setReferencia_ext(referencia_ext);
 
         itemRepo.save(item);
     }

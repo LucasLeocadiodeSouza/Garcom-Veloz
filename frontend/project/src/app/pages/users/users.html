@@ -1,0 +1,195 @@
+<div class="users-page">
+    <app-topbar [pageTitle]="'Usuários'" />
+
+    <div class="page-content">
+        <div class="page-header-row">
+            <div class="page-header">
+                <h1>Gerenciamento de Usuários</h1>
+                <p>Administre os usuários e permissões de acesso ao sistema</p>
+            </div>
+            <button class="btn btn-primary" id="add-user-btn" (click)="openAddUserModal()">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                    <path d="M12 4v16m8-8H4" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" />
+                </svg>
+                Novo Usuário
+            </button>
+        </div>
+
+        <!-- Stats chips -->
+        <div class="user-stats">
+            @for (stat of userStats; track stat.label) {
+            <div class="user-stat-card">
+                <div class="us-icon" [style.background]="stat.iconBg" [style.color]="stat.iconColor">
+                    <span [innerHTML]="stat.icon"></span>
+                </div>
+                <div>
+                    <span class="us-value">{{ stat.value }}</span>
+                    <span class="us-label">{{ stat.label }}</span>
+                </div>
+            </div>
+            }
+        </div>
+
+        <!-- Users Table Card -->
+        <div class="card table-card">
+            <div class="table-toolbar">
+                <div class="search-filter">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none">
+                        <circle cx="11" cy="11" r="8" stroke="currentColor" stroke-width="2" />
+                        <path d="M21 21l-4.35-4.35" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                    </svg>
+                    <input type="search" id="user-search" placeholder="Buscar usuário por nome ou e-mail..."
+                        [(ngModel)]="searchQuery" (input)="filterUsers()" />
+                </div>
+                <div class="toolbar-filters">
+                    <select id="role-filter" [(ngModel)]="selectedRole" (change)="filterUsers()">
+                        <option value="">Todos os perfis</option>
+                        <option value="Administrador">Administrador</option>
+                        <option value="Gerente">Gerente</option>
+                        <option value="Atendente">Atendente</option>
+                        <option value="Cozinha">Cozinha</option>
+                    </select>
+                    <select id="user-status-filter" [(ngModel)]="selectedStatus" (change)="filterUsers()">
+                        <option value="">Todos os status</option>
+                        <option value="ativo">Ativo</option>
+                        <option value="inativo">Inativo</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="table-wrapper">
+                <table class="data-table" id="users-table">
+                    <thead>
+                        <tr>
+                            <th>Usuário</th>
+                            <th>E-mail</th>
+                            <th>Perfil</th>
+                            <th>Último Acesso</th>
+                            <th>Status</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @for (user of filteredUsers; track user.id) {
+                        <tr>
+                            <td>
+                                <div class="user-cell">
+                                    <div class="user-avatar" [style.background]="user.avatarColor">
+                                        {{ user.initials }}
+                                    </div>
+                                    <div>
+                                        <div class="user-name">{{ user.name }}</div>
+                                        <div class="user-since">Desde {{ user.since }}</div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="email-cell">{{ user.email }}</td>
+                            <td>
+                                <span class="role-badge" [class]="'role-' + user.role.toLowerCase()">
+                                    {{ user.role }}
+                                </span>
+                            </td>
+                            <td class="access-cell">{{ user.lastAccess }}</td>
+                            <td>
+                                <span class="badge" [class.badge-green]="user.status === 'ativo'"
+                                    [class.badge-red]="user.status === 'inativo'">
+                                    {{ user.status === 'ativo' ? '● Ativo' : '● Inativo' }}
+                                </span>
+                            </td>
+                            <td>
+                                <div class="action-buttons">
+                                    <button class="action-btn edit" [id]="'edit-user-' + user.id" title="Editar"
+                                        (click)="editUser(user)">
+                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+                                            <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"
+                                                stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                                            <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"
+                                                stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                                        </svg>
+                                    </button>
+                                    <button class="action-btn" [id]="'toggle-user-' + user.id"
+                                        [class.view]="user.status === 'inativo'"
+                                        [class.delete]="user.status === 'ativo'"
+                                        [title]="user.status === 'ativo' ? 'Desativar' : 'Ativar'"
+                                        (click)="toggleUserStatus(user)">
+                                        @if (user.status === 'ativo') {
+                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+                                            <path
+                                                d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"
+                                                stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                                        </svg>
+                                        } @else {
+                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+                                            <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                                                stroke="currentColor" stroke-width="2" />
+                                        </svg>
+                                        }
+                                    </button>
+                                    <button class="action-btn delete" [id]="'delete-user-' + user.id" title="Excluir"
+                                        (click)="deleteUser(user.id)">
+                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+                                            <path
+                                                d="M3 6h18M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6M10 11v6M14 11v6M9 6V4h6v2"
+                                                stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                                        </svg>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                        }
+                        @if (filteredUsers.length === 0) {
+                        <tr>
+                            <td colspan="6" class="empty-state">
+                                <div class="empty-icon">👤</div>
+                                <p>Nenhum usuário encontrado</p>
+                            </td>
+                        </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Permissions Matrix -->
+        <div class="card permissions-card">
+            <div class="card-header">
+                <h3>Matriz de Permissões por Perfil</h3>
+                <span class="badge badge-blue">Somente leitura</span>
+            </div>
+            <div class="permissions-table-wrap">
+                <table class="permissions-table">
+                    <thead>
+                        <tr>
+                            <th>Permissão</th>
+                            @for (role of roles; track role) {
+                            <th>{{ role }}</th>
+                            }
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @for (perm of permissions; track perm.name) {
+                        <tr>
+                            <td class="perm-name">{{ perm.name }}</td>
+                            @for (role of roles; track role) {
+                            <td class="perm-cell">
+                                @if (perm.roles.includes(role)) {
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" class="check-icon">
+                                    <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" fill="#d1fae5"
+                                        stroke="#059669" stroke-width="1.5" />
+                                </svg>
+                                } @else {
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" class="cross-icon">
+                                    <path d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"
+                                        fill="#fee2e2" stroke="#ef4444" stroke-width="1.5" />
+                                </svg>
+                                }
+                            </td>
+                            }
+                        </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>

@@ -13,7 +13,6 @@ import lombok.Setter;
 @Setter
 @Entity
 @Table(name = "item_media")
-@IdClass(ItemMediaId.class)
 public class ItemMedia {
 
     @EmbeddedId

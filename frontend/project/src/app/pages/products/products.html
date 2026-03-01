@@ -1,0 +1,166 @@
+<div class="products-page">
+    <app-topbar [pageTitle]="'Produtos'" />
+
+    <div class="page-content">
+        <div class="page-header-row">
+            <div class="page-header">
+                <h1>Produtos Cadastrados</h1>
+                <p>Gerencie todos os produtos disponíveis no sistema</p>
+            </div>
+            <div class="header-actions">
+                <button class="btn btn-primary" id="add-product-btn">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                        <path d="M12 4v16m8-8H4" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" />
+                    </svg>
+                    Novo Produto
+                </button>
+            </div>
+        </div>
+
+        <!-- Filters Bar -->
+        <div class="filters-bar card">
+            <div class="search-filter">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none">
+                    <circle cx="11" cy="11" r="8" stroke="currentColor" stroke-width="2" />
+                    <path d="M21 21l-4.35-4.35" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                </svg>
+                <input type="search" id="product-search" placeholder="Buscar produto por nome ou código..."
+                    [(ngModel)]="searchQuery" (input)="filterProducts()" />
+            </div>
+            <div class="filter-group">
+                <select id="category-filter" [(ngModel)]="selectedCategory" (change)="filterProducts()">
+                    <option value="">Todas as Categorias</option>
+                    @for (cat of categories; track cat) {
+                    <option [value]="cat">{{ cat }}</option>
+                    }
+                </select>
+                <select id="status-filter" [(ngModel)]="selectedStatus" (change)="filterProducts()">
+                    <option value="">Todos os Status</option>
+                    <option value="ativo">Ativo</option>
+                    <option value="inativo">Inativo</option>
+                </select>
+                <button class="btn btn-ghost btn-sm" (click)="clearFilters()" id="clear-filters-btn">Limpar</button>
+            </div>
+        </div>
+
+        <!-- Summary chips -->
+        <div class="summary-chips">
+            <span class="chip chip-total">{{ filteredProducts.length }} produto(s) encontrado(s)</span>
+            <span class="chip chip-active">{{ activeCount }} Ativos</span>
+            <span class="chip chip-inactive">{{ inactiveCount }} Inativos</span>
+        </div>
+
+        <!-- Products Table -->
+        <div class="card table-card">
+            <div class="table-wrapper">
+                <table class="data-table" id="products-table">
+                    <thead>
+                        <tr>
+                            <th class="col-img"></th>
+                            <th class="sortable" (click)="sort('name')">
+                                Nome <span class="sort-icon">{{ getSortIcon('name') }}</span>
+                            </th>
+                            <th>Código</th>
+                            <th class="sortable" (click)="sort('category')">
+                                Categoria <span class="sort-icon">{{ getSortIcon('category') }}</span>
+                            </th>
+                            <th class="sortable" (click)="sort('price')">
+                                Preço <span class="sort-icon">{{ getSortIcon('price') }}</span>
+                            </th>
+                            <th>Estoque</th>
+                            <th>Status</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @for (product of paginatedProducts; track product.id) {
+                        <tr class="product-row">
+                            <td class="col-img">
+                                <div class="product-thumb" [style.background]="product.color">
+                                    {{ product.name.charAt(0) }}
+                                </div>
+                            </td>
+                            <td>
+                                <div class="product-name">{{ product.name }}</div>
+                                <div class="product-desc">{{ product.description }}</div>
+                            </td>
+                            <td><span class="code-badge">{{ product.code }}</span></td>
+                            <td><span class="badge badge-blue">{{ product.category }}</span></td>
+                            <td class="price-cell">R$ {{ product.price.toFixed(2) }}</td>
+                            <td>
+                                <div class="stock-indicator" [class.low]="product.stock < 10">
+                                    {{ product.stock }} un.
+                                </div>
+                            </td>
+                            <td>
+                                <span class="badge" [class.badge-green]="product.status === 'ativo'"
+                                    [class.badge-red]="product.status === 'inativo'">
+                                    {{ product.status === 'ativo' ? 'Ativo' : 'Inativo' }}
+                                </span>
+                            </td>
+                            <td>
+                                <div class="action-buttons">
+                                    <button class="action-btn view" title="Visualizar" [id]="'view-' + product.id">
+                                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none">
+                                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" stroke="currentColor"
+                                                stroke-width="2" />
+                                            <circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="2" />
+                                        </svg>
+                                    </button>
+                                    <button class="action-btn edit" title="Editar" [id]="'edit-' + product.id">
+                                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none">
+                                            <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"
+                                                stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                                            <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"
+                                                stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                                        </svg>
+                                    </button>
+                                    <button class="action-btn delete" title="Excluir" [id]="'delete-' + product.id">
+                                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none">
+                                            <path
+                                                d="M3 6h18M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6M10 11v6M14 11v6M9 6V4h6v2"
+                                                stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                                        </svg>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                        }
+                        @if (paginatedProducts.length === 0) {
+                        <tr>
+                            <td colspan="8" class="empty-state">
+                                <div class="empty-icon">🔍</div>
+                                <p>Nenhum produto encontrado</p>
+                                <span>Tente ajustar os filtros de busca</span>
+                            </td>
+                        </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Pagination -->
+            <div class="pagination">
+                <span class="pagination-info">Mostrando {{ startItem }}–{{ endItem }} de {{ filteredProducts.length
+                    }}</span>
+                <div class="pagination-controls">
+                    <button class="page-btn" [disabled]="currentPage === 1" (click)="prevPage()" id="prev-page-btn">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                            <path d="M15 18l-6-6 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                        </svg>
+                    </button>
+                    @for (page of pages; track page) {
+                    <button class="page-btn" [class.active]="page === currentPage" (click)="goToPage(page)"
+                        [id]="'page-' + page">{{ page }}</button>
+                    }
+                    <button class="page-btn" [disabled]="currentPage === totalPages" (click)="nextPage()"
+                        id="next-page-btn">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                            <path d="M9 18l6-6-6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

@@ -11,11 +11,12 @@ import java.util.List;
 @Repository
 public interface ItemMediaRepository extends JpaRepository<ItemMedia, ItemMediaId> {
 
+    @Query("SELECT media FROM ItemMedia media WHERE media.id.idItem = :item_id")
     List<ItemMedia> findByIdItem(Long idItem);
 
-    @Query("SELECT media FROM ItemMedia media WHERE media.id.item_id = :item_id AND media.id.seq = :sequencia")
+    @Query("SELECT media FROM ItemMedia media WHERE media.id.idItem = :item_id AND media.id.seq = :sequencia")
     ItemMedia findMediaById(@Param("item_id") Long itemId, @Param("sequencia") Integer sequencia);
 
-    @Query("SELECT MAX(media.id.seq) FROM ItemMedia media WHERE media.id.item_id = :item_id")
+    @Query("SELECT MAX(media.id.seq) FROM ItemMedia media WHERE media.id.idItem = :item_id")
     Integer findMaxSeqByItemId(@Param("item_id") Long itemId);
 }
