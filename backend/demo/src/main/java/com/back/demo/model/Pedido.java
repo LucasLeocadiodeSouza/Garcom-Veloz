@@ -34,6 +34,10 @@ public class Pedido {
     @Column(name = "mesa")
     private Integer mesa;
 
+    @ManyToOne
+    @JoinColumn(name = "id_empresa", insertable = false, updatable = false)
+    private Empresa empresa;
+
     @Column(name = "criado_em")
     private LocalDate criadoEm;
 

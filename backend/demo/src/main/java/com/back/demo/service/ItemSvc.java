@@ -17,9 +17,11 @@ import com.back.demo.exception.CategoriaNotFoundException;
 import com.back.demo.exception.ItemException;
 import com.back.demo.model.Categoria;
 import com.back.demo.model.Item;
+import com.back.demo.model.ItemDTO;
 import com.back.demo.model.ItemMedia;
 import com.back.demo.model.ItemMediaId;
 import com.back.demo.repository.CategoriaRepository;
+import com.back.demo.repository.ItemDTORepository;
 import com.back.demo.repository.ItemMediaRepository;
 import com.back.demo.repository.ItemRepository;
 import jakarta.transaction.Transactional;
@@ -36,9 +38,12 @@ public class ItemSvc {
     @Autowired
     private CategoriaRepository categoriaRepo;
 
+    @Autowired
+    private ItemDTORepository itemDTORepo;
+
+
     private String itensDirectory = System.getProperty("user.dir") + "/media/itens";
 
-    
 
     public List<Categoria> getListCategoria(String descricao, Boolean ativo){
         List<Categoria> categorias = new ArrayList<>();
@@ -98,33 +103,8 @@ public class ItemSvc {
 
 
 
-    public List<Item> getListItem(String nome, Boolean ativo, Long categoriaId){
-        List<Item> itens = new ArrayList<>();
-
-        Boolean porDescricao = nome != null && !nome.isBlank();
-        Boolean porCategoria = categoriaId != null && categoriaId != 0;
-
-        if(porDescricao) itens = itemRepo.findItemByNome(nome);
-        if(porCategoria){
-            List<Item> itensCategoria = itemRepo.findItemByCategoria(categoriaId);
-
-            if(porDescricao){
-                for (Item itemCategoria : itensCategoria) {
-                    if(!itens.contains(itemCategoria)) itens.remove(itemCategoria);
-                }
-            }else itens = itensCategoria;
-        }
-        if(ativo != null){
-            List<Item> itensAtivos = itemRepo.findItemByStatus(ativo);
-
-            if(itens != null){
-                for (Item itemAtivo : itensAtivos) {
-                    if(!itens.contains(itemAtivo)) itens.remove(itemAtivo);
-                }
-            }else if(!porDescricao && !porCategoria) itens = itensAtivos;
-        } 
-
-        if(!porDescricao && !porCategoria && ativo == null) itens = itemRepo.findAll();
+    public List<ItemDTO> getListItem(String nome, Boolean ativo, Long categoriaId){
+        List<ItemDTO> itens = itemDTORepo.getListItem(nome, ativo, categoriaId);
 
         return itens;
     }

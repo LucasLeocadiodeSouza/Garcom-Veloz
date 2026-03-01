@@ -7,13 +7,16 @@ import java.util.ArrayList;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import com.back.demo.exception.EmpresaNotFoundException;
 import com.back.demo.exception.ItemNotFoundException;
 import com.back.demo.exception.PedidoException;
 import com.back.demo.exception.PedidoNotFoundException;
+import com.back.demo.model.Empresa;
 import com.back.demo.model.Item;
 import com.back.demo.model.Pedido;
 import com.back.demo.model.PedidoItem;
 import com.back.demo.model.PedidoItemId;
+import com.back.demo.repository.EmpresaRepository;
 import com.back.demo.repository.ItemRepository;
 import com.back.demo.repository.PedidoItemRepository;
 import com.back.demo.repository.PedidoRepository;
@@ -29,6 +32,9 @@ public class PedidoSvc {
 
     @Autowired
     private ItemRepository itemRepo;
+
+    @Autowired
+    private EmpresaRepository empresaRepo;
 
 
 
@@ -63,10 +69,14 @@ public class PedidoSvc {
                                    String     observacao,
                                    BigDecimal gorgeta,
                                    Integer    mesa,
+                                   Long       idEmpresa,
                                    String     ideusu)
                                    {        
 
         if(mesa == null || mesa == 0) throw new PedidoException("É preciso informar o número da mesa para criar o pedido!");
+
+        Empresa empresa = empresaRepo.findEmpresaById(idEmpresa);
+        if(empresa == null) throw new EmpresaNotFoundException("Empresa informada não encontrado!");
 
         Pedido pedido = pedidoRepo.findPedidoById(id);
 
@@ -76,6 +86,7 @@ public class PedidoSvc {
             pedido.setIdeusu(ideusu);
             pedido.setCriadoEm(LocalDate.now());
             pedido.setHorario(LocalTime.now());
+            pedido.setEmpresa(empresa);
         }
 
         pedido.setGorgeta(gorgeta);

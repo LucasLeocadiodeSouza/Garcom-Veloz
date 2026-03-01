@@ -32,8 +32,9 @@ public class Usuario {
     @Column(columnDefinition = "TINYINT(1)")
     private Boolean ativo;
 
-    @Column(name = "empresa")
-    private Integer empresa;
+    @ManyToOne
+    @JoinColumn(name = "id_empresa", insertable = false, updatable = false)
+    private Empresa empresa;
 
     @Column(name = "criado_em")
     private LocalDate criadoEm;

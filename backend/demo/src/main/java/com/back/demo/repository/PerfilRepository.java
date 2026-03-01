@@ -10,8 +10,8 @@ public interface PerfilRepository extends JpaRepository<Perfil, Long>{
     @Query("SELECT p FROM Perfil p WHERE p.id = :id")
     Perfil findPerfilById(@Param("id") Long id);
 
-    @Query("SELECT p FROM Perfil p WHERE p.descricao LIKE CONCAT('%', :descricao, '%')")
-    List<Perfil> findPerfilByDescricao(@Param("descricao") String descricao);
+    @Query("SELECT p FROM Perfil p WHERE p.descricao LIKE :descricao")
+    Perfil findPerfilByDescricao(@Param("descricao") String descricao);
 
     @Query("SELECT p FROM Perfil p WHERE p.ativo = :status")
     List<Perfil> findPerfilByStatus(@Param("status") Boolean status);
