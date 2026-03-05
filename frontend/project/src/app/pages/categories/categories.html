@@ -1,0 +1,199 @@
+<div class="categories-page">
+    <app-topbar [pageTitle]="'Categorias'" />
+
+    <div class="page-content">
+        <div class="page-header-row">
+            <div class="page-header">
+                <h1>Categorias de Produtos</h1>
+                <p>Organize seus produtos em categorias para facilitar o cardápio</p>
+            </div>
+            <div class="header-actions">
+                <button class="btn btn-primary" id="add-category-btn" (click)="openCreateModal()">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                        <path d="M12 4v16m8-8H4" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" />
+                    </svg>
+                    Nova Categoria
+                </button>
+            </div>
+        </div>
+
+        <!-- Stats Row -->
+        <div class="stats-strip">
+            <div class="stat-pill">
+                <span class="stat-pill-value">{{ allCategories.length }}</span>
+                <span class="stat-pill-label">Total de Categorias</span>
+            </div>
+            <div class="stat-pill stat-pill-green">
+                <span class="stat-pill-value">{{ activeCount }}</span>
+                <span class="stat-pill-label">Ativas</span>
+            </div>
+            <div class="stat-pill stat-pill-gray">
+                <span class="stat-pill-value">{{ allCategories.length - activeCount }}</span>
+                <span class="stat-pill-label">Inativas</span>
+            </div>
+            <div class="stat-pill stat-pill-blue">
+                <span class="stat-pill-value">{{ totalProducts }}</span>
+                <span class="stat-pill-label">Produtos Vinculados</span>
+            </div>
+        </div>
+
+        <!-- Filters -->
+        <div class="filters-bar card">
+            <div class="search-filter">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none">
+                    <circle cx="11" cy="11" r="8" stroke="currentColor" stroke-width="2" />
+                    <path d="M21 21l-4.35-4.35" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                </svg>
+                <input type="search" id="category-search" placeholder="Buscar categoria por nome ou descrição..."
+                     [(ngModel)]="searchQuery"/>
+            </div>
+            <div class="filter-group">
+                <select id="status-filter" [(ngModel)]="filterStatus">
+                    <option value="">Todos os Status</option>
+                    <option value="A">Ativas</option>
+                    <option value="I">Inativas</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- Categories Grid -->
+        <div class="categories-grid">
+            @for (cat of filtered; track cat.id) {
+            <div class="category-card card" [class.inactive]="!cat.active">
+                <div class="cat-header">
+                    <div class="cat-icon-wrap" [style.background]="cat.color + '22'"
+                        [style.border-color]="cat.color + '44'">
+                        <span class="cat-icon">{{ cat.icon }}</span>
+                    </div>
+                    <div class="cat-status-toggle">
+                        <label class="toggle-switch" [title]="cat.active ? 'Desativar' : 'Ativar'">
+                            <input type="checkbox" [checked]="cat.active" (change)="toggleActive(cat)"
+                                [id]="'toggle-' + cat.id" />
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="cat-body">
+                    <div class="cat-name">{{ cat.name }}</div>
+                    <div class="cat-meta">
+                        <span class="cat-count">
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none">
+                                <path d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-14L4 7m8 4v10M4 7v10l8 4"
+                                    stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                    stroke-linejoin="round" />
+                            </svg>
+                            {{ cat.productCount }} produto(s)
+                        </span>
+                        <span class="cat-date">Criado em {{ cat.createdAt }}</span>
+                    </div>
+                </div>
+
+                <div class="cat-footer">
+                    <span class="badge" [class.badge-green]="cat.active" [class.badge-red]="!cat.active">
+                        {{ cat.active ? 'Ativa' : 'Inativa' }}
+                    </span>
+                    <div class="action-buttons">
+                        <button class="action-btn edit" title="Editar" [id]="'edit-cat-' + cat.id"
+                            (click)="openEditModal(cat)">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+                                <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7" stroke="currentColor"
+                                    stroke-width="2" stroke-linecap="round" />
+                                <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z" stroke="currentColor"
+                                    stroke-width="2" stroke-linecap="round" />
+                            </svg>
+                        </button>
+                        <button class="action-btn delete" title="Excluir" [id]="'delete-cat-' + cat.id"
+                            (click)="askDelete(cat.id)">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+                                <path d="M3 6h18M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6M10 11v6M14 11v6M9 6V4h6v2"
+                                    stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            }
+
+            @if (filtered.length === 0) {
+            <div class="empty-state-full">
+                <div class="empty-icon">🏷️</div>
+                <p>Nenhuma categoria encontrada</p>
+                <span>Tente ajustar os filtros ou cadastre uma nova categoria</span>
+            </div>
+            }
+        </div>
+    </div>
+</div>
+
+<!-- Create / Edit Modal -->
+@if (showModal()) {
+<div class="modal-overlay" id="category-modal-overlay" (click)="closeModal()">
+    <div class="modal-box" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+            <h2>{{ editingCategory() ? 'Editar Categoria' : 'Nova Categoria' }}</h2>
+            <button class="modal-close" (click)="closeModal()" id="modal-close-btn">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+                    <path d="M18 6L6 18M6 6l12 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                </svg>
+            </button>
+        </div>
+        <div class="modal-body">
+            <div class="form-group">
+                <label for="cat-name">Nome da Categoria <span class="required">*</span></label>
+                <input id="cat-name" type="text" [(ngModel)]="formName" placeholder="Ex: Lanches, Bebidas..." />
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Ícone</label>
+                    <div class="icon-picker">
+                        @for (icon of iconOptions; track icon) {
+                        <button class="icon-opt" [class.selected]="formIcon === icon" (click)="formIcon = icon"
+                            type="button">{{ icon }}</button>
+                        }
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Cor</label>
+                    <div class="color-picker">
+                        @for (color of colorOptions; track color) {
+                        <button class="color-opt" [class.selected]="formColor === color" (click)="formColor = color"
+                            [style.background]="color" type="button"></button>
+                        }
+                    </div>
+                    <div class="color-preview" [style.background]="formColor + '22'"
+                        [style.border-color]="formColor + '88'">
+                        <span>{{ formIcon }}</span> <span [style.color]="formColor">{{ formName || 'Minha Categoria'
+                            }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-ghost" (click)="closeModal()" id="modal-cancel-btn">Cancelar</button>
+            <button class="btn btn-primary" (click)="saveCategory()" id="modal-save-btn">
+                {{ editingCategory() ? 'Salvar Alterações' : 'Criar Categoria' }}
+            </button>
+        </div>
+    </div>
+</div>
+}
+
+<!-- Confirm Delete -->
+@if (confirmDeleteId() !== null) {
+<div class="modal-overlay" id="delete-confirm-overlay" (click)="cancelDelete()">
+    <div class="modal-box modal-sm" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+            <h2>Confirmar Exclusão</h2>
+        </div>
+        <div class="modal-body">
+            <p class="delete-warning">Tem certeza que deseja excluir esta categoria? Esta ação não pode ser desfeita.
+            </p>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-ghost" (click)="cancelDelete()" id="cancel-delete-btn">Cancelar</button>
+            <button class="btn btn-danger" (click)="confirmDelete()" id="confirm-delete-btn">Excluir</button>
+        </div>
+    </div>
+</div>
+}

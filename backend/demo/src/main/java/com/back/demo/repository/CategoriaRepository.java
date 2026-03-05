@@ -15,4 +15,10 @@ public interface CategoriaRepository extends JpaRepository<Categoria, Long>{
 
     @Query("SELECT c FROM Categoria c WHERE c.ativo = :ativo")
     List<Categoria> findAllCategoriaByStatus(@Param("ativo") Boolean ativo);
+
+    @Query("SELECT COUNT(c) FROM Categoria c")
+    Long countAllCategoria();
+
+    @Query("SELECT COUNT(c) FROM Categoria c WHERE c.ativo = :ativo")
+    Long countAllCategoriaByStatus(@Param("ativo") Boolean ativo);
 }

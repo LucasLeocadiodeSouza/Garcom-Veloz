@@ -21,4 +21,10 @@ public interface ItemRepository extends JpaRepository<Item, Long> {
 
     @Query("SELECT item FROM Item item WHERE item.categoria.id = :categoriaId")
     List<Item> findItemByCategoria(@Param("categoriaId") Long categoriaId);
+
+    @Query("SELECT COUNT(i) FROM Item i")
+    Long CountAllItens();
+
+    @Query("SELECT COUNT(i) FROM Item i WHERE i.ativo = :ativo")
+    Long CountAllItensByStatus(@Param("ativo") Boolean ativo);
 }

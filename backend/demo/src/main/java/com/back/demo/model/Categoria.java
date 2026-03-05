@@ -22,6 +22,12 @@ public class Categoria {
     @Column(name = "descricao", length = 60)
     private String descricao;
 
+    @Column(name = "icone", length = 1)
+    private String icone;
+
+    @Column(name = "cor", length = 10)
+    private String cor;
+
     @Column(name = "referencia_ext")
     private Long refereciaExt;
 

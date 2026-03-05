@@ -83,6 +83,16 @@ public class UserSvc implements UserDetailsService  {
         return usuarios;
     }
 
+    public Long getCountAllUsuario(){
+        Long usuarios = usuarioRepo.CountAllUsuario();
+        return usuarios;
+    }
+
+    public Long getCountAllUsuarioAtivos(){
+        Long usuarios = usuarioRepo.CountAllUsuarioByStatus(true);
+        return usuarios;
+    }
+
     @Transactional
     public void criarAlterarUsuario(Long    id,
                                     String  nome, 

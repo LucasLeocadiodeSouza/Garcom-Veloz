@@ -1,0 +1,23 @@
+<div class="stats-grid">
+    @for (stat of stats; track stat.label) {
+    <div class="stat-card">
+        <div class="stat-icon" [style.background]="stat.iconBg" [style.color]="stat.iconColor"></div>
+        <div class="stat-info">
+            <span class="stat-value">{{ stat.value }}</span>
+            <span class="stat-label">{{ stat.label }}</span>
+        </div>
+        <div class="stat-trend" [class.up]="stat.trendUp" [class.down]="!stat.trendUp">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none">
+                @if (stat.trendUp) {
+                <path d="M7 17L17 7M17 7H7M17 7v10" stroke="currentColor" stroke-width="2.5"
+                    stroke-linecap="round" />
+                } @else {
+                <path d="M7 7l10 10M17 17H7M17 17V7" stroke="currentColor" stroke-width="2.5"
+                    stroke-linecap="round" />
+                }
+            </svg>
+            <span>{{ stat.trendText }}</span>
+        </div>
+    </div>
+    }
+</div>

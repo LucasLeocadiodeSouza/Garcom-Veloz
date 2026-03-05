@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { RouterLink } from '@angular/router';
 import { Topbar } from '../../layout/topbar/topbar';
 
 interface Product {
@@ -16,7 +17,7 @@ interface Product {
 
 @Component({
   selector: 'app-products',
-  imports: [FormsModule, Topbar],
+  imports: [FormsModule, RouterLink, Topbar],
   templateUrl: './products.html',
   styleUrl: './products.css'
 })

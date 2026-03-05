@@ -16,10 +16,12 @@ import com.back.demo.exception.CategoriaException;
 import com.back.demo.exception.CategoriaNotFoundException;
 import com.back.demo.exception.ItemException;
 import com.back.demo.model.Categoria;
+import com.back.demo.model.CategoriaDTO;
 import com.back.demo.model.Item;
 import com.back.demo.model.ItemDTO;
 import com.back.demo.model.ItemMedia;
 import com.back.demo.model.ItemMediaId;
+import com.back.demo.repository.CategoriaDTORepository;
 import com.back.demo.repository.CategoriaRepository;
 import com.back.demo.repository.ItemDTORepository;
 import com.back.demo.repository.ItemMediaRepository;
@@ -39,36 +41,45 @@ public class ItemSvc {
     private CategoriaRepository categoriaRepo;
 
     @Autowired
+    private CategoriaDTORepository categoriaDTORepo;
+
+    @Autowired
     private ItemDTORepository itemDTORepo;
+
+    @Autowired
+    private GenSvc gen;
 
 
     private String itensDirectory = System.getProperty("user.dir") + "/media/itens";
 
 
-    public List<Categoria> getListCategoria(String descricao, Boolean ativo){
-        List<Categoria> categorias = new ArrayList<>();
-
-        Boolean temDescricao = descricao != null && !descricao.isBlank();
-
-        if(temDescricao) categorias = categoriaRepo.findCategoriaByDescricao(descricao);
-        if(ativo != null){
-            List<Categoria> categoriasAtivos = categoriaRepo.findAllCategoriaByStatus(ativo);
-
-            if(categorias != null){
-                for (Categoria categoriaAtiva : categoriasAtivos) {
-                    if(!categorias.contains(categoriaAtiva)) categorias.remove(categoriaAtiva);
-                }
-            }
-        }
-
-        if(!temDescricao && ativo == null) categorias = categoriaRepo.findAll();
+    public List<CategoriaDTO> getListCategoria(String descricao, String ativo){
+        List<CategoriaDTO> categorias = categoriaDTORepo.getCategoriaList(ativo, descricao);
 
         return categorias;
+    }
+
+    public Long getCountAllCategorias(){
+        Long categorias = categoriaRepo.countAllCategoria();
+        return categorias;
+    }
+
+    public Long getCountAllCategoriasAtivos(){
+        Long categorias = categoriaRepo.countAllCategoriaByStatus(true);
+        return categorias;
+    }
+
+    public CategoriaDTO getStatsCategoria(String status, String search){
+        CategoriaDTO categoria = categoriaDTORepo.getStatsCategoria(status, search);
+
+        return categoria;
     }
 
     @Transactional
     public void criarAlterarCategoria(Long       id,
                                       String     descricao,
+                                      String     icone,
+                                      String     cor,
                                       Long       referencia_ext,
                                       String     ideusu)
                                       {        
@@ -85,6 +96,8 @@ public class ItemSvc {
         }
 
         categoria.setDescricao(descricao);
+        categoria.setCor(cor);
+        categoria.setIcone(icone);
         categoria.setRefereciaExt(referencia_ext);
 
         categoriaRepo.save(categoria);
@@ -106,6 +119,16 @@ public class ItemSvc {
     public List<ItemDTO> getListItem(String nome, Boolean ativo, Long categoriaId){
         List<ItemDTO> itens = itemDTORepo.getListItem(nome, ativo, categoriaId);
 
+        return itens;
+    }
+
+    public Long getCountAllItens(){
+        Long itens = itemRepo.CountAllItens();
+        return itens;
+    }
+
+    public Long getCountAllItensByStatus(){
+        Long itens = itemRepo.CountAllItensByStatus(true);
         return itens;
     }
 

@@ -1,0 +1,212 @@
+<div class="new-product-page">
+    <app-topbar [pageTitle]="'Novo Produto'" />
+
+    <div class="page-content">
+
+        <!-- Success State -->
+        @if (saved()) {
+        <div class="success-banner">
+            <div class="success-icon">✅</div>
+            <div>
+                <div class="success-title">Produto criado com sucesso!</div>
+                <div class="success-sub">Redirecionando para a lista de produtos...</div>
+            </div>
+        </div>
+        } @else {
+
+        <div class="page-header-row">
+            <div class="page-header">
+                <h1>Novo Produto</h1>
+                <p>Preencha as informações para cadastrar um novo produto no sistema</p>
+            </div>
+            <div class="header-actions">
+                <button class="btn btn-ghost" (click)="cancel()" id="cancel-btn">Cancelar</button>
+            </div>
+        </div>
+
+        <!-- Stepper -->
+        <div class="stepper">
+            @for (step of steps; track step.id) {
+            <div class="step" [class.active]="activeStep() === step.id" [class.done]="activeStep() > step.id"
+                (click)="goStep(step.id)" [id]="'step-' + step.id">
+                <div class="step-circle">
+                    @if (activeStep() > step.id) {
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+                        <path d="M20 6L9 17l-5-5" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"
+                            stroke-linejoin="round" />
+                    </svg>
+                    } @else {
+                    {{ step.id }}
+                    }
+                </div>
+                <span class="step-label">{{ step.label }}</span>
+            </div>
+            @if (step.id < 3) { <div class="step-connector" [class.done]="activeStep() > step.id">
+        </div>
+        }
+        }
+    </div>
+
+    <!-- Error Banner -->
+    @if (formError()) {
+    <div class="error-banner">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+            <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" />
+            <path d="M12 8v4M12 16h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+        </svg>
+        {{ formError() }}
+    </div>
+    }
+
+    <!-- Step 1: Informações Básicas -->
+    @if (activeStep() === 1) {
+    <div class="card form-card" id="step1-panel">
+        <div class="form-section-title">
+            <span class="form-section-icon">📋</span>
+            Informações Básicas
+        </div>
+        <div class="form-grid">
+            <div class="form-group col-2">
+                <label for="prod-name">Nome do Produto <span class="required">*</span></label>
+                <input id="prod-name" type="text" [(ngModel)]="form.name"
+                    placeholder="Ex: Hambúrguer Artesanal" />
+            </div>
+            <div class="form-group col-3">
+                <label for="prod-description">Descrição</label>
+                <textarea id="prod-description" [(ngModel)]="form.description" rows="3"
+                    placeholder="Descreva os ingredientes, tamanho, sabor..."></textarea>
+            </div>
+            <div class="form-group col-2">
+                <label for="prod-category">Categoria <span class="required">*</span></label>
+                <select id="prod-category" [(ngModel)]="form.category">
+                    <option value="">Selecione uma categoria</option>
+                    @for (cat of categories; track cat) {
+                    <option [value]="cat">{{ cat }}</option>
+                    }
+                </select>
+            </div>
+            <div class="form-group col-1">
+                <label for="prod-status">Status</label>
+                <select id="prod-status" [(ngModel)]="form.status">
+                    <option value="ativo">Ativo</option>
+                    <option value="inativo">Inativo</option>
+                </select>
+            </div>
+        </div>
+    </div>
+    }
+
+    <!-- Step 2: Preço & Estoque -->
+    @if (activeStep() === 2) {
+    <div class="card form-card" id="step2-panel">
+        <div class="form-section-title">
+            <span class="form-section-icon">💰</span>
+            Preço & Estoque
+        </div>
+        <div class="form-grid">
+            <div class="form-group col-1">
+                <label for="prod-price">Preço de Venda (R$) <span class="required">*</span></label>
+                <div class="input-prefix-wrap">
+                    <span class="input-prefix">R$</span>
+                    <input id="prod-price" type="number" min="0" step="0.01" [(ngModel)]="form.price"
+                        placeholder="0,00" />
+                </div>
+            </div>
+            <div class="form-group col-1">
+                <label for="prod-stock">Estoque Inicial</label>
+                <input id="prod-stock" type="number" min="0" [(ngModel)]="form.stock" placeholder="0" />
+            </div>
+            <div class="form-group col-1">
+                <label for="prod-unit">Unidade de Medida</label>
+                <select id="prod-unit" [(ngModel)]="form.unit">
+                    @for (u of units; track u) {
+                    <option [value]="u">{{ u }}</option>
+                    }
+                </select>
+            </div>
+        </div>
+
+        <!-- Price guidance -->
+        <div class="tip-box">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+                <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" />
+                <path d="M12 8v4M12 16h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+            </svg>
+            <span>Defina um preço justo levando em conta custos de insumos, mão de obra e margem de lucro
+                desejada.</span>
+        </div>
+    </div>
+    }
+
+    <!-- Step 3: Revisão -->
+    @if (activeStep() === 3) {
+    <div class="card form-card" id="step3-panel">
+        <div class="form-section-title">
+            <span class="form-section-icon">✅</span>
+            Revisão do Produto
+        </div>
+        <div class="review-grid">
+            <div class="review-thumb" [style.background]="selectedColor">
+                <span>{{ form.name.charAt(0) || '?' }}</span>
+            </div>
+            <div class="review-details">
+                <div class="review-name">{{ form.name || '—' }}</div>
+                <div class="review-desc">{{ form.description || 'Sem descrição' }}</div>
+                <div class="review-meta-row">
+                    <span class="badge badge-blue">{{ form.category || 'Sem categoria' }}</span>
+                    <span class="badge" [class.badge-green]="form.status === 'ativo'"
+                        [class.badge-red]="form.status === 'inativo'">
+                        {{ form.status === 'ativo' ? 'Ativo' : 'Inativo' }}
+                    </span>
+                </div>
+                <div class="review-pricing">
+                    <div class="review-price">
+                        <span class="price-label">Preço</span>
+                        <span class="price-value">R$ {{ form.price !== null ? form.price.toFixed(2) : '—' }}</span>
+                    </div>
+                    <div class="review-price">
+                        <span class="price-label">Estoque</span>
+                        <span class="price-value">{{ form.stock ?? '—' }} {{ form.unit }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="review-confirm-note">
+            Verifique todas as informações antes de confirmar o cadastro do produto.
+        </div>
+    </div>
+    }
+
+    <!-- Navigation Buttons -->
+    <div class="form-navigation">
+        @if (activeStep() > 1) {
+        <button class="btn btn-ghost" (click)="prevStep()" id="prev-step-btn">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                <path d="M15 18l-6-6 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+            </svg>
+            Anterior
+        </button>
+        } @else {
+        <span></span>
+        }
+
+        @if (activeStep() < 3) { <button class="btn btn-primary" (click)="nextStep()" id="next-step-btn">
+            Próximo
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                <path d="M9 18l6-6-6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+            </svg>
+            </button>
+            } @else {
+            <button class="btn btn-primary" (click)="saveProduct()" id="save-product-btn">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                    <path d="M20 6L9 17l-5-5" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"
+                        stroke-linejoin="round" />
+                </svg>
+                Cadastrar Produto
+            </button>
+            }
+    </div>
+    }
+
+</div>
+</div>
