@@ -22,25 +22,18 @@ public class ItemDTO {
     private Integer    estoque;
     private Boolean    ativo;
 
-    private Long       totalResult;
-    private Long       totalAtivo;
-    private Long       totalInativo;
-
     private List<String> mediaPath;
 
     // Grid Principal tela Produtos
-    public ItemDTO(Long idItem, 
-                   Long idCategoria, 
-                   String categDecricao, 
-                   String nome, 
-                   String decricao, 
+    public ItemDTO(Long       idItem, 
+                   Long       idCategoria, 
+                   String     categDecricao, 
+                   String     nome, 
+                   String     decricao, 
                    BigDecimal valor,
                    BigDecimal desconto, 
-                   Integer estoque, 
-                   Boolean ativo, 
-                   Long    totalResult, 
-                   Long    totalAtivo,
-                   Long    totalInativo) 
+                   Integer    estoque, 
+                   Boolean    ativo) 
                    {
         this.idItem        = idItem;
         this.idCategoria   = idCategoria;
@@ -51,9 +44,6 @@ public class ItemDTO {
         this.desconto      = desconto;
         this.estoque       = estoque;
         this.ativo         = ativo;
-        this.totalResult   = totalResult;
-        this.totalAtivo    = totalAtivo;
-        this.totalInativo  = totalInativo;
     }
 
     // Tela de cardapio

@@ -3,6 +3,7 @@ package com.back.demo.controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import com.back.demo.model.CategoriaDTO;
+import com.back.demo.model.ItemDTO;
 import com.back.demo.service.ItemSvc;
 import java.util.List;
 import java.util.Map;
@@ -68,9 +69,12 @@ public class Api {
         ));
     }
 
+    // ####################### ITENS #######################
 
-
-    
-
-
+    @GetMapping("/getItensGrid")
+    public List<ItemDTO> getItensGrid(@RequestParam(name = "search", required = false)       String search, 
+                                      @RequestParam(value = "idCategoria", required = false) Long idCategoria, 
+                                      @RequestParam(value = "status", required = false)      String status){
+        return itemService.getListItem(search, status, idCategoria);
+    }
 }

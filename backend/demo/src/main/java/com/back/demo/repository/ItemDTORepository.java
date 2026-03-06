@@ -13,44 +13,42 @@ public class ItemDTORepository {
         this.em = em;
     }
 
-    public Long getCountItensByStatus(Boolean status, String nome, Long idCategoria){
-        String query = "SELECT COUNT(i) FROM Item i " + 
-                       "JOIN Categoria cat ON cat.id = i.idCategoria " + //JOIN i.categoria cat
-                       "WHERE i.ativo = " + status.toString();
+    // public Long getCountItensByStatus(Boolean status, String nome, Long idCategoria){
+    //     String query = "SELECT COUNT(i) FROM Item i " + 
+    //                    "JOIN Categoria cat ON cat.id = i.idCategoria " + //JOIN i.categoria cat
+    //                    "WHERE i.ativo = " + status.toString();
 
-        Boolean filtroPorDescricao = nome != null && !nome.isBlank();
-        Boolean filtroPorCategoria = idCategoria != null && idCategoria != 0;
+    //     Boolean filtroPorDescricao = nome != null && !nome.isBlank();
+    //     Boolean filtroPorCategoria = idCategoria != null && idCategoria != 0;
 
-        if(filtroPorDescricao) query += " AND i.nome LIKE CONCAT('%', :nomeItem ,'%') ";
-        if(filtroPorCategoria) query += " AND cat.id = :idCategoria";
+    //     if(filtroPorDescricao) query += " AND i.nome LIKE CONCAT('%', :nomeItem ,'%') ";
+    //     if(filtroPorCategoria) query += " AND cat.id = :idCategoria";
 
-        var q = em.createQuery(query, Long.class);
+    //     var q = em.createQuery(query, Long.class);
 
-        if(filtroPorDescricao) q.setParameter("nomeItem", nome);
-        if(filtroPorCategoria) q.setParameter("idCategoria", idCategoria);
+    //     if(filtroPorDescricao) q.setParameter("nomeItem", nome);
+    //     if(filtroPorCategoria) q.setParameter("idCategoria", idCategoria);
 
-        return q.getSingleResult();
-    }
+    //     return q.getSingleResult();
+    // }
 
-    public List<ItemDTO> getListItem(String nome, Boolean ativo, Long idCategoria){
+    public List<ItemDTO> getListItem(String nome, String ativo, Long idCategoria){
         String query = "SELECT new ItemDTO(" + 
                        "i.id, " +
                        "cat.id, " +
                        "cat.descricao, " +
                        "i.nome, " +
-                       "i.decricao, " +
+                       "i.descricao, " +
                        "i.valor," +
                        "i.desconto, " +
                        "i.estoque, " +
-                       "i.ativo, " +
-                       "COUNT(i), " + // Totais
-                       getCountItensByStatus(true, nome, idCategoria).toString() + ", " + // Totais
-                       getCountItensByStatus(false, nome, idCategoria).toString() + ") " + // Totais 
-                       " FROM Item i JOIN Categoria cat ON cat.id = i.idCategoria";
+                       "i.ativo " +
+                       ") " +
+                       " FROM Item i JOIN i.categoria cat ";
 
         Boolean filtroPorDescricao = nome != null && !nome.isBlank();
         Boolean filtroPorCategoria = idCategoria != null && idCategoria != 0;
-        Boolean filtroPorStatus    = ativo != null;
+        Boolean filtroPorStatus    = ativo != null && !ativo.isBlank();
 
         Boolean temAnd = false;
 
@@ -67,7 +65,7 @@ public class ItemDTORepository {
         var q = em.createQuery(query, ItemDTO.class);
 
         if(filtroPorDescricao) q.setParameter("nomeItem", nome);
-        if(filtroPorCategoria) q.setParameter("ativo", ativo);
+        if(filtroPorCategoria) q.setParameter("ativo", ativo == "A");
         if(filtroPorStatus)    q.setParameter("idCategoria", idCategoria);
 
         return q.getResultList();

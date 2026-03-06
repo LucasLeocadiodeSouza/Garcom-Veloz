@@ -29,15 +29,15 @@
             </div>
             <div class="filter-group">
                 <select id="category-filter" [(ngModel)]="selectedCategory" (change)="filterProducts()">
-                    <option value="">Todas as Categorias</option>
+                    <option value='0'>Todas as Categorias</option>
                     @for (cat of categories; track cat) {
-                    <option [value]="cat">{{ cat }}</option>
+                    <option [value]="cat.value">{{ cat.label }}</option>
                     }
                 </select>
                 <select id="status-filter" [(ngModel)]="selectedStatus" (change)="filterProducts()">
                     <option value="">Todos os Status</option>
-                    <option value="ativo">Ativo</option>
-                    <option value="inativo">Inativo</option>
+                    <option value="A">Ativo</option>
+                    <option value="I">Inativo</option>
                 </select>
                 <button class="btn btn-ghost btn-sm" (click)="clearFilters()" id="clear-filters-btn">Limpar</button>
             </div>
@@ -93,9 +93,9 @@
                                 </div>
                             </td>
                             <td>
-                                <span class="badge" [class.badge-green]="product.status === 'ativo'"
-                                    [class.badge-red]="product.status === 'inativo'">
-                                    {{ product.status === 'ativo' ? 'Ativo' : 'Inativo' }}
+                                <span class="badge" [class.badge-green]="product.status === 'A'"
+                                    [class.badge-red]="product.status === 'I'">
+                                    {{ product.status === 'A' ? 'Ativo' : 'Inativo' }}
                                 </span>
                             </td>
                             <td>

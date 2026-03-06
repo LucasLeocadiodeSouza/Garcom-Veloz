@@ -127,7 +127,7 @@ public class ItemSvc {
 
 
 
-    public List<ItemDTO> getListItem(String nome, Boolean ativo, Long categoriaId){
+    public List<ItemDTO> getListItem(String nome, String ativo, Long categoriaId){
         List<ItemDTO> itens = itemDTORepo.getListItem(nome, ativo, categoriaId);
 
         return itens;
