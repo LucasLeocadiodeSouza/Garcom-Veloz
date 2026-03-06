@@ -21,7 +21,7 @@ interface Category {
     styleUrl: './categories.css'
 })
 export class Categories {
-    private request = inject(RequestForm);
+  private request = inject(RequestForm);
 
   ngOnInit(): void {
     this.getCategoriaGrid();
@@ -32,6 +32,7 @@ export class Categories {
     showModal = signal(false);
     editingCategory = signal<Category | null>(null);
     confirmDeleteId = signal<number | null>(null);
+    showAlertMessage = signal<string | null>(null);
 
     formName = '';
     formColor = '#3b82f6';
@@ -43,84 +44,104 @@ export class Categories {
 
     allCategories: Category[] = [];
 
-    get filtered() {
-        return this.allCategories.filter(c => {
-            const matchSearch = !this.searchQuery || c.name.toLowerCase().includes(this.searchQuery.toLowerCase());
+  get filtered() {
+    return this.allCategories.filter(c => {
+      const matchSearch = !this.searchQuery || c.name.toLowerCase().includes(this.searchQuery.toLowerCase());
 
-            const matchStatus = !this.filterStatus || (this.filterStatus === 'ativo' ? c.active : !c.active);
+      const matchStatus = !this.filterStatus || (this.filterStatus === 'A' ? c.active : !c.active);
 
-            return matchSearch && matchStatus;
-        });
+      return matchSearch && matchStatus;
+    });
+  }
+
+  get activeCount() { return this.allCategories.filter(c => c.active).length; }
+  get totalProducts() { return this.allCategories.reduce((s, c) => s + c.productCount, 0); }
+
+  openCreateModal() {
+    this.editingCategory.set(null);
+    this.formName   = '';
+    this.formColor  = '#3b82f6';
+    this.formIcon   = '🍽️';
+    this.formActive = true;
+    this.showModal.set(true);
+  }
+
+  openEditModal(cat: Category) {
+    if(!cat.active) return;
+
+    this.editingCategory.set(cat);
+    this.formName = cat.name;
+    this.formColor = cat.color;
+    this.formIcon = cat.icon;
+    this.formActive = cat.active;
+    this.showModal.set(true);
+  }
+
+  closeModal() {
+    this.showModal.set(false);
+    this.editingCategory.set(null);
+  }
+
+  closeAlert(){
+    this.showAlertMessage.set(null);
+  }
+
+  saveCategory() {
+    const editing = this.editingCategory();
+
+    if(editing){
+      const idx = this.allCategories.findIndex(c => c.id === editing.id);
+      if(idx == -1) return;
     }
 
-    get activeCount() { return this.allCategories.filter(c => c.active).length; }
-    get totalProducts() { return this.allCategories.reduce((s, c) => s + c.productCount, 0); }
+    this.criarAlterarCategoria( (editing?editing.id : 0) , this.formName, this.formIcon, this.formColor);
+    this.closeModal();
+  }
 
-    openCreateModal() {
-        this.editingCategory.set(null);
-        this.formName = '';
-        this.formColor = '#3b82f6';
-        this.formIcon = '🍽️';
-        this.formActive = true;
-        this.showModal.set(true);
+
+
+  toggleActive(cat: Category) {
+    const idx = this.allCategories.findIndex(c => c.id === cat.id);
+    if (idx == -1) return;
+
+    this.request.executeRequestPOST('api/ativarInativarCategoria', null, {idCategoria: this.allCategories[idx].id, ativar: !this.allCategories[idx].active}).subscribe({
+      next: () => {
+        this.allCategories[idx].active = !this.allCategories[idx].active;
+      },
+      error: (error) => {
+        console.error('Erro:', error);
+      }
+    });
+  }
+
+  askDelete(cat: Category) {
+    if(!cat.active) return;
+    if(cat.productCount > 0){
+      this.showAlertMessage.set('Não é possível excluir uma categoria que possui produtos vinculados. Por favor, remova os produtos vinculados antes de excluir a categoria.');
+      return;
     }
 
-    openEditModal(cat: Category) {
-        this.editingCategory.set(cat);
-        this.formName = cat.name;
-        this.formColor = cat.color;
-        this.formIcon = cat.icon;
-        this.formActive = cat.active;
-        this.showModal.set(true);
-    }
+    this.confirmDeleteId.set(cat.id);
+  }
 
-    closeModal() {
-        this.showModal.set(false);
-        this.editingCategory.set(null);
-    }
+  cancelDelete() { this.confirmDeleteId.set(null); }
 
-    saveCategory() {
-        const editing = this.editingCategory();
-        if (editing) {
-            const idx = this.allCategories.findIndex(c => c.id === editing.id);
-            if (idx !== -1) {
-                this.allCategories[idx] = {
-                    ...this.allCategories[idx],
-                    name: this.formName,
-                    color: this.formColor,
-                    icon: this.formIcon,
-                    active: this.formActive,
-                };
-            }
-        } else {
-            const newCat: Category = {
-                id: Date.now(),
-                name: this.formName,
-                color: this.formColor,
-                icon: this.formIcon,
-                productCount: 0,
-                active: this.formActive,
-                createdAt: new Date().toISOString().split('T')[0],
-            };
-            this.allCategories.push(newCat);
-        }
-        this.closeModal();
-    }
+  confirmDelete() {
+      const id = this.confirmDeleteId();
+      if (id !== null) {
 
-    toggleActive(cat: Category) {
-        const idx = this.allCategories.findIndex(c => c.id === cat.id);
-        if (idx !== -1) this.allCategories[idx].active = !this.allCategories[idx].active;
-    }
-
-    askDelete(id: number) { this.confirmDeleteId.set(id); }
-    cancelDelete() { this.confirmDeleteId.set(null); }
-    confirmDelete() {
-        const id = this.confirmDeleteId();
-        if (id !== null) {
+        this.request.executeRequestPOST('api/excluirCategoria', null, {idCategoria: id}).subscribe({
+          next: () => {
             this.allCategories = this.allCategories.filter(c => c.id !== id);
             this.confirmDeleteId.set(null);
-        }
-    }
+          },
+          error: (error) => {
+            console.error('Erro:', error);
+            this.showAlertMessage.set('Erro ao excluir categoria. Por favor, tente novamente.');
+          }
+        });
+      }
+  }
 
   getCategoriaGrid(){
     this.request.executeRequestGET('api/getCategoriaGrid', {search: this.searchQuery, status: this.filterStatus}).subscribe({
@@ -134,7 +155,7 @@ export class Categories {
       ]) => {
 
         this.allCategories = response.map((item: any) => ({
-          id:           item.id,
+          id:           item.idCategoria,
           name:         item.descricao,
           color:        item.cor,
           icon:         item.icone,
@@ -145,6 +166,26 @@ export class Categories {
       },
       error: (error) => {
         console.error('Erro:', error);
+        this.showAlertMessage.set('Erro ao carregar as categorias. Por favor, tente novamente.');
+      }
+    });
+  }
+
+  criarAlterarCategoria(id: number, descricao: string, icone: string, cor: string) {
+    const dto = {
+      idCategoria:   id,
+      descricao:     descricao,
+      icone:         icone,
+      cor:           cor
+    };
+
+    this.request.executeRequestPOST('api/criarAlterarCategoria', dto).subscribe({
+      next: () => {
+        this.getCategoriaGrid();
+      },
+      error: (error) => {
+        console.error('Erro:', error);
+        this.showAlertMessage.set('Erro ao salvar categoria. Por favor, tente novamente.');
       }
     });
   }

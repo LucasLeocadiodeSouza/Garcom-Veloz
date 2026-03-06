@@ -106,11 +106,22 @@ public class ItemSvc {
     @Transactional
     public void ativarInativarCategoria(Long id, Boolean ativar){
         Categoria categoria = categoriaRepo.findCategoriaById(id);
-        if(categoria == null) throw new CategoriaNotFoundException("Não encontrado o Item");
+        if(categoria == null) throw new CategoriaNotFoundException("Não encontrado a Categoria");
 
         categoria.setAtivo(ativar);
 
         categoriaRepo.save(categoria);
+    }
+
+    @Transactional
+    public void excluirCategoria(Long id, String ideusu){
+        Categoria categoria = categoriaRepo.findCategoriaById(id);
+        if(categoria == null) throw new CategoriaNotFoundException("Não encontrado a Categoria");
+
+        Long countProdutosVinculados = categoriaDTORepo.getCountProductByCategoria(categoria.getId(), null, null);
+        if(countProdutosVinculados >= 1) throw new CategoriaException("Categoria possui itens vinculados, altere a categoria dos itens para excluir a categoria selecionada");
+
+        categoriaRepo.delete(categoria);
     }
 
 

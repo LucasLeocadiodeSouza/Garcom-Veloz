@@ -28,7 +28,7 @@ public class CategoriaDTORepository {
         return q.getSingleResult();
     }
 
-    public Long getCountProductByCategoria(Integer categoriaId, String status, String search){
+    public Long getCountProductByCategoria(Long categoriaId, String status, String search){
         String query = "SELECT COUNT(i) " + 
                        "FROM  Item i " +
                        "JOIN Categoria c ON i.id = c.id ";
