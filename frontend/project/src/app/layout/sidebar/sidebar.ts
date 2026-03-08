@@ -1,6 +1,5 @@
 import { Component, signal, effect, inject, PLATFORM_ID } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
-import { RouterLink, RouterLinkActive } from '@angular/router';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 
 interface NavItem {
@@ -11,7 +10,7 @@ interface NavItem {
 
 @Component({
   selector: 'app-sidebar',
-  imports: [RouterLink, RouterLinkActive],
+  imports: [],
   templateUrl: './sidebar.html',
   styleUrl: './sidebar.css'
 })
@@ -70,5 +69,11 @@ export class Sidebar {
 
   toggleCollapse() {
     this.collapsed.update(v => !v);
+  }
+
+  isActive(route: string): boolean {
+    if (!isPlatformBrowser(this.platformId)) return false;
+    return window.location.pathname === route ||
+      window.location.pathname.startsWith(route + '/');
   }
 }

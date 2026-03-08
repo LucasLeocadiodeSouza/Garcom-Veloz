@@ -8,7 +8,7 @@
                 <p>Gerencie todos os produtos disponíveis no sistema</p>
             </div>
             <div class="header-actions">
-                <a class="btn btn-primary" id="add-product-btn" routerLink="/produtos/novo">
+                <a class="btn btn-primary" id="add-product-btn" href="/produtos/novo">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
                         <path d="M12 4v16m8-8H4" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" />
                     </svg>
@@ -30,7 +30,7 @@
             <div class="filter-group">
                 <select id="category-filter" [(ngModel)]="selectedCategory" (change)="filterProducts()">
                     <option value='0'>Todas as Categorias</option>
-                    @for (cat of categories; track cat) {
+                    @for (cat of categories; track cat.value) {
                     <option [value]="cat.value">{{ cat.label }}</option>
                     }
                 </select>
@@ -100,26 +100,28 @@
                             </td>
                             <td>
                                 <div class="action-buttons">
-                                    <button class="action-btn view" title="Visualizar" [id]="'view-' + product.id">
+                                    <button class="action-btn view" title="Visualizar" [id]="'view-' + product.id" (click)="openImagesModal(product)">
                                         <svg width="15" height="15" viewBox="0 0 24 24" fill="none">
-                                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" stroke="currentColor"
-                                                stroke-width="2" />
+                                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" stroke="currentColor" stroke-width="2" />
                                             <circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="2" />
                                         </svg>
                                     </button>
-                                    <button class="action-btn edit" title="Editar" [id]="'edit-' + product.id">
+                                    <button class="action-btn edit" title="Editar" [id]="'edit-' + product.id" (click)="openEditModal(product)">
                                         <svg width="15" height="15" viewBox="0 0 24 24" fill="none">
-                                            <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"
-                                                stroke="currentColor" stroke-width="2" stroke-linecap="round" />
-                                            <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"
-                                                stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                                            <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                                            <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
                                         </svg>
                                     </button>
-                                    <button class="action-btn delete" title="Excluir" [id]="'delete-' + product.id">
+                                    <button class="action-btn delete" title="Excluir" [id]="'delete-' + product.id" (click)="askDelete(product)">
                                         <svg width="15" height="15" viewBox="0 0 24 24" fill="none">
-                                            <path
-                                                d="M3 6h18M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6M10 11v6M14 11v6M9 6V4h6v2"
-                                                stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                                            <path d="M3 6h18M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6M10 11v6M14 11v6M9 6V4h6v2" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                                        </svg>
+                                    </button>
+                                    <button class="action-btn toggle active" [title]="product.status === 'A' ? 'Desativar produto' : 'Ativar produto'" [id]="'toggle-' + product.id" (click)="ativarDesativarItem(product.id, product.status !== 'A')">
+                                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none">
+                                            <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2" />
+                                            <line x1="12" y1="7" x2="12" y2="12" stroke="currentColor"
+                                                stroke-width="2.5" stroke-linecap="round" />
                                         </svg>
                                     </button>
                                 </div>
@@ -164,3 +166,158 @@
         </div>
     </div>
 </div>
+
+<!-- Edit Modal -->
+@if (showModal()) {
+<div class="modal-overlay" id="edit-modal-overlay" (click)="closeModal()">
+    <div class="modal-box" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+            <h2>{{ editingProduct() ? 'Editar Produto' : 'Novo Produto' }}</h2>
+            <button class="modal-close" (click)="closeModal()" id="modal-close-btn">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+                    <path d="M18 6L6 18M6 6l12 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                </svg>
+            </button>
+        </div>
+        <div class="modal-body">
+            <div class="form-group">
+                <label for="prod-name">Nome do Produto </label>
+                <input id="prod-name" type="text" [(ngModel)]="formName" placeholder="Ex: Suco de Laranja..." />
+            </div>
+            <div class="form-group">
+                <label for="prod-desc">Descrição </label>
+                <textarea id="prod-desc" [(ngModel)]="formDescription"
+                    placeholder="Ex: Natural, 500ml, gelado..."></textarea>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="prod-estoque">Estoque (Unidade)</label>
+                    <input id="prod-estoque" type="number" min="0" step="0" [(ngModel)]="formEstoque"
+                        placeholder="Ex: 15" />
+                </div>
+                <div class="form-group">
+                    <label for="prod-category">Categoria</label>
+                    <select id="prod-category" [(ngModel)]="formCategoryId">
+                        @for (cat of categories; track cat.value) {
+                        <option [value]="cat.value">{{ cat.label }}</option>
+                        }
+                    </select>
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="prod-price">Preço </label>
+                    <input id="prod-price" type="number" min="0" step="0.01" [(ngModel)]="formPrice"
+                        placeholder="Ex: 5,99" />
+                </div>
+                <div class="form-group">
+                    <label for="prod-desconto">Desconto </label>
+                    <input id="prod-desconto" type="number" min="0" step="0.01" [(ngModel)]="formDiscount"
+                        placeholder="Ex: 1,99" />
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-ghost" (click)="closeModal()" id="modal-cancel-btn">Cancelar</button>
+                <button class="btn btn-primary" (click)="criarAlterarItem()" id="modal-save-btn">Salvar
+                    Alterações</button>
+            </div>
+        </div>
+    </div>
+</div>
+}
+
+<!-- Images Modal -->
+@if (showImagesModal()) {
+<div class="modal-overlay" id="images-modal-overlay" (click)="closeModal()">
+    <div class="modal-box" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+            <h2>Imagens do Produto</h2>
+            <button class="modal-close" (click)="closeModal()" id="modal-close-btn">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+                    <path d="M18 6L6 18M6 6l12 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                </svg>
+            </button>
+        </div>
+        <div class="modal-body img-modal-body">
+            <input type="file" #fileinput id="fileinput" (change)="onFileSelected($event)" accept="image/*" multiple
+                style="display: none;">
+
+            <div class="gallery-container">
+                <div class="gallery-preview">
+                    @if (productImages().length > 0) {
+                    <button class="gallery-nav gallery-nav-prev" (click)="prevImage()"
+                        [disabled]="productImages().length <= 1">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                            <path d="M15 18l-6-6 6-6" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"
+                                stroke-linejoin="round" />
+                        </svg>
+                    </button>
+
+                    <img class="gallery-main-img" [src]="productImages()[activeImageIndex()].description"
+                        [alt]="'Foto ' + (activeImageIndex() + 1)" (error)="onImgError($event)" />
+
+                    <button class="gallery-nav gallery-nav-next" (click)="nextImage()"
+                        [disabled]="productImages().length <= 1">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                            <path d="M9 18l6-6-6-6" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"
+                                stroke-linejoin="round" />
+                        </svg>
+                    </button>
+
+                    <div class="gallery-counter">
+                        <span>{{ activeImageIndex() + 1 }} / {{ productImages().length }}</span>
+                    </div>
+                    } @else {
+                    <div class="gallery-empty">
+                        <svg width="48" height="48" viewBox="0 0 24 24" fill="none">
+                            <rect x="3" y="3" width="18" height="18" rx="3" stroke="currentColor" stroke-width="1.5" />
+                            <path d="M3 16l5-5 4 4 3-3 6 6" stroke="currentColor" stroke-width="1.5"
+                                stroke-linecap="round" stroke-linejoin="round" />
+                            <circle cx="8.5" cy="8.5" r="1.5" fill="currentColor" />
+                        </svg>
+                        <p>Nenhuma foto cadastrada</p>
+                        <span>Adicione imagens ao produto para visualizá-las aqui</span>
+                    </div>
+                    }
+                </div>
+
+                @if (productImages().length > 1) {
+                <div class="gallery-filmstrip">
+                    @for (img of productImages(); track $index) {
+                    <button class="gallery-thumb" [class.active]="$index === activeImageIndex()"
+                        (click)="goToImage($index)">
+                        <img [src]="img.description" [alt]="'Miniatura ' + ($index + 1)" (error)="onImgError($event)" />
+                    </button>
+                    }
+                </div>
+                }
+            </div>
+
+            <div class="modal-footer">
+                <button class="btn btn-ghost" (click)="closeModal()" id="modal-cancel-btn">Cancelar</button>
+                <button class="btn btn-primary" (click)="adapterRegisterTempImageItem()" id="modal-save-btn">Adicionar
+                    Imagem</button>
+            </div>
+        </div>
+    </div>
+</div>
+}
+
+<!-- Confirm Delete -->
+@if (confirmDeleteId() !== null) {
+<div class="modal-overlay" id="delete-confirm-overlay" (click)="cancelDelete()">
+    <div class="modal-box modal-sm" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+            <h2>Confirmar Exclusão</h2>
+        </div>
+        <div class="modal-body">
+            <p class="delete-warning">Tem certeza que deseja excluir esse produto? Esta ação não pode ser desfeita.
+            </p>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-ghost" (click)="cancelDelete()" id="cancel-delete-btn">Cancelar</button>
+            <button class="btn btn-danger" (click)="confirmDelete()" id="confirm-delete-btn">Excluir</button>
+        </div>
+    </div>
+</div>
+}

@@ -5,7 +5,7 @@
 
 <div class="nav-cards-grid">
     @for (card of quickNavCards; track card.title) {
-    <a class="nav-card" [routerLink]="card.route">
+    <a class="nav-card" [href]="card.route">
         <div class="nav-card-icon" [style.background]="card.iconBg"></div>
         <div class="nav-card-content">
             <h3>{{ card.title }}</h3>

@@ -12,7 +12,7 @@ import java.util.List;
 public interface ItemMediaRepository extends JpaRepository<ItemMedia, ItemMediaId> {
 
     @Query("SELECT media FROM ItemMedia media WHERE media.id.idItem = :item_id")
-    List<ItemMedia> findByIdItem(Long idItem);
+    List<ItemMedia> findAllByIdItem(@Param("item_id") Long idItem);
 
     @Query("SELECT media FROM ItemMedia media WHERE media.id.idItem = :item_id AND media.id.seq = :sequencia")
     ItemMedia findMediaById(@Param("item_id") Long itemId, @Param("sequencia") Integer sequencia);

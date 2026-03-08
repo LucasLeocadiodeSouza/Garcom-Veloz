@@ -3,6 +3,7 @@ import { FormsModule } from '@angular/forms';
 import { Topbar } from '../../layout/topbar/topbar';
 import { RequestForm } from '../../service/request-form';
 import { map } from 'rxjs/internal/operators/map';
+import { AlertService } from '../../service/alert-service';
 
 interface Category {
     id: number;
@@ -22,6 +23,7 @@ interface Category {
 })
 export class Categories {
   private request = inject(RequestForm);
+  private alert   = inject(AlertService);
 
   ngOnInit(): void {
     this.getCategoriaGrid();
@@ -32,7 +34,6 @@ export class Categories {
     showModal = signal(false);
     editingCategory = signal<Category | null>(null);
     confirmDeleteId = signal<number | null>(null);
-    showAlertMessage = signal<string | null>(null);
 
     formName = '';
     formColor = '#3b82f6';
@@ -82,10 +83,6 @@ export class Categories {
     this.editingCategory.set(null);
   }
 
-  closeAlert(){
-    this.showAlertMessage.set(null);
-  }
-
   saveCategory() {
     const editing = this.editingCategory();
 
@@ -117,7 +114,7 @@ export class Categories {
   askDelete(cat: Category) {
     if(!cat.active) return;
     if(cat.productCount > 0){
-      this.showAlertMessage.set('Não é possível excluir uma categoria que possui produtos vinculados. Por favor, remova os produtos vinculados antes de excluir a categoria.');
+      this.alert.show('Não é possível excluir uma categoria que possui produtos vinculados. Por favor, remova os produtos vinculados antes de excluir a categoria.');
       return;
     }
 
@@ -137,7 +134,7 @@ export class Categories {
           },
           error: (error) => {
             console.error('Erro:', error);
-            this.showAlertMessage.set('Erro ao excluir categoria. Por favor, tente novamente.');
+            this.alert.show('Erro ao excluir categoria. Por favor, tente novamente.');
           }
         });
       }
@@ -166,7 +163,7 @@ export class Categories {
       },
       error: (error) => {
         console.error('Erro:', error);
-        this.showAlertMessage.set('Erro ao carregar as categorias. Por favor, tente novamente.');
+        this.alert.show('Erro ao carregar as categorias. Por favor, tente novamente.');
       }
     });
   }
@@ -185,7 +182,7 @@ export class Categories {
       },
       error: (error) => {
         console.error('Erro:', error);
-        this.showAlertMessage.set('Erro ao salvar categoria. Por favor, tente novamente.');
+        this.alert.show('Erro ao salvar categoria. Por favor, tente novamente.');
       }
     });
   }

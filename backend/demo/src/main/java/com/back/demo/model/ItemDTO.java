@@ -16,7 +16,7 @@ public class ItemDTO {
     private Long       idCategoria;
     private String     categDecricao;
     private String     nome;
-    private String     decricao;
+    private String     descricao;
     private BigDecimal valor;
     private BigDecimal desconto;
     private Integer    estoque;
@@ -29,7 +29,7 @@ public class ItemDTO {
                    Long       idCategoria, 
                    String     categDecricao, 
                    String     nome, 
-                   String     decricao, 
+                   String     descricao, 
                    BigDecimal valor,
                    BigDecimal desconto, 
                    Integer    estoque, 
@@ -39,7 +39,7 @@ public class ItemDTO {
         this.idCategoria   = idCategoria;
         this.categDecricao = categDecricao;
         this.nome          = nome;
-        this.decricao      = decricao;
+        this.descricao      = descricao;
         this.valor         = valor;
         this.desconto      = desconto;
         this.estoque       = estoque;
@@ -48,12 +48,12 @@ public class ItemDTO {
 
     // Tela de cardapio
     public ItemDTO(String nome, 
-                   String decricao, 
+                   String descricao, 
                    BigDecimal valor, 
                    BigDecimal desconto, 
                    List<String> mediaPath) {
         this.nome      = nome;
-        this.decricao  = decricao;
+        this.descricao  = descricao;
         this.valor     = valor;
         this.desconto  = desconto;
         this.mediaPath = mediaPath;

@@ -6,7 +6,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -55,6 +54,12 @@ public class ItemSvc {
 
     public List<CategoriaDTO> getListCategoria(String descricao, String ativo){
         List<CategoriaDTO> categorias = categoriaDTORepo.getCategoriaList(ativo, descricao);
+
+        return categorias;
+    }
+
+    public List<Categoria> getAllCategoriaActives(){
+        List<Categoria> categorias = categoriaRepo.findAllCategoriaByStatus(true);
 
         return categorias;
     }
@@ -160,7 +165,9 @@ public class ItemSvc {
         if(nome == null || nome.isBlank()) throw new ItemException("É preciso informar o nome do item!");
         //if(descricao == null || descricao.isBlank()) throw new ItemException("É preciso informar a descrição do item!");
         if(valor == null || valor.equals(BigDecimal.ZERO)) throw new ItemException("É preciso informar um valor para o item");
+        if(valor.compareTo(BigDecimal.ZERO) < 0) throw new ItemException("O valor do item não pode ser menor que 0");
         //if(desconto == null || desconto.equals(BigDecimal.ZERO)) throw new ItemException("É preciso informar um desconto para o item!");
+        if(valor.compareTo(desconto) < 0) throw new ItemException("O desconto do item não pode ser maior que o valor do item");
 
         Item item = itemRepo.findItemById(id);
 
@@ -191,7 +198,7 @@ public class ItemSvc {
     }
 
     @Transactional
-    public void ativarInativarItem(Long id, Boolean ativar){
+    public void ativarInativarItem(Long id, Boolean ativar, String ideusu){
         Item item = itemRepo.findItemById(id);
         if(item == null) throw new ItemException("Não encontrado o Item");
 
@@ -201,7 +208,7 @@ public class ItemSvc {
     }
 
     @Transactional
-    public void excluiItem(Long id){
+    public void excluiItem(Long id, String ideusu){
         Item item = itemRepo.findItemById(id);
         if(item == null) throw new ItemException("Não encontrado o Item");
 
@@ -209,7 +216,14 @@ public class ItemSvc {
     }
 
     @Transactional
-    private void vincularItemImage(MultipartFile image, Long itemId) throws IOException{
+    public void adapterVincularItemImage(MultipartFile[] images, Long itemId, String ideusu) throws IOException{
+       for (MultipartFile image : images) {
+            vincularItemImage(image, itemId, ideusu);
+        }
+    }
+
+    @Transactional
+    private void vincularItemImage(MultipartFile image, Long itemId, String ideusu) throws IOException{
        Item item = itemRepo.findItemById(itemId);
         if(item == null) throw new ItemException("Não encontrado o Item");
 
@@ -231,12 +245,13 @@ public class ItemSvc {
        media.setItem(item);
        media.setCriadoEm(LocalDate.now());
        media.setDescricao(newName);
+       media.setIdeusu(ideusu);
     
        itemImgRepo.save(media);
     }
 
     @Transactional
-    private void removerItemImage(Long itemId, Integer sequencia) throws IOException{
+    private void removerMediaItem(Long itemId, Integer sequencia) throws IOException{
        Item item = itemRepo.findItemById(itemId);
         if(item == null) throw new ItemException("Não encontrado o Item");
 
@@ -252,13 +267,18 @@ public class ItemSvc {
     }
 
     @Transactional
-    private void removerTodosItemImage() throws IOException{
+    private void removerTodosMediaItem() throws IOException{
        List<ItemMedia> itens = itemImgRepo.findAll();
         if(itens == null) return;
 
        for (ItemMedia item : itens) {
-           removerItemImage(item.getId().getIdItem(), item.getId().getSeq());
+           removerMediaItem(item.getId().getIdItem(), item.getId().getSeq());
        }
+    }
 
+    public List<ItemMedia> getListMediaItem(Long idItem){
+        List<ItemMedia> itens = itemImgRepo.findAllByIdItem(idItem);
+
+        return itens;
     }
 }

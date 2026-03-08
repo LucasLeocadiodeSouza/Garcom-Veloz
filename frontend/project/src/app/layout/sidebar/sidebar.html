@@ -32,7 +32,7 @@
             <span class="nav-section-label">Principal</span>
             }
             @for (item of mainNav; track item.route) {
-            <a class="nav-item" [routerLink]="item.route" routerLinkActive="active" [title]="item.label">
+            <a class="nav-item" [class.active]="isActive(item.route)" [href]="item.route" [title]="item.label">
                 <span class="nav-icon" [innerHTML]="item.icon"></span>
                 @if (!collapsed()) {
                 <span class="nav-label">{{ item.label }}</span>
@@ -46,7 +46,7 @@
             <span class="nav-section-label">Administração</span>
             }
             @for (item of adminNav; track item.route) {
-            <a class="nav-item" [routerLink]="item.route" routerLinkActive="active" [title]="item.label">
+            <a class="nav-item" [class.active]="isActive(item.route)" [href]="item.route" [title]="item.label">
                 <span class="nav-icon" [innerHTML]="item.icon"></span>
                 @if (!collapsed()) {
                 <span class="nav-label">{{ item.label }}</span>

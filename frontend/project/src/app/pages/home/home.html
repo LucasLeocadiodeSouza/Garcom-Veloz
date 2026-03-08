@@ -40,7 +40,7 @@
                 </div>
                 <div class="quick-actions-list">
                     @for (action of quickActions; track action.label) {
-                    <a class="quick-action-btn" [routerLink]="action.route">
+                    <a class="quick-action-btn" [href]="action.route">
                         <span>{{ action.label }}</span>
                     </a>
                     }

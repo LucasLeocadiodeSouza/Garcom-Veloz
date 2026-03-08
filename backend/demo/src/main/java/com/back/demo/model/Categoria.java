@@ -40,6 +40,6 @@ public class Categoria {
     @Column(name = "ideusu", length = 20)
     private String ideusu;
 
-    @OneToMany(mappedBy = "categoria", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Item> itens;
+    // @OneToMany(mappedBy = "categoria", cascade = CascadeType.ALL, orphanRemoval = true)
+    // private List<Item> itens;
 }

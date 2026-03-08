@@ -34,7 +34,7 @@ public class Item {
     private BigDecimal desconto;
 
     @ManyToOne
-    @JoinColumn(name = "id_categoria", insertable = false, updatable = false)
+    @JoinColumn(name = "id_categoria")
     private Categoria categoria;
 
     private Integer estoque;
@@ -50,6 +50,6 @@ public class Item {
     @Column(name = "ideusu", length = 20)
     private String ideusu;
 
-    @OneToMany(mappedBy = "item", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<ItemMedia> medias;
+    // @OneToMany(mappedBy = "item", cascade = CascadeType.ALL, orphanRemoval = true)
+    // private List<ItemMedia> medias;
 }

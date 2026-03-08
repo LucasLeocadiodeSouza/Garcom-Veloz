@@ -1,51 +1,76 @@
-import { Component, inject } from '@angular/core';
+import { ChangeDetectorRef, Component, ElementRef, inject, signal, ViewChild } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { RouterLink } from '@angular/router';
 import { Topbar } from '../../layout/topbar/topbar';
 import { RequestForm } from '../../service/request-form';
+import { AlertService } from '../../service/alert-service';
 
 interface Product {
-  id: number;
-  name: string;
+  id:          number;
+  name:        string;
   description: string;
-  code: string;
-  category: string;
-  categoryId: number;
-  price: number;
-  stock: number;
-  status: 'A' | 'I';
-  color: string;
+  code:        string;
+  category:    string;
+  categoryId:  number;
+  price:       number;
+  discount:    number;
+  stock:       number;
+  status:      'A' | 'I';
+  color:       string;
+}
+
+interface ProductImages {
+  id:          number;
+  description: string;
 }
 
 @Component({
   selector: 'app-products',
-  imports: [FormsModule, RouterLink, Topbar],
+  imports: [FormsModule, Topbar],
   templateUrl: './products.html',
   styleUrl: './products.css'
 })
 export class Products {
   private request = inject(RequestForm);
+  private alert   = inject(AlertService);
 
-  ngOnInit(): void {
-    this.getItensGrid();
-    this.filterProducts();
-  }
+  constructor(private cdRef: ChangeDetectorRef) {}
 
+  confirmDeleteId = signal<number | null>(null);
 
-  searchQuery = '';
+  showModal = signal(false);
+  editingProduct = signal<Product | null>(null);
+
+  showImagesModal = signal(false);
+  productImages = signal<ProductImages[]>([]);
+  activeImageIndex = signal(0);
+
+  formId          = 0;
+  formName        = '';
+  formActive      = true;
+  formDescription = '';
+  formEstoque     = 0;
+  formPrice       = 0;
+  formCategoryId  = 0;
+  formDiscount    = 0;
+
+  imageProducts: File[] = [];
+
+  searchQuery      = '';
   selectedCategory = 0;
-  selectedStatus = '';
-  currentPage = 1;
-  itemsPerPage = 8;
-  sortField = '';
-  sortDirection: 'asc' | 'desc' = 'asc';
+  selectedStatus   = '';
+  currentPage      = 1;
+  itemsPerPage     = 8;
+  sortField        = '';
+  sortDirection:   'asc' | 'desc' = 'asc';
 
-  categories = [{ label: '', value: 0 }];
+  categories: { label: string, value: number }[] = [];
 
-  allProducts: Product[] = [ ];
+  allProducts: Product[] = [];
 
   filteredProducts: Product[] = [];
   paginatedProducts: Product[] = [];
+
+  @ViewChild('fileinput') fileInput!: ElementRef<HTMLInputElement>;
 
   get activeCount() { return this.filteredProducts.filter(p => p.status === 'A').length; }
   get inactiveCount() { return this.filteredProducts.filter(p => p.status === 'I').length; }
@@ -53,6 +78,10 @@ export class Products {
   get pages() { return Array.from({ length: this.totalPages }, (_, i) => i + 1); }
   get startItem() { return (this.currentPage - 1) * this.itemsPerPage + 1; }
   get endItem() { return Math.min(this.currentPage * this.itemsPerPage, this.filteredProducts.length); }
+
+  ngOnInit(): void {
+    this.getItensGrid();
+  }
 
   filterProducts() {
     this.currentPage = 1;
@@ -111,66 +140,270 @@ export class Products {
   prevPage() { if (this.currentPage > 1) { this.currentPage--; this.paginate(); } }
   nextPage() { if (this.currentPage < this.totalPages) { this.currentPage++; this.paginate(); } }
 
+  openCreateModal() {
+    this.editingProduct.set(null);
+    this.formName = '';
+    this.formActive = true;
+    this.showModal.set(true);
+  }
+  openEditModal(prod: Product) {
+    //if(!prod.status) return;
 
-  getItensGrid(){
-    this.request.executeRequestGET('api/getItensGrid', {search: this.searchQuery, idCategoria: this.selectedCategory, status: this.selectedStatus}).subscribe({
+    this.editingProduct.set(prod);
+    this.formId          = prod.id;
+    this.formName        = prod.name;
+    this.formDescription = prod.description;
+    this.formEstoque     = prod.stock;
+    this.formPrice       = prod.price;
+    this.formActive      = prod.status === 'A';
+    this.formCategoryId  = prod.categoryId;
+    this.formDiscount    = prod.discount;
+    this.showModal.set(true);
+  }
+  closeModal() {
+    this.showModal.set(false);
+    this.showImagesModal.set(false);
+    this.editingProduct.set(null);
+  }
+
+
+  openImagesModal(prod: Product) {
+    this.formId = prod.id;
+
+    this.getListMediaItem();
+
+    this.activeImageIndex.set(0);
+    this.showImagesModal.set(true);
+  }
+
+  prevImage() {
+    const len = this.productImages().length;
+    if (len === 0) return;
+    this.activeImageIndex.update(i => (i - 1 + len) % len);
+  }
+
+  nextImage() {
+    const len = this.productImages().length;
+    if (len === 0) return;
+    this.activeImageIndex.update(i => (i + 1) % len);
+  }
+
+  goToImage(index: number) {
+    this.activeImageIndex.set(index);
+  }
+
+  onImgError(event: Event) {
+    const img = event.target as HTMLImageElement;
+    img.src = 'assets/mediaError.png';
+    img.onerror = null;
+  }
+
+  getItensGrid() {
+    this.allProducts = [];
+
+    this.request.executeRequestGET('api/getItensGrid', { search: this.searchQuery, idCategoria: this.selectedCategory, status: this.selectedStatus }).subscribe({
       next: (response: [
-        idItem:         number,
-        idCategoria:    number,
-        categDecricao:  string,
-        nome:           string,
-        decricao:       string,
-        valor:          number,
-        desconto:       number,
-        estoque:        number,
-        ativo:          boolean
+        idItem:        number,
+        idCategoria:   number,
+        categDecricao: string,
+        nome:          string,
+        decricao:      string,
+        valor:         number,
+        desconto:      number,
+        estoque:       number,
+        ativo:         boolean
       ]) => {
 
         this.allProducts = response.map((item: any) => ({
           id:          item.idItem,
           name:        item.nome,
-          description: item.decricao,
+          description: item.descricao,
           code:        item.idItem,
           categoryId:  item.idCategoria,
           category:    item.categDecricao,
           price:       item.valor,
+          discount:    item.desconto,
           stock:       item.estoque,
           status:      item.ativo ? 'A' : 'I',
           color:       this.getCor(item.idItem)
         }));
 
+        this.getAllCategoria();
 
-        this.categories = [];
-        this.allProducts.filter(p => {
-          if(!this.categories.includes({ label: p.category, value: p.categoryId }))  this.categories.push({ label: p.category, value: p.categoryId });
-        });
+        this.filterProducts();
+
+        this.cdRef.detectChanges();
       },
       error: (error) => {
         console.error('Erro:', error);
-        //this.showAlertMessage.set('Erro ao carregar as categorias. Por favor, tente novamente.');
+        this.alert.show('Erro ao carregar os itens. Por favor, tente novamente.');
+      }
+    });
+  }
+
+  getAllCategoria() {
+    this.request.executeRequestGET('api/getAllCategoria').subscribe({
+      next: (response: any) => {
+        const categoriesReq: {
+          id:           number,
+          descricao:    string,
+          icone:        string,
+          cor:          string,
+          refereciaExt: number,
+          ativo:        boolean,
+          criadoEm:     Date,
+          ideusu:       string
+        }[] = response;
+
+
+        this.categories = categoriesReq.map(info => ({
+            label: info.descricao,
+            value: info.id
+        }));
+
+        this.cdRef.detectChanges();
+      },
+      error: (error) => {
+        console.error('Erro:', error);
+        this.alert.show('Erro ao carregar as categoria. Por favor, tente novamente.');
+      }
+    });
+  }
+
+  askDelete(prod: Product) { this.confirmDeleteId.set(prod.id); }
+  cancelDelete() { this.confirmDeleteId.set(null); }
+  confirmDelete() {
+    const id = this.confirmDeleteId();
+    if (id !== null) {
+      this.request.executeRequestPOST('api/excluiItem', null, {idItem: id}).subscribe({
+        next: () => {
+          this.getItensGrid();
+          this.closeModal();
+        },
+        error: (error) => {
+          console.error('Erro:', error);
+          this.alert.show('Erro ao excluior o item. Por favor, tente novamente.');
+        }
+      });
+    }
+  }
+
+  criarAlterarItem() {
+    const dto = {
+      idItem:      this.formId,
+      nome:        this.formName,
+      descricao:   this.formDescription,
+      valor:       this.formPrice,
+      desconto:    this.formDiscount,
+      estoque:     this.formEstoque,
+      idCategoria: this.formCategoryId
+    };
+
+    this.request.executeRequestPOST('api/criarAlterarItem', dto).subscribe({
+      next: () => {
+        this.getItensGrid();
+
+        this.closeModal();
+      },
+      error: (error) => {
+        console.error('Erro:', error);
+        this.alert.show('Erro ao salvar o item. Por favor, tente novamente.');
+      }
+    });
+  }
+
+  ativarDesativarItem(idItem: number, ativo: boolean) {
+    this.request.executeRequestPOST('api/ativarInativarItem', null, { idItem: idItem, ativar: ativo }).subscribe({
+      next: () => {
+        this.getItensGrid();
+
+        this.cdRef.detectChanges();
+      },
+      error: (error) => {
+        console.error('Erro:', error);
+        this.alert.show('Erro ao ativar/desativar o item. Por favor, tente novamente.');
+      }
+    });
+  }
+
+  adapterRegisterTempImageItem() {
+    this.fileInput.nativeElement.click();
+  }
+
+  onFileSelected(event: any) {
+    const selectedImage = event.target.files;
+
+    if (selectedImage) {
+      this.registerMediaItem(selectedImage);
+      event.target.value = '';
+    }
+  }
+
+  registerMediaItem(files: File[]){
+    const formData = new FormData();
+
+    for (let file of files) {
+      formData.append("images[]", file);
+    }
+    formData.append("idItem", this.formId.toString());
+
+    this.request.executeRequestPOST('api/registrarMediaProduct', formData).subscribe({
+      next: (response) => {
+        this.getItensGrid();
+        this.closeModal();
+       },
+      error: (error) => {
+        alert(error.error);
+        console.error('Erro:', error);
+      }
+    });
+  }
+
+  getListMediaItem() {
+    this.request.executeRequestGET('api/getListMediaItem', {idItem: this.formId}).subscribe({
+      next: (response: any) => {
+        const mediaResp: {
+	        id:		        { idItem: number, seq: number },
+          descricao:    string,
+          criadoEm:     Date,
+          ideusu:       string
+        }[] = response;
+
+        const images: ProductImages[] = mediaResp.map(mp => ({
+          id: mp.id.seq,
+          description: "http://localhost:8080/api/mediaItem/" + mp.descricao
+        }));
+
+        this.productImages.set(images);
+
+        this.cdRef.detectChanges();
+      },
+      error: (error) => {
+        console.error('Erro:', error);
+        this.alert.show('Erro ao carregar as mídias. Por favor, tente novamente.');
       }
     });
   }
 
 
-  getCor(idx: number){
-    const colors = [
-    '#dbeafe',
-    '#fef3c7',
-    '#ede9fe',
-    '#d1fae5',
-    '#fee2e2',
-    '#fef3c7',
-    '#dbeafe',
-    '#dbeafe',
-    '#ede9fe',
-    '#dbeafe',
-    '#d1fae5',
-    '#ede9fe',
-    '#dbeafe',
-    '#fee2e2',
-    '#fee2e2']
 
+  getCor(idx: number) {
+    const colors = [
+      '#dbeafe',
+      '#fef3c7',
+      '#ede9fe',
+      '#d1fae5',
+      '#fee2e2',
+      '#fef3c7',
+      '#dbeafe',
+      '#dbeafe',
+      '#ede9fe',
+      '#dbeafe',
+      '#d1fae5',
+      '#ede9fe',
+      '#dbeafe',
+      '#fee2e2',
+      '#fee2e2']
 
     return colors[idx % colors.length];
   }

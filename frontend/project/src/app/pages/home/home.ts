@@ -1,5 +1,4 @@
 import { Component } from '@angular/core';
-import { RouterLink } from '@angular/router';
 import { Topbar } from '../../layout/topbar/topbar';
 import { StatsRow } from "../../components/stats-row/stats-row";
 import { NavigationCards } from "../../components/navigation-cards/navigation-cards";
@@ -7,7 +6,7 @@ import { RecentActivity } from "../../components/recent-activity/recent-activity
 
 @Component({
   selector: 'app-home',
-  imports: [RouterLink, Topbar, StatsRow, NavigationCards, RecentActivity],
+  imports: [Topbar, StatsRow, NavigationCards, RecentActivity],
   templateUrl: './home.html',
   styleUrl: './home.css'
 })

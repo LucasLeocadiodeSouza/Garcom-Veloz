@@ -1,6 +1,8 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Topbar } from '../../layout/topbar/topbar';
+import { RequestForm } from '../../service/request-form';
+import { AlertService } from '../../service/alert-service';
 
 interface HistoryItem {
   id: number;
@@ -18,6 +20,9 @@ interface HistoryItem {
   styleUrl: './import-export.css'
 })
 export class ImportExport {
+  private request = inject(RequestForm);
+  private alert   = inject(AlertService);
+
   // Export
   exportCategory = '';
   exportStatus = '';

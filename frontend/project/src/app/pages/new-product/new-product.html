@@ -79,17 +79,10 @@
             <div class="form-group col-2">
                 <label for="prod-category">Categoria <span class="required">*</span></label>
                 <select id="prod-category" [(ngModel)]="form.category">
-                    <option value="">Selecione uma categoria</option>
+                    <option value="0">Selecione uma categoria</option>
                     @for (cat of categories; track cat) {
-                    <option [value]="cat">{{ cat }}</option>
+                    <option [value]="cat.value">{{ cat.label }}</option>
                     }
-                </select>
-            </div>
-            <div class="form-group col-1">
-                <label for="prod-status">Status</label>
-                <select id="prod-status" [(ngModel)]="form.status">
-                    <option value="ativo">Ativo</option>
-                    <option value="inativo">Inativo</option>
                 </select>
             </div>
         </div>
@@ -100,16 +93,13 @@
     @if (activeStep() === 2) {
     <div class="card form-card" id="step2-panel">
         <div class="form-section-title">
-            <span class="form-section-icon">💰</span>
-            Preço & Estoque
-        </div>
+            <span class="form-section-icon">💰</span> Preço & Estoque </div>
         <div class="form-grid">
             <div class="form-group col-1">
                 <label for="prod-price">Preço de Venda (R$) <span class="required">*</span></label>
                 <div class="input-prefix-wrap">
                     <span class="input-prefix">R$</span>
-                    <input id="prod-price" type="number" min="0" step="0.01" [(ngModel)]="form.price"
-                        placeholder="0,00" />
+                    <input id="prod-price" type="number" min="0" step="0.01" [(ngModel)]="form.price" placeholder="0,00" />
                 </div>
             </div>
             <div class="form-group col-1">
@@ -153,11 +143,7 @@
                 <div class="review-name">{{ form.name || '—' }}</div>
                 <div class="review-desc">{{ form.description || 'Sem descrição' }}</div>
                 <div class="review-meta-row">
-                    <span class="badge badge-blue">{{ form.category || 'Sem categoria' }}</span>
-                    <span class="badge" [class.badge-green]="form.status === 'ativo'"
-                        [class.badge-red]="form.status === 'inativo'">
-                        {{ form.status === 'ativo' ? 'Ativo' : 'Inativo' }}
-                    </span>
+                    <span class="badge badge-blue">{{ getSelectedCategory() || 'Sem categoria' }}</span>
                 </div>
                 <div class="review-pricing">
                     <div class="review-price">
