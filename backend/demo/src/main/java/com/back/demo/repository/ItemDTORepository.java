@@ -65,8 +65,8 @@ public class ItemDTORepository {
         var q = em.createQuery(query, ItemDTO.class);
 
         if(filtroPorDescricao) q.setParameter("nomeItem", nome);
-        if(filtroPorCategoria) q.setParameter("ativo", ativo == "A");
-        if(filtroPorStatus)    q.setParameter("idCategoria", idCategoria);
+        if(filtroPorStatus) q.setParameter("ativo", ativo == "A");
+        if(filtroPorCategoria)    q.setParameter("idCategoria", idCategoria);
 
         return q.getResultList();
     }

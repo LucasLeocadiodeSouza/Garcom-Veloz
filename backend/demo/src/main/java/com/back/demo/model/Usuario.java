@@ -26,21 +26,24 @@ public class Usuario {
     @Column(name = "email", length = 255)
     private String email;
 
-    @Column(name = "telefone", length = 13, nullable = false, unique = true)
+    @Column(name = "telefone", length = 13, nullable = false)
     private String telefone;
 
     @Column(columnDefinition = "TINYINT(1)")
     private Boolean ativo;
 
     @ManyToOne
-    @JoinColumn(name = "id_empresa", insertable = false, updatable = false)
+    @JoinColumn(name = "id_empresa")
     private Empresa empresa;
 
     @Column(name = "criado_em")
     private LocalDate criadoEm;
 
+    @Column(name = "ideusu", length = 20)
+    private String ideusu;
+
     @ManyToOne
-    @JoinColumn(name = "id_perfil", insertable = false, updatable = false)
+    @JoinColumn(name = "id_perfil")
     private Perfil perfil;
 
     @OneToMany(mappedBy = "usuario", cascade = CascadeType.ALL, orphanRemoval = true)

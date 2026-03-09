@@ -6,8 +6,10 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.http.MediaType;
 import com.back.demo.model.Categoria;
 import com.back.demo.model.CategoriaDTO;
+import com.back.demo.model.EstatisticasDTO;
 import com.back.demo.model.ItemDTO;
 import com.back.demo.model.ItemMedia;
+import com.back.demo.service.GenSvc;
 import com.back.demo.service.ItemSvc;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
@@ -22,7 +24,6 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
-import java.nio.file.Files;
 import java.nio.file.Path;
 
 
@@ -33,12 +34,23 @@ public class Api {
     @Autowired
     private ItemSvc itemService;
 
+    @Autowired
+    private GenSvc genService;
+
     @GetMapping("/teste")
     public String getTeste(){
         return "teste";
     }
 
     private String mediaDirectory = System.getProperty("user.dir") + "/media/itens";
+
+    // ####################### ITENS #######################
+
+    @GetMapping("/getStatsHome")
+    private EstatisticasDTO getStatsHome(){
+        return genService.getStatsHome();
+    }
+
 
     // ####################### CATEGORIAS #######################
 
@@ -48,17 +60,17 @@ public class Api {
     // }
 
     @GetMapping("/getCategoriaGrid")
-    public List<CategoriaDTO> getCategoriaGrid(@RequestParam(name = "search", required = false) String search, @RequestParam(value = "status", required = false) String status){
+    private List<CategoriaDTO> getCategoriaGrid(@RequestParam(name = "search", required = false) String search, @RequestParam(value = "status", required = false) String status){
         return itemService.getListCategoria(search, status);
     }
 
     @GetMapping("/getAllCategoria")
-    public List<Categoria> getAllCategoria(){
+    private List<Categoria> getAllCategoria(){
         return itemService.getAllCategoriaActives();
     }
 
     @PostMapping("/ativarInativarCategoria")
-    public ResponseEntity<?> ativarInativarCategoria(@RequestParam(name = "idCategoria", required = true) Long idCategoria, @RequestParam(value = "ativar", required = true) Boolean ativar){
+    private ResponseEntity<?> ativarInativarCategoria(@RequestParam(name = "idCategoria", required = true) Long idCategoria, @RequestParam(value = "ativar", required = true) Boolean ativar){
         itemService.ativarInativarCategoria(idCategoria, ativar);
         
         return ResponseEntity.ok(Map.of(
@@ -68,7 +80,7 @@ public class Api {
     }
 
     @PostMapping("/criarAlterarCategoria")
-    public ResponseEntity<?> criarAlterarCategoria(@RequestBody CategoriaDTO dto){
+    private ResponseEntity<?> criarAlterarCategoria(@RequestBody CategoriaDTO dto){
         itemService.criarAlterarCategoria(dto.getIdCategoria(), dto.getDescricao(), dto.getIcone(), dto.getCor(), null, "LUCASSZ");
         
         return ResponseEntity.ok(Map.of(
@@ -78,7 +90,7 @@ public class Api {
     }
 
     @PostMapping("/excluirCategoria")
-    public ResponseEntity<?> excluirCategoria(@RequestParam(name = "idCategoria", required = true) Long idCategoria){
+    private ResponseEntity<?> excluirCategoria(@RequestParam(name = "idCategoria", required = true) Long idCategoria){
         itemService.excluirCategoria(idCategoria, "LUCASSZ");
         
         return ResponseEntity.ok(Map.of(
@@ -90,15 +102,23 @@ public class Api {
     // ####################### ITENS #######################
 
     @GetMapping("/getItensGrid")
-    public List<ItemDTO> getItensGrid(@RequestParam(name  = "search", required = false)      String search, 
-                                      @RequestParam(value = "idCategoria", required = false) Long idCategoria, 
-                                      @RequestParam(value = "status", required = false)      String status){
+    private List<ItemDTO> getItensGrid(@RequestParam(name  = "search", required = false)      String search, 
+                                       @RequestParam(value = "idCategoria", required = false) Long idCategoria, 
+                                       @RequestParam(value = "status", required = false)      String status){
         return itemService.getListItem(search, status, idCategoria);
     }
 
     @PostMapping("/criarAlterarItem")
-    public ResponseEntity<?> criarAlterarItem(@RequestBody ItemDTO dto){
-        itemService.criarAlterarItem(dto.getIdItem(), dto.getNome(), dto.getDescricao(), dto.getValor(), dto.getDesconto(), dto.getEstoque(), dto.getIdCategoria(), null, "LUCASSZ");
+    private ResponseEntity<?> criarAlterarItem(@RequestBody ItemDTO dto){
+        itemService.criarAlterarItem(dto.getIdItem(), 
+                                     dto.getNome(), 
+                                     dto.getDescricao(), 
+                                     dto.getValor(), 
+                                     dto.getDesconto(), 
+                                     dto.getEstoque(), 
+                                     dto.getIdCategoria(),
+                                     null,
+                                     "LUCASSZ");
         
         return ResponseEntity.ok(Map.of(
             "status", "success",
@@ -107,7 +127,7 @@ public class Api {
     }
 
     @PostMapping("/ativarInativarItem")
-    public ResponseEntity<?> ativarInativarItem(@RequestParam(name = "idItem", required = true) Long itemId, @RequestParam(name = "ativar", required = true) Boolean ativar){
+    private ResponseEntity<?> ativarInativarItem(@RequestParam(name = "idItem", required = true) Long itemId, @RequestParam(name = "ativar", required = true) Boolean ativar){
         itemService.ativarInativarItem(itemId, ativar, "LUCASSZ");
         
         return ResponseEntity.ok(Map.of(
@@ -117,7 +137,7 @@ public class Api {
     }
 
     @PostMapping("/excluiItem")
-    public ResponseEntity<?> excluiItem(@RequestParam(name = "idItem", required = true) Long itemId){
+    private ResponseEntity<?> excluiItem(@RequestParam(name = "idItem", required = true) Long itemId){
         itemService.excluiItem(itemId, "LUCASSZ");
         
         return ResponseEntity.ok(Map.of(
@@ -127,7 +147,7 @@ public class Api {
     }
 
     @PostMapping(value = "/registrarMediaProduct", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<?> registrarMediaProduct(@RequestParam(value = "idItem", required = false)    Long idItem,
+    private ResponseEntity<?> registrarMediaProduct(@RequestParam(value = "idItem", required = false)    Long idItem,
                                                    @RequestParam(value = "images[]",  required = false) MultipartFile[] images) throws IOException{
 
         itemService.adapterVincularItemImage(images, idItem, "LUCASSZ");
@@ -139,12 +159,12 @@ public class Api {
     }
 
     @GetMapping("/getListMediaItem")
-    public List<ItemMedia> getListMediaItem(@RequestParam(name  = "idItem", required = false) Long idItem){
+    private List<ItemMedia> getListMediaItem(@RequestParam(name  = "idItem", required = false) Long idItem){
         return itemService.getListMediaItem(idItem);
     }
 
     @GetMapping("/mediaItem/{filename}")
-    public ResponseEntity<Resource> getMediaImage(@PathVariable String filename) {
+    private ResponseEntity<Resource> getMediaImage(@PathVariable String filename) {
         try {
             Path filePath = Paths.get(mediaDirectory).resolve(filename);
             Resource resource = new UrlResource(filePath.toUri());

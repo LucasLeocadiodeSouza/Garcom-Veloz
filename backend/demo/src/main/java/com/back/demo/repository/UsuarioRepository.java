@@ -20,8 +20,8 @@ public interface UsuarioRepository extends JpaRepository<Usuario, Long> {
     List<Usuario> findAllUsuarioByAtivo(Boolean ativo);
 
     @Query("SELECT COUNT(u) FROM Usuario u")
-    Long CountAllUsuario();
+    Long countAllUsuario();
 
     @Query("SELECT COUNT(u) FROM Usuario u WHERE u.ativo = :ativo")
-    Long CountAllUsuarioByStatus(@Param("ativo") Boolean ativo);
+    Long countAllUsuarioByStatus(@Param("ativo") Boolean ativo);
 }

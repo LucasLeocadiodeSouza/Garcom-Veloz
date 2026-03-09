@@ -2,8 +2,6 @@ package com.back.demo.model;
 
 import jakarta.persistence.*;
 import java.time.LocalDate;
-import java.util.List;
-
 import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -29,6 +27,6 @@ public class Perfil {
     @Column(name = "criado_em")
     private LocalDate criadoEm;
 
-    @OneToMany(mappedBy = "perfil", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<RestricaoPerfil> restricaoPerfil;
+    //@OneToMany(mappedBy = "perfil", cascade = CascadeType.ALL, orphanRemoval = true)
+    //private List<RestricaoPerfil> restricaoPerfil;
 }

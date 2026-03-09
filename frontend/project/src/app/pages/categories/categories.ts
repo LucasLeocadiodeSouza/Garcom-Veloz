@@ -29,21 +29,21 @@ export class Categories {
     this.getCategoriaGrid();
   }
 
-    searchQuery = '';
-    filterStatus = '';
-    showModal = signal(false);
-    editingCategory = signal<Category | null>(null);
-    confirmDeleteId = signal<number | null>(null);
+  searchQuery = '';
+  filterStatus = '';
+  showModal = signal(false);
+  editingCategory = signal<Category | null>(null);
+  confirmDeleteId = signal<number | null>(null);
 
-    formName = '';
-    formColor = '#3b82f6';
-    formIcon = '🍽️';
-    formActive = true;
+  formName = '';
+  formColor = '#3b82f6';
+  formIcon = '🍽️';
+  formActive = true;
 
-    iconOptions = ['🍽️', '🥤', '🍔', '🍕', '🥗', '🍰', '🍷', '🥩', '🌮', '🍜', '🍣', '🧃'];
-    colorOptions = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#14b8a6', '#f97316'];
+  iconOptions = ['🍽️', '🥤', '🍔', '🍕', '🥗', '🍰', '🍷', '🥩', '🌮', '🍜', '🍣', '🧃'];
+  colorOptions = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#14b8a6', '#f97316'];
 
-    allCategories: Category[] = [];
+  allCategories: Category[] = [];
 
   get filtered() {
     return this.allCategories.filter(c => {
@@ -56,7 +56,10 @@ export class Categories {
   }
 
   get activeCount() { return this.allCategories.filter(c => c.active).length; }
+  get inactiveCount() { return this.allCategories.filter(c => !c.active).length; }
+  get userCount() { return this.activeCount + this.inactiveCount; }
   get totalProducts() { return this.allCategories.reduce((s, c) => s + c.productCount, 0); }
+
 
   openCreateModal() {
     this.editingCategory.set(null);

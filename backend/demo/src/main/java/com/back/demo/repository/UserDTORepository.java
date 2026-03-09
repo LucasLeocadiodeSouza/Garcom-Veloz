@@ -14,57 +14,23 @@ public class UserDTORepository {
     }
 
 
-    public Long getCountUsuarioByStatus(Boolean status, String nome, Long idEmpresa, Long idPerfil){
-        String query = "SELECT COUNT(u) " + 
-                       "FROM Usuario u JOIN u.perfil p " +
-                       "WHERE u.ativo = " + status.toString();
-
+    public List<UserDTO> getListUsuarios(String nome, String ativo, Long idEmpresa, Long idPerfil){
         Boolean filtroPorDescricao = nome != null && !nome.isBlank();
         Boolean filtroPorPerfil    = idPerfil != null && idPerfil != 0;
         Boolean filtroPorEmpresa   = idEmpresa != null && idEmpresa != 0;
-
-        if(filtroPorDescricao) query += " AND u.nome LIKE CONCAT('%', :nome ,'%') ";
-        if(filtroPorPerfil)    query += " AND p.id = :idPerfil";
-        if(filtroPorEmpresa)   query += " AND e.id = :idEmpresa";
-
-        var q = em.createQuery(query, Long.class);
-
-        if(filtroPorDescricao) q.setParameter("nome", nome);
-        if(filtroPorPerfil)    q.setParameter("idPerfil", filtroPorPerfil);
-        if(filtroPorEmpresa)   q.setParameter("idEmpresa", idEmpresa);
-
-        return q.getSingleResult();
-    }
-
-    public List<UserDTO> getListUsuarios(String nome, Boolean ativo, Long idEmpresa, Long idPerfil){
-        Boolean filtroPorDescricao = nome != null && !nome.isBlank();
-        Boolean filtroPorPerfil    = idPerfil != null && idPerfil != 0;
-        Boolean filtroPorEmpresa   = idEmpresa != null && idEmpresa != 0;
-        Boolean filtroPorStatus    = ativo != null;
+        Boolean filtroPorStatus    = ativo != null && !ativo.isBlank();
         Boolean temAnd             = false;
-
-        String totalResultAtivos;
-        String totalResultInativos;
-
-        if(filtroPorStatus){
-            totalResultAtivos   = (ativo?"COUNT(U)":"0");
-            totalResultInativos = (ativo?"0":"COUNT(U)");
-        }
-        else {
-            totalResultAtivos   = getCountUsuarioByStatus(true, nome, idEmpresa, idPerfil).toString();
-            totalResultInativos = getCountUsuarioByStatus(false, nome, idEmpresa, idPerfil).toString();
-        }
 
         String query = "SELECT new UserDTO(" + 
                        "u.id, " +
                        "u.nome, " +
                        "u.email, " +
+                       "u.telefone, " +
                        "p.id, " +
                        "p.descricao, " +
                        "u.ativo, " +
-                       "COUNT(u), " +
-                       totalResultAtivos + ", " +
-                       totalResultInativos + ") " +
+                       "e.id, " +
+                       "u.criadoEm) " +
                        "FROM Usuario u " + 
                        "JOIN u.perfil p " +
                        "JOIN u.empresa e";
@@ -86,9 +52,9 @@ public class UserDTORepository {
         var q = em.createQuery(query, UserDTO.class);
 
         if(filtroPorDescricao) q.setParameter("nomeItem", nome);
-        if(filtroPorPerfil)    q.setParameter("ativo", ativo);
+        if(filtroPorStatus)    q.setParameter("ativo", ativo == "A");
         if(filtroPorEmpresa)   q.setParameter("idEmpresa", idEmpresa);
-        if(filtroPorStatus)    q.setParameter("idPerfil", idPerfil);
+        if(filtroPorPerfil)    q.setParameter("idPerfil", idPerfil);
 
         return q.getResultList();
     }
@@ -102,7 +68,7 @@ public class UserDTORepository {
                        "r.descricao) " +
                        "FROM RestricaoPerfil rp " + 
                        "JOIN rp.perfil p " +
-                       "JOIN r.restricao r ";
+                       "JOIN rp.restricao r ";
 
         var q = em.createQuery(query, UserDTO.class);
 

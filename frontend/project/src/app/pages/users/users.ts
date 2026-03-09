@@ -1,16 +1,19 @@
-import { Component, OnInit } from '@angular/core';
+import { RequestForm } from './../../service/request-form';
+import { Component, inject, OnInit, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Topbar } from '../../layout/topbar/topbar';
+import { AlertService } from '../../service/alert-service';
 
 interface User {
-  id: number;
-  name: string;
-  email: string;
-  role: string;
-  status: 'ativo' | 'inativo';
-  lastAccess: string;
-  since: string;
-  initials: string;
+  id:          number;
+  name:        string;
+  email:       string;
+  roleId:      number;
+  roleDesc:    string;
+  status:      'ativo' | 'inativo';
+  phone:       string;
+  since:       string;
+  initials:    string;
   avatarColor: string;
 }
 
@@ -21,82 +24,223 @@ interface User {
   styleUrl: './users.css'
 })
 export class Users implements OnInit {
-  searchQuery = '';
-  selectedRole = '';
+  private request = inject(RequestForm);
+  private alert   = inject(AlertService);
+
+  searchQuery    = '';
+  selectedRole   = 0;
   selectedStatus = '';
 
-  allUsers: User[] = [
-    { id: 1, name: 'Lucas Leocadio', email: 'lucas@garcomveloz.com.br', role: 'Administrador', status: 'ativo', lastAccess: 'hoje, 20:45', since: 'Jan/2024', initials: 'LL', avatarColor: '#1e40af' },
-    { id: 2, name: 'Ana Paula Souza', email: 'ana.paula@garcomveloz.com.br', role: 'Gerente', status: 'ativo', lastAccess: 'hoje, 18:30', since: 'Mar/2024', initials: 'AP', avatarColor: '#059669' },
-    { id: 3, name: 'Carlos Mendes', email: 'carlos.m@garcomveloz.com.br', role: 'Atendente', status: 'ativo', lastAccess: 'ontem, 22:10', since: 'Jun/2024', initials: 'CM', avatarColor: '#7c3aed' },
-    { id: 4, name: 'Fernanda Costa', email: 'fernanda@garcomveloz.com.br', role: 'Atendente', status: 'ativo', lastAccess: 'hoje, 19:00', since: 'Jun/2024', initials: 'FC', avatarColor: '#d97706' },
-    { id: 5, name: 'João Silva', email: 'joao.silva@garcomveloz.com.br', role: 'Cozinha', status: 'ativo', lastAccess: 'ontem, 14:20', since: 'Set/2024', initials: 'JS', avatarColor: '#06b6d4' },
-    { id: 6, name: 'Maria Oliveira', email: 'maria.o@garcomveloz.com.br', role: 'Cozinha', status: 'inativo', lastAccess: '10/01/2026', since: 'Ago/2024', initials: 'MO', avatarColor: '#94a3b8' },
-    { id: 7, name: 'Rafael Torres', email: 'rafael.t@garcomveloz.com.br', role: 'Gerente', status: 'ativo', lastAccess: 'hoje, 17:55', since: 'Nov/2024', initials: 'RT', avatarColor: '#dc2626' },
-  ];
+  allUsers: User[] = [];
 
   filteredUsers: User[] = [];
 
-  userStats = [
-    {
-      label: 'Total', value: '7',
-      icon: `<svg viewBox="0 0 24 24" fill="none" width="20" height="20"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="9" cy="7" r="4" stroke="currentColor" stroke-width="2"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>`,
-      iconBg: '#dbeafe', iconColor: '#1d4ed8'
-    },
-    {
-      label: 'Ativos', value: '6',
-      icon: `<svg viewBox="0 0 24 24" fill="none" width="20" height="20"><path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" stroke="currentColor" stroke-width="2"/></svg>`,
-      iconBg: '#d1fae5', iconColor: '#059669'
-    },
-    {
-      label: 'Inativos', value: '1',
-      icon: `<svg viewBox="0 0 24 24" fill="none" width="20" height="20"><path d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>`,
-      iconBg: '#fee2e2', iconColor: '#dc2626'
-    },
-    {
-      label: 'Administradores', value: '1',
-      icon: `<svg viewBox="0 0 24 24" fill="none" width="20" height="20"><path d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>`,
-      iconBg: '#ede9fe', iconColor: '#7c3aed'
-    },
-  ];
+  get activeCount() { return this.filteredUsers.filter(u => u.status === 'ativo').length; }
+  get inactiveCount() { return this.filteredUsers.filter(u => u.status === 'inativo').length; }
+  get userCount() { return this.activeCount + this.inactiveCount; }
+  get totAdmins() { return this.filteredUsers.filter(u => u.roleDesc === 'Administrador').length; }
 
-  roles = ['Administrador', 'Gerente', 'Atendente', 'Cozinha'];
-  permissions = [
-    { name: 'Visualizar Produtos', roles: ['Administrador', 'Gerente', 'Atendente', 'Cozinha'] },
-    { name: 'Editar Produtos', roles: ['Administrador', 'Gerente'] },
-    { name: 'Excluir Produtos', roles: ['Administrador'] },
-    { name: 'Importar/Exportar Excel', roles: ['Administrador', 'Gerente'] },
-    { name: 'Gerenciar Usuários', roles: ['Administrador'] },
-    { name: 'Ver Relatórios', roles: ['Administrador', 'Gerente'] },
-    { name: 'Registrar Pedidos', roles: ['Administrador', 'Gerente', 'Atendente'] },
-    { name: 'Visualizar Cardápio', roles: ['Administrador', 'Gerente', 'Atendente', 'Cozinha'] },
-  ];
+  roles: { label: string, value: number }[] = [];
 
-  ngOnInit() { this.filterUsers(); }
+  permissions: { id: number; name: string; roles: string[] }[] = [];
+
+  showModal = signal(false);
+  editingUser = signal<User | null>(null);
+
+  formName     = '';
+  formEmail    = '';
+  formPhone    = '';
+  formRoleId   = 0;
+
+  ngOnInit() { this.getUsuariosGrid(); }
 
   filterUsers() {
     this.filteredUsers = this.allUsers.filter(u => {
-      const matchSearch = !this.searchQuery ||
-        u.name.toLowerCase().includes(this.searchQuery.toLowerCase()) ||
-        u.email.toLowerCase().includes(this.searchQuery.toLowerCase());
-      const matchRole = !this.selectedRole || u.role === this.selectedRole;
-      const matchStatus = !this.selectedStatus || u.status === this.selectedStatus;
+      const matchSearch = !this.searchQuery || u.name.toLowerCase().includes(this.searchQuery.toLowerCase()) || u.email.toLowerCase().includes(this.searchQuery.toLowerCase());
+
+      const matchRole = !this.selectedRole || u.roleId == this.selectedRole;
+
+      const matchStatus = !this.selectedStatus || u.status == this.selectedStatus;
+
       return matchSearch && matchRole && matchStatus;
     });
   }
 
-  openAddUserModal() { alert('Funcionalidade de adicionar usuário (a implementar)'); }
-  editUser(user: User) { alert(`Editar usuário: ${user.name} (a implementar)`); }
-
-  toggleUserStatus(user: User) {
-    user.status = user.status === 'ativo' ? 'inativo' : 'ativo';
-    this.filterUsers();
+  openAddUserModal() {
+    this.editingUser.set(null);
+    this.formName     = '';
+    this.formEmail    = '';
+    this.formPhone    = '';
+    this.formRoleId   = 0;
+    this.showModal.set(true);
   }
 
-  deleteUser(id: number) {
-    if (confirm('Tem certeza que deseja excluir este usuário?')) {
-      this.allUsers = this.allUsers.filter(u => u.id !== id);
-      this.filterUsers();
-    }
+  editUser(user: User) {
+    this.editingUser.set(user);
+    this.formName     = user.name;
+    this.formEmail    = user.email;
+    this.formPhone    = user.phone;
+    this.formRoleId   = user.roleId;
+    this.showModal.set(true);
+  }
+
+  closeModal() {
+    this.showModal.set(false);
+    this.editingUser.set(null);
+  }
+
+  getUsuariosGrid() {
+    this.allUsers = [];
+
+    this.request.executeRequestGET('restrictedApi/getListUsers', { search: this.searchQuery, status: this.selectedStatus, idPerfil: this.selectedRole }).subscribe({
+      next: (response: [
+        idUsuario:     number,
+        nome:          string,
+        email:         string,
+        perfId:        number,
+        perfDescricao: string,
+        status:        boolean,
+        telefone:      string,
+        idEmpresa:     number,
+        criadoEm:      Date
+      ]) => {
+
+        this.allUsers = response.map((user: any) => ({
+          id:          user.idUsuario,
+          name:        user.nome,
+          email:       user.email,
+          roleId:      user.perfId,
+          roleDesc:    user.perfDescricao,
+          status:      user.status ? 'ativo' : 'inativo',
+          phone:       user.telefone,
+          since:       user.criadoEm,
+          initials:    user.nome.substring(0, 2).toUpperCase(),
+          avatarColor: this.getCor(user.idUsuario)
+
+        }));
+
+        this.getAllPerfil();
+
+        this.filterUsers();
+      },
+      error: (error) => {
+        console.error('Erro:', error);
+        this.alert.show('Erro ao carregar os usuários. Por favor, tente novamente.');
+      }
+    });
+  }
+
+  getAllPerfil() {
+    this.request.executeRequestGET('restrictedApi/getAllPerfil').subscribe({
+      next: (response: any) => {
+        const perfilReq: {
+          id: number,
+          descricao: string,
+          ativo: boolean,
+          criadoEm: Date,
+        }[] = response;
+
+        this.roles = perfilReq.map(info => ({
+          label: info.descricao,
+          value: info.id
+        }));
+
+
+        this.getAllRestricoesPerfil();
+      },
+      error: (error) => {
+        console.error('Erro:', error);
+        this.alert.show('Erro ao carregar os perfis. Por favor, tente novamente.');
+      }
+    });
+  }
+
+  getAllRestricoesPerfil() {
+    this.request.executeRequestGET('restrictedApi/getAllRestricoesPerfil').subscribe({
+      next: (response: any) => {
+        const permissionsReq: {
+          perfId: number,
+          perfDescricao: string,
+          restId: number,
+          restDescricao: string
+        }[] = response;
+
+        permissionsReq.forEach(info => {
+          if (this.permissions.some(p => p.id === info.restId)) return;
+
+          this.permissions.push({
+            id: info.restId,
+            name: info.restDescricao,
+            roles: []
+          });
+        });
+
+        this.permissions.forEach((req: any) => {
+          const matchingRoles = permissionsReq.filter(p => p.restId === req.id).map(p => p.perfDescricao);
+          req.roles = matchingRoles;
+        });
+      },
+      error: (error) => {
+        console.error('Erro:', error);
+        this.alert.show('Erro ao carregar as restricoes. Por favor, tente novamente.');
+      }
+    });
+  }
+
+  criarAlterarUsuario() {
+    const dto = {
+      idUsuario: this.editingUser()?.id,
+      nome:      this.formName,
+      email:     this.formEmail,
+      telefone:  this.formPhone,
+      perfId:    this.formRoleId
+    };
+
+    this.request.executeRequestPOST('restrictedApi/criarAlterarUsuario', dto).subscribe({
+      next: () => {
+        this.getUsuariosGrid();
+        this.closeModal();
+      },
+      error: (error) => {
+        console.error('Erro:', error);
+        this.alert.show('Erro ao salvar usuario. Por favor, tente novamente.');
+      }
+    });
+  }
+
+  ativarInativarUsuario(id: number, ativar: boolean) {
+    console.log(ativar); //.status == 'ativo'
+
+    this.request.executeRequestPOST('restrictedApi/ativarInativarUsuario', null, { idUsuario: id, ativar: ativar }).subscribe({
+      next: () => {
+        this.getUsuariosGrid();
+      },
+      error: (error) => {
+        console.error('Erro:', error);
+        this.alert.show('Erro ao ativar/inativar usuario. Por favor, tente novamente.');
+      }
+    });
+  }
+
+  getCor(idx: number) {
+    const colors = [
+      '#dbeafe',
+      '#fef3c7',
+      '#ede9fe',
+      '#d1fae5',
+      '#fee2e2',
+      '#fef3c7',
+      '#dbeafe',
+      '#dbeafe',
+      '#ede9fe',
+      '#dbeafe',
+      '#d1fae5',
+      '#ede9fe',
+      '#dbeafe',
+      '#fee2e2',
+      '#fee2e2'
+    ]
+
+    return colors[idx % colors.length];
   }
 }

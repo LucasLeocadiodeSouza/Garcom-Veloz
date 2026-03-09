@@ -1,5 +1,6 @@
 package com.back.demo.model;
 
+import java.time.LocalDate;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -10,17 +11,15 @@ import lombok.Setter;
 @Getter
 @Setter
 public class UserDTO {
-    private Long    idUsuario;
-    private String  nome;
-    private String  email;
-    private Long    perfId;
-    private String  perfDescricao;
-    private String  status;
-    private Long    idEmpresa;
-
-    private Long    totalResult;
-    private Long    totalAtivos;
-    private Long    totalInativos;
+    private Long      idUsuario;
+    private String    nome;
+    private String    email;
+    private String    telefone;
+    private Long      perfId;
+    private String    perfDescricao;
+    private Boolean   status;
+    private Long      idEmpresa;
+    private LocalDate criadoEm;
 
     private Long    restId;
     private String  restDescricao;
@@ -35,26 +34,25 @@ public class UserDTO {
         this.perfDescricao = perfDescricao;
     }
 
-    public UserDTO(Long   idUsuario, 
-                   String nome, 
-                   String email, 
-                   Long   perfId, 
-                   String perfDescricao, 
-                   String status,
-                   Long   idEmpresa,
-                   Long   totalResult, 
-                   Long   totalAtivos, 
-                   Long   totalInativos)
+    public UserDTO(Long      idUsuario, 
+                   String    nome, 
+                   String    email, 
+                   String    telefone,
+                   Long      perfId, 
+                   String    perfDescricao, 
+                   Boolean   status,
+                   Long      idEmpresa,
+                   LocalDate criadoEm)
                    {
         this.idUsuario     = idUsuario;
         this.nome          = nome;
         this.email         = email;
+        this.telefone      = telefone;
         this.perfId        = perfId;
         this.perfDescricao = perfDescricao;
         this.status        = status;
-        this.totalResult   = totalResult;
-        this.totalAtivos   = totalAtivos;
-        this.totalInativos = totalInativos;
+        this.idEmpresa     = idEmpresa;
+        this.criadoEm      = criadoEm;
     }
 
     public UserDTO(Long   perfId, 

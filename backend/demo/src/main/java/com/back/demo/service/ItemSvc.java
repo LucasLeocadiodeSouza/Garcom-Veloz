@@ -45,8 +45,8 @@ public class ItemSvc {
     @Autowired
     private ItemDTORepository itemDTORepo;
 
-    @Autowired
-    private GenSvc gen;
+    // @Autowired
+    // private GenSvc gen;
 
 
     private String itensDirectory = System.getProperty("user.dir") + "/media/itens";
@@ -79,6 +79,8 @@ public class ItemSvc {
 
         return categoria;
     }
+
+    // CRIAR, ALTERAR e EXCLUIR os itens
 
     @Transactional
     public void criarAlterarCategoria(Long       id,
@@ -135,16 +137,6 @@ public class ItemSvc {
     public List<ItemDTO> getListItem(String nome, String ativo, Long categoriaId){
         List<ItemDTO> itens = itemDTORepo.getListItem(nome, ativo, categoriaId);
 
-        return itens;
-    }
-
-    public Long getCountAllItens(){
-        Long itens = itemRepo.CountAllItens();
-        return itens;
-    }
-
-    public Long getCountAllItensByStatus(){
-        Long itens = itemRepo.CountAllItensByStatus(true);
         return itens;
     }
 
