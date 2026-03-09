@@ -209,8 +209,6 @@ export class Users implements OnInit {
   }
 
   ativarInativarUsuario(id: number, ativar: boolean) {
-    console.log(ativar); //.status == 'ativo'
-
     this.request.executeRequestPOST('restrictedApi/ativarInativarUsuario', null, { idUsuario: id, ativar: ativar }).subscribe({
       next: () => {
         this.getUsuariosGrid();
