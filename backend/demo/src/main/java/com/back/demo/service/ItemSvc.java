@@ -80,6 +80,11 @@ public class ItemSvc {
         return categoria;
     }
 
+    public Item getItemInfo(Long idItem){
+        Item item = itemRepo.findItemById(idItem);
+        return item;
+    }
+
     // CRIAR, ALTERAR e EXCLUIR os itens
 
     @Transactional

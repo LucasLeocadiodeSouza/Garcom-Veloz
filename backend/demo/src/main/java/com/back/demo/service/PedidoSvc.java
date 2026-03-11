@@ -15,9 +15,12 @@ import com.back.demo.model.Empresa;
 import com.back.demo.model.Item;
 import com.back.demo.model.Pedido;
 import com.back.demo.model.PedidoItem;
+import com.back.demo.model.PedidoItemDTO;
 import com.back.demo.model.PedidoItemId;
+import com.back.demo.model.PedidoDTO;
 import com.back.demo.repository.EmpresaRepository;
 import com.back.demo.repository.ItemRepository;
+import com.back.demo.repository.PedidoDTORepository;
 import com.back.demo.repository.PedidoItemRepository;
 import com.back.demo.repository.PedidoRepository;
 import jakarta.transaction.Transactional;
@@ -36,7 +39,15 @@ public class PedidoSvc {
     @Autowired
     private EmpresaRepository empresaRepo;
 
+    @Autowired
+    private PedidoDTORepository pedidoDTORepo;
 
+
+
+
+    public List<PedidoItem> getItensPedidos(Long pedidoId) {
+        return pedidoItemRepo.findAllItensByPedido(pedidoId);
+    }
 
     public List<Pedido> getListPedidos(Integer mesa, Integer estado){
 
@@ -56,31 +67,79 @@ public class PedidoSvc {
         return pedidos;
     }
 
-    public List<PedidoItem> getItensPedidos(Long pedidoId){
-        return pedidoItemRepo.findAllItensByPedido(pedidoId);
+
+
+    public List<PedidoDTO> getListPedidosDTO(Integer mesa, Integer estado) {
+        List<Pedido> pedidos = getListPedidos(mesa, estado);
+        List<PedidoDTO> dtos = new ArrayList<>();
+
+        for (Pedido p : pedidos) {
+            BigDecimal total = BigDecimal.ZERO;
+            List<PedidoItemDTO> itemDTOs = getListPedidosItemDTO(p.getId());
+
+            if (p.getGorgeta() != null) {
+                total = total.add(p.getGorgeta());
+            }
+
+            dtos.add(new PedidoDTO(
+                    p.getId(),
+                    p.getEstado(),
+                    p.getObservacao(),
+                    p.getGorgeta(),
+                    p.getMesa(),
+                    p.getCriadoEm(),
+                    p.getHorario(),
+                    p.getIdeusu(),
+                    total,
+                    itemDTOs));
+        }
+
+        return dtos;
     }
 
+    public List<PedidoItemDTO> getListPedidosItemDTO(Long idPedido) {
+        Pedido pedido = pedidoRepo.findPedidoById(idPedido);
 
+        BigDecimal total = BigDecimal.ZERO;
+        List<PedidoItemDTO> itemDTOs = new ArrayList<>();
 
-    //CRIAR, ALTERAR e EXCLUIR os pedidos
+        for (PedidoItem pi : pedido.getItens()) {
+            BigDecimal valorItem = pi.getItem().getValor();
+            if (pi.getItem().getDesconto() != null) {
+                valorItem = valorItem.subtract(pi.getItem().getDesconto());
+            }
+            total = total.add(valorItem);
+
+            itemDTOs.add(new PedidoItemDTO(
+                    pedido.getId(),
+                    pi.getItem().getId(),
+                    pi.getItem().getNome(),
+                    valorItem));
+        }
+
+        return itemDTOs;
+    }
+
+    // CRIAR, ALTERAR e EXCLUIR os pedidos
 
     @Transactional
-    public void criarAlterarPedido(Long       id,
-                                   String     observacao,
+    public void criarAlterarPedido(Long id,
+                                   String observacao,
                                    BigDecimal gorgeta,
-                                   Integer    mesa,
-                                   Long       idEmpresa,
-                                   String     ideusu)
-                                   {        
+                                   Integer mesa,
+                                   Long idEmpresa,
+                                   String ideusu) {
 
-        if(mesa == null || mesa == 0) throw new PedidoException("É preciso informar o número da mesa para criar o pedido!");
+        if (mesa == null || mesa == 0)
+            throw new PedidoException("É preciso informar o número da mesa para criar o pedido!");
 
         Empresa empresa = empresaRepo.findEmpresaById(idEmpresa);
-        if(empresa == null) throw new EmpresaNotFoundException("Empresa informada não encontrado!");
+        if (empresa == null)
+            throw new EmpresaNotFoundException("Empresa informada não encontrado!");
 
         Pedido pedido = pedidoRepo.findPedidoById(id);
 
-        if(pedido == null){
+        if (pedido == null) {
             pedido = new Pedido();
             pedido.setEstado(1);
             pedido.setIdeusu(ideusu);
@@ -97,30 +156,37 @@ public class PedidoSvc {
     }
 
     @Transactional
-    public void excluiPedido(Long id){
+    public void excluiPedido(Long id) {
         Pedido pedido = pedidoRepo.findPedidoById(id);
-        if(pedido == null) throw new PedidoNotFoundException("Não encontrado o Pedido");
+        if (pedido == null)
+            throw new PedidoNotFoundException("Não encontrado o Pedido");
 
         pedidoRepo.delete(pedido);
     }
 
     @Transactional
-    public void vinculaItemPedido(Long   pedidoId,
-                                  Long   itemId,
-                                  String ideusu)
-                                  {        
+    public void vinculaItemPedido(Long    pedidoId,
+                                  Long    itemId,
+                                  String  ideusu) {
 
-        if(pedidoId == null || pedidoId == Long.valueOf(0)) throw new PedidoException("É preciso informar o número do pedido para vincular ao item!");
-        if(itemId == null || itemId == Long.valueOf(0)) throw new PedidoException("É preciso informar o código do item para vincular ao pedido!");
+        System.out.println(pedidoId);
+
+        if (pedidoId == null || pedidoId == Long.valueOf(0))
+            throw new PedidoException("É preciso informar o número do pedido para vincular ao item!");
+        if (itemId == null || itemId == Long.valueOf(0))
+            throw new PedidoException("É preciso informar o código do item para vincular ao pedido!");
 
         Pedido pedido = pedidoRepo.findPedidoById(pedidoId);
-        if(pedido == null) throw new PedidoNotFoundException("Não encontrado o Pedido");
+        if (pedido == null)
+            throw new PedidoNotFoundException("Não encontrado o Pedido");
 
         Item item = itemRepo.findItemById(itemId);
-        if(item == null) throw new ItemNotFoundException("Não encontrado o Item");
+        if (item == null)
+            throw new ItemNotFoundException("Não encontrado o Item");
 
         PedidoItem vinculoPedidoItem = pedidoItemRepo.findPedidoItemById(pedidoId, itemId);
-        if(vinculoPedidoItem != null) return;
+        if (vinculoPedidoItem != null)
+            return;
 
         PedidoItemId id_vinculoPedidoItem = new PedidoItemId();
         id_vinculoPedidoItem.setIdItem(itemId);
@@ -137,24 +203,27 @@ public class PedidoSvc {
     }
 
     @Transactional
-    public void excluiItemPedido(Long   pedidoId,
-                                 Long   itemId)
-                                 {        
+    public void excluiItemPedido(Long pedidoId,
+            Long itemId) {
 
-        if(pedidoId == null || pedidoId == Long.valueOf(0)) throw new PedidoException("É preciso informar o número do pedido para remover o item!");
-        if(itemId == null || itemId == Long.valueOf(0)) throw new PedidoException("É preciso informar o código do item para remover o pedido!");
+        if (pedidoId == null || pedidoId == Long.valueOf(0))
+            throw new PedidoException("É preciso informar o número do pedido para remover o item!");
+        if (itemId == null || itemId == Long.valueOf(0))
+            throw new PedidoException("É preciso informar o código do item para remover o pedido!");
 
         Pedido pedido = pedidoRepo.findPedidoById(pedidoId);
-        if(pedido == null) throw new PedidoNotFoundException("Não encontrado o Pedido");
+        if (pedido == null)
+            throw new PedidoNotFoundException("Não encontrado o Pedido");
 
         Item item = itemRepo.findItemById(itemId);
-        if(item == null) throw new ItemNotFoundException("Não encontrado o Item");
+        if (item == null)
+            throw new ItemNotFoundException("Não encontrado o Item");
 
         PedidoItem vinculoPedidoItem = pedidoItemRepo.findPedidoItemById(pedidoId, itemId);
-        if(vinculoPedidoItem == null) return;
+        if (vinculoPedidoItem == null)
+            return;
 
         pedidoItemRepo.delete(vinculoPedidoItem);
     }
-
 
 }

@@ -5,6 +5,7 @@ import { ImportExport } from './pages/import-export/import-export';
 import { Users } from './pages/users/users';
 import { Categories } from './pages/categories/categories';
 import { NewProduct } from './pages/new-product/new-product';
+import { Orders } from './pages/orders/orders';
 
 export const routes: Routes = [
 
@@ -20,6 +21,11 @@ export const routes: Routes = [
         path: 'produtos',
         component: Products,
         title: 'Produtos - GarçomVeloz CRM'
+    },
+    {
+        path: 'pedidos',
+        component: Orders,
+        title: 'Pedidos - GarçomVeloz CRM'
     },
     {
         path: 'produtos/novo',

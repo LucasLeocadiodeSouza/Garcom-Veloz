@@ -7,10 +7,14 @@ import org.springframework.http.MediaType;
 import com.back.demo.model.Categoria;
 import com.back.demo.model.CategoriaDTO;
 import com.back.demo.model.EstatisticasDTO;
+import com.back.demo.model.Item;
 import com.back.demo.model.ItemDTO;
 import com.back.demo.model.ItemMedia;
+import com.back.demo.model.PedidoDTO;
+import com.back.demo.model.PedidoItemDTO;
 import com.back.demo.service.GenSvc;
 import com.back.demo.service.ItemSvc;
+import com.back.demo.service.PedidoSvc;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
 import java.io.IOException;
@@ -33,6 +37,9 @@ public class Api {
     
     @Autowired
     private ItemSvc itemService;
+
+    @Autowired
+    private PedidoSvc pedidoSvc;
 
     @Autowired
     private GenSvc genService;
@@ -108,6 +115,11 @@ public class Api {
         return itemService.getListItem(search, status, idCategoria);
     }
 
+    @GetMapping("/getItemInfo")
+    private Item getItemInfo(@RequestParam(name  = "idItem", required = true) Long idItem){
+        return itemService.getItemInfo(idItem);
+    }
+
     @PostMapping("/criarAlterarItem")
     private ResponseEntity<?> criarAlterarItem(@RequestBody ItemDTO dto){
         itemService.criarAlterarItem(dto.getIdItem(), 
@@ -177,5 +189,46 @@ public class Api {
         } catch (Exception e) {
             return ResponseEntity.notFound().build();
         }
+    }
+
+    // ####################### PEDIDOS #######################
+
+    @GetMapping("/getListPedidos")
+    private List<PedidoDTO> getListPedidos(@RequestParam(name = "mesa", required = false) Integer mesa,
+                                           @RequestParam(name = "estado", required = false) Integer estado) {
+        return pedidoSvc.getListPedidosDTO(mesa, estado);
+    }
+
+    @GetMapping("/getListPedidosItem")
+    private List<PedidoItemDTO> getListPedidosItem(@RequestParam(name = "idPedido", required = false) Long idPedido) {
+        return pedidoSvc.getListPedidosItemDTO(idPedido);
+    }
+
+    @PostMapping("/criarAlterarPedido")
+    private ResponseEntity<?> criarAlterarPedido(@RequestBody PedidoDTO dto){
+        pedidoSvc.criarAlterarPedido(dto.getId(), 
+                                     dto.getObservacao(), 
+                                     dto.getGorgeta(), 
+                                     dto.getMesa(), 
+                                     1L, 
+                                     "LUCASSZ");
+        
+        return ResponseEntity.ok(Map.of(
+            "status", "success",
+            "message", "Pedido Criado/Alterado com sucesso"
+        ));
+    }
+
+    @PostMapping("/criarAlterarItemPedido")
+    private ResponseEntity<?> criarAlterarItemPedido(@RequestParam(name = "idPedido", required = true) Long idPedido,
+                                                     @RequestParam(name = "IdItem", required = true)   Long IdItem){
+        pedidoSvc.vinculaItemPedido(3L, 
+                                    IdItem, 
+                                    "LUCASSZ");
+        
+        return ResponseEntity.ok(Map.of(
+            "status", "success",
+            "message", "Item do Pedido Criado/Alterado com sucesso"
+        ));
     }
 }

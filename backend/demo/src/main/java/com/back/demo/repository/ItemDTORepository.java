@@ -57,10 +57,10 @@ public class ItemDTORepository {
             temAnd = true;
         }
         if(filtroPorCategoria){
-            query += (temAnd?" AND ":" ") + "cat.id = :idCategoria";
+            query += (temAnd?" AND ":" WHERE ") + "cat.id = :idCategoria";
             temAnd = true;
         }
-        if(filtroPorStatus) query += (temAnd?" AND ":" ") + "id.ativo = :ativo";
+        if(filtroPorStatus) query += (temAnd?" AND ":" WHERE ") + "id.ativo = :ativo";
 
         var q = em.createQuery(query, ItemDTO.class);
 

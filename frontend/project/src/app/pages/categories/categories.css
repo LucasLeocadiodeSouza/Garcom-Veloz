@@ -36,7 +36,6 @@
     gap: 10px;
 }
 
-/* Stats Strip */
 .stats-strip {
     display: flex;
     gap: 14px;
@@ -83,7 +82,6 @@
     color: var(--blue-600);
 }
 
-/* Filters Bar */
 .filters-bar {
     display: flex;
     align-items: center;
