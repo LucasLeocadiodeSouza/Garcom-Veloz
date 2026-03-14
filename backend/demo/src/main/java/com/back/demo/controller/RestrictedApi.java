@@ -4,9 +4,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import com.back.demo.model.Perfil;
 import com.back.demo.model.UserDTO;
-import com.back.demo.model.PedidoDTO;
 import com.back.demo.service.UserSvc;
-import com.back.demo.service.PedidoSvc;
 import java.util.List;
 import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,8 +21,6 @@ public class RestrictedApi {
     @Autowired
     private UserSvc userService;
 
-    @Autowired
-    private PedidoSvc pedidoSvc;
 
     @GetMapping("/teste")
     private String getTeste() {

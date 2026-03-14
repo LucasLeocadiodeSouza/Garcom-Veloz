@@ -10,6 +10,8 @@ import org.springframework.stereotype.Service;
 import com.back.demo.exception.EmpresaNotFoundException;
 import com.back.demo.exception.ItemNotFoundException;
 import com.back.demo.exception.PedidoException;
+import com.back.demo.exception.PedidoItemException;
+import com.back.demo.exception.PedidoItemNotFoundException;
 import com.back.demo.exception.PedidoNotFoundException;
 import com.back.demo.model.Empresa;
 import com.back.demo.model.Item;
@@ -39,7 +41,33 @@ public class PedidoSvc {
     private EmpresaRepository empresaRepo;
 
 
+    public String getDescEstadoPedido(Integer estado){
+        switch (estado) {
+            case 0: return "Cancelada";
+            case 1: return "Aberto";
+            case 2: return "Encerrado";
+        }
 
+        return "";
+    }
+
+    public Integer getCodEstadoPedidoAberto(){
+        return 1;
+    }
+
+    public String getDescEstadoItem(Integer estado){
+        switch (estado) {
+            case 1: return "Aberto";
+            case 2: return "Aguardando";
+            case 3: return "Entregue";
+        }
+
+        return "";
+    }
+
+    public Integer getCodEstadoItemAberto(){
+        return 1;
+    }
 
     public List<PedidoItem> getItensPedidos(Long pedidoId) {
         return pedidoItemRepo.findAllItensByPedido(pedidoId);
@@ -75,13 +103,12 @@ public class PedidoSvc {
 
             List<PedidoItemDTO> itemDTOs = getListPedidosItemDTO(p.getId());
 
-            System.out.println(total);
-
             if (p.getGorgeta() != null) total = total.add(p.getGorgeta());
 
             dtos.add(new PedidoDTO(
                      p.getId(),
                      p.getEstado(),
+                     getDescEstadoPedido(p.getEstado()),
                      p.getObservacao(),
                      p.getGorgeta(),
                      p.getMesa(),
@@ -113,9 +140,12 @@ public class PedidoSvc {
             itemDTOs.add(new PedidoItemDTO(
                          pedido.getId(),
                          pi.getItem().getId(),
+                         pi.getId().getSeq(),
                          pi.getItem().getNome(),
                          pi.getItem().getDescricao(),
                          pi.getQuantidade(),
+                         pi.getEstado(),
+                         getDescEstadoItem(pi.getEstado()),
                          valorItem));
         }
 
@@ -164,10 +194,29 @@ public class PedidoSvc {
     }
 
     @Transactional
+    public void alterarEstadoPedido(Long    pedidoId,
+                                    Integer estado,
+                                    String  ideusu){
+
+        if (pedidoId == null || pedidoId == Long.valueOf(0)) throw new PedidoException("É preciso informar o número do pedido alterar o estado do item!");
+
+        Pedido pedido = pedidoRepo.findPedidoById(pedidoId);
+        if (pedido == null) throw new PedidoNotFoundException("Não encontrado o Pedido");
+
+        pedido.setEstado(estado);
+
+        pedidoRepo.save(pedido);
+    }
+
+
+    @Transactional
     public void vinculaItemPedido(Long    pedidoId,
                                   Long    itemId,
+                                  Long    seq,
                                   Integer quantidade,
                                   String  ideusu) {
+
+        Boolean temItemAberto = false;
 
         if (pedidoId == null || pedidoId == Long.valueOf(0)) throw new PedidoException("É preciso informar o número do pedido para vincular ao item!");
         if (itemId == null || itemId == Long.valueOf(0)) throw new PedidoException("É preciso informar o código do item para vincular ao pedido!");
@@ -178,9 +227,18 @@ public class PedidoSvc {
         Item item = itemRepo.findItemById(itemId);
         if (item == null) throw new ItemNotFoundException("Não encontrado o Item");
 
-        PedidoItem vinculoPedidoItem = pedidoItemRepo.findPedidoItemById(pedidoId, itemId);
-        if (vinculoPedidoItem == null) {
-            criarAlterarItemPedido(pedidoId, itemId, quantidade, ideusu);
+        List<PedidoItem> vinculosPedidoItem = pedidoItemRepo.findPedidoItemByItemAndPedido(pedidoId, itemId);
+        PedidoItem vinculoPedidoItem = new PedidoItem();
+
+        for (PedidoItem pedidoItem : vinculosPedidoItem) {
+            if(pedidoItem.getEstado() == getCodEstadoItemAberto()) {
+                temItemAberto     = true;
+                vinculoPedidoItem = pedidoItem;
+            }
+        }
+
+        if (!temItemAberto) {
+            criarAlterarItemPedido(pedidoId, itemId, seq, quantidade, ideusu);
             return;
         }
 
@@ -193,6 +251,7 @@ public class PedidoSvc {
     @Transactional
     public void criarAlterarItemPedido(Long    pedidoId,
                                        Long    itemId,
+                                       Long    seq,
                                        Integer quantidade,
                                        String  ideusu) {
 
@@ -205,16 +264,21 @@ public class PedidoSvc {
         Item item = itemRepo.findItemById(itemId);
         if (item == null) throw new ItemNotFoundException("Não encontrado o Item");
 
-        PedidoItem vinculoPedidoItem = pedidoItemRepo.findPedidoItemById(pedidoId, itemId);
+        PedidoItem vinculoPedidoItem = pedidoItemRepo.findPedidoItemById(pedidoId, itemId, seq);
         if (vinculoPedidoItem == null){
+            Long newSeq = pedidoItemRepo.findMaxSeqByItemAndPedido(pedidoId, itemId);
+            if(newSeq == null) newSeq = 0L;
+
             PedidoItemId id_vinculoPedidoItem = new PedidoItemId();
             id_vinculoPedidoItem.setIdItem(itemId);
             id_vinculoPedidoItem.setIdPedido(pedidoId);
+            id_vinculoPedidoItem.setSeq(newSeq + 1L);
     
             vinculoPedidoItem = new PedidoItem();
             vinculoPedidoItem.setId(id_vinculoPedidoItem);
             vinculoPedidoItem.setItem(item);
             vinculoPedidoItem.setPedido(pedido);
+            vinculoPedidoItem.setEstado(getCodEstadoItemAberto());
             vinculoPedidoItem.setIdeusu(ideusu);
             vinculoPedidoItem.setCriadoEm(LocalDate.now());
             
@@ -228,26 +292,52 @@ public class PedidoSvc {
     @Transactional
     public void excluiItemPedido(Long   pedidoId,
                                  Long   itemId,
+                                 Long   seq,
                                  String ideusu){
 
-        if (pedidoId == null || pedidoId == Long.valueOf(0))
-            throw new PedidoException("É preciso informar o número do pedido para remover o item!");
-        if (itemId == null || itemId == Long.valueOf(0))
-            throw new PedidoException("É preciso informar o código do item para remover o pedido!");
+        if (pedidoId == null || pedidoId == Long.valueOf(0)) throw new PedidoException("É preciso informar o número do pedido para remover o item!");
+        if (itemId == null || itemId == Long.valueOf(0)) throw new PedidoException("É preciso informar o código do item para remover o pedido!");
 
         Pedido pedido = pedidoRepo.findPedidoById(pedidoId);
-        if (pedido == null)
-            throw new PedidoNotFoundException("Não encontrado o Pedido");
+        if (pedido == null) throw new PedidoNotFoundException("Não encontrado o Pedido");
 
         Item item = itemRepo.findItemById(itemId);
-        if (item == null)
-            throw new ItemNotFoundException("Não encontrado o Item");
+        if (item == null) throw new ItemNotFoundException("Não encontrado o Item");
 
-        PedidoItem vinculoPedidoItem = pedidoItemRepo.findPedidoItemById(pedidoId, itemId);
-        if (vinculoPedidoItem == null)
-            return;
+        PedidoItem vinculoPedidoItem = pedidoItemRepo.findPedidoItemById(pedidoId, itemId, seq);
+        if (vinculoPedidoItem == null) return;
+
+        if(vinculoPedidoItem.getEstado() != getCodEstadoItemAberto()) throw new PedidoItemException("Não é possível deletar um Pedido que não estajá em Aberto!");
 
         pedidoItemRepo.delete(vinculoPedidoItem);
+    }
+
+    @Transactional
+    public void alterarEstadoItemPedido(Long    pedidoId,
+                                        Long    itemId,
+                                        Long    seq,
+                                        Integer estado,
+                                        String  ideusu){
+
+        if (pedidoId == null || pedidoId == Long.valueOf(0)) throw new PedidoException("É preciso informar o número do pedido alterar o estado do item!");
+        if (itemId == null || itemId == Long.valueOf(0)) throw new PedidoException("É preciso informar o código do item para alterar o estado do pedido!");
+
+        Pedido pedido = pedidoRepo.findPedidoById(pedidoId);
+        if (pedido == null) throw new PedidoNotFoundException("Não encontrado o Pedido");
+
+        //if(pedido.getEstado() == 2) throw new PedidoException("Não é possivel alterar a situação de um item para um pedido que já foi finalizado");
+
+        Item item = itemRepo.findItemById(itemId);
+        if (item == null) throw new ItemNotFoundException("Não encontrado o Item");
+
+        PedidoItem vinculoPedidoItem = pedidoItemRepo.findPedidoItemById(pedidoId, itemId, seq);
+        if (vinculoPedidoItem == null) throw new PedidoItemNotFoundException("Não encontrado o item vinculado ao pedido");
+
+        //if(vinculoPedidoItem.getEstado() == 3 && estado == getCodEstadoItemAberto()) throw new PedidoItemException("Não é possível voltar um item entregue do pedido para aberto!");
+
+        vinculoPedidoItem.setEstado(estado);
+
+        pedidoItemRepo.save(vinculoPedidoItem);
     }
 
 }

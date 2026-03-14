@@ -7,15 +7,19 @@ import { AlertService } from '../../service/alert-service';
 export interface PedidoItemDTO {
   idPedido:      number;
   idItem:        number;
+  seq:           number;
   nomeItem:      string;
   descricaoItem: string;
   quantidade:    number;
   valorItem:     number;
+  estado:        number;
+  descEstado:    string;
 }
 
 export interface PedidoDTO {
   id:          number;
   estado:      number;
+  descEstado:  string;
   observacao:  string;
   gorgeta:     number;
   mesa:        number;
@@ -52,11 +56,19 @@ export class Orders implements OnInit {
   showItensModal       = signal<boolean | null>(null);
   formsOrderModal      = signal<PedidoDTO | null>(null);
 
+  showObservacao       = signal<boolean | null>(null);
+
   isEditModal          = signal<boolean | null>(false);
 
-  confirmDeleteId      = signal<number | null>(null);
+  showModalConfirm     = signal<boolean | null>(null);
+  actionModalConfirm   = signal<number | null>(null);
+  titleModalConfirm    = signal<string | null>(null);
+  textModalConfirm     = signal<string | null>(null);
+  
+  confirmDeleteId      = signal<{idItem: number, seq: number } | null>(null);
 
   formIdItem     = 0;
+  formSeq        = 0;
   formItem       = '';
   formQuantity   = 0;
   formDescItem   = '';
@@ -92,14 +104,15 @@ export class Orders implements OnInit {
     return this.themes[randomIndex];
   }
 
-  openOrderDetails(order: PedidoDTO) {
-    this.selectedOrder.set(order);
-  }
+  openOrderDetails(order: PedidoDTO) { this.selectedOrder.set(order) }
 
   closeOrderDetails() {
     this.selectedOrder.set(null);
+    this.showObservacao.set(false);
     this.closeMediaModal();
   }
+
+  cancelModalConfirm() { this.showModalConfirm.set(null); }
 
   openMediaModal(item: PedidoItemDTO) {
     this.selectedItemForMedia.set(item);
@@ -154,9 +167,13 @@ export class Orders implements OnInit {
     return this.getSumValueItens() + this.selectedOrder()!.gorgeta;
   }
 
+  isEstadoAbertoPedido(){ return this.selectedOrder()?.estado === 1 }
+  isEstadoConfirmadoPedido(){ return this.selectedOrder()?.estado === 2 }
+
   closeCreateOrderModal() {
     this.showCreateOrderModal.set(false);
     this.formIdItem     = 0;
+    this.formSeq        = 0;
     this.formItem       = '';
     this.formQuantity   = 0;
     this.formDescItem   = '';
@@ -181,8 +198,57 @@ export class Orders implements OnInit {
     });
   }
 
+  askAlterarEstadoPedido(estado: number){
+    this.showModalConfirm.set(true);
+
+    if(estado === 1){
+      this.titleModalConfirm.set('Retorno');
+      this.textModalConfirm.set('Deseja retomar o pedido? O pedido retornará para o estado em aberto.');
+      this.actionModalConfirm.set(2);
+    }
+    else if(estado === 2){
+      this.titleModalConfirm.set('Pedido');
+      this.textModalConfirm.set('Deseja encerrar o pedido? Essa ação não permitirá mais alterações.');
+      this.actionModalConfirm.set(3);
+    }else{
+      this.titleModalConfirm.set('Cancelamento');
+      this.textModalConfirm.set('Deseja cancelar o pedido? Essa ação não permitirá mais alterações.');
+      this.actionModalConfirm.set(4);
+    }
+  }
+
+  cancelarPedido(){
+    this.request.executeRequestPOST('api/alterarEstadoPedido', null, {idPedido: this.selectedOrder()!.id, estado: 0}).subscribe({
+      next: () => {
+        this.loadOrders();
+        this.cancelModalConfirm();
+        this.closeOrderDetails();
+      },
+      error: (error) => {
+        console.error('Erro:', error);
+        this.alert.show('Erro ao cancelar o Pedido. Por favor, tente novamente.');
+      }
+    });
+  }
+  encerrarPedido(){
+    this.request.executeRequestPOST('api/alterarEstadoPedido', null, {idPedido: this.selectedOrder()!.id, estado: 3}).subscribe({
+      next: () => {
+        this.loadOrders();
+        this.cancelModalConfirm();
+        this.closeOrderDetails();
+      },
+      error: (error) => {
+        console.error('Erro:', error);
+        this.alert.show('Erro ao encerrar o Pedido. Por favor, tente novamente.');
+      }
+    });
+  }
+
+
+
   closeItensModal() {
     this.formIdItem   = 0;
+    this.formSeq      = 0;
     this.formItem     = '';
     this.formQuantity = 0;
     this.formDescItem = '';
@@ -193,7 +259,7 @@ export class Orders implements OnInit {
   }
 
   incluirItemNoPedido() {
-    this.request.executeRequestPOST('api/vinculaItemPedido', null, { idPedido: this.selectedOrder()!.id, idItem: this.formIdItem, quantidade: this.formQuantity }).subscribe({
+    this.request.executeRequestPOST('api/vinculaItemPedido', null, { idPedido: this.selectedOrder()!.id, idItem: this.formIdItem, seq: this.formSeq, quantidade: this.formQuantity }).subscribe({
       next: (res: any) => {
         this.closeItensModal();
         this.getListPedidosItem();
@@ -202,12 +268,29 @@ export class Orders implements OnInit {
       error: (err) => {
         console.error('Erro ao Criar/Alterar Pedido:', err);
         this.alert.show('Não foi possível criar/alterar o pedido.');
+      }
+    });
+  }
+
+  getItemInfo() {
+    this.request.executeRequestGET('api/getItemInfo', { idItem: this.formIdItem }).subscribe({
+      next: (res: any) => {
+        this.formItem     = res == null? "" : res.nome;
+        this.formSeq      = 0; // Sempre inicia com 0 para nova inclusão
+        this.formDescItem = res == null? "" : res.descricao;
+        this.formQuantity = res == null? 1 : 1;
+        this.formEstoque  = res == null? 0 : res.estoque;
+        this.formValor    = res == null? 0 : res.valor;
+      },
+      error: (err) => {
+        console.error('Erro ao buscar informações do item:', err);
+        this.alert.show('Não foi possível carregar os dados do item.');
       }
     });
   }
 
   criarAlterarItemPedido() {
-    this.request.executeRequestPOST('api/criarAlterarItemPedido', null, { idPedido: this.selectedOrder()!.id, idItem: this.formIdItem, quantidade: this.formQuantity }).subscribe({
+    this.request.executeRequestPOST('api/criarAlterarItemPedido', null, { idPedido: this.selectedOrder()!.id, idItem: this.formIdItem, seq: this.formSeq, quantidade: this.formQuantity }).subscribe({
       next: (res: any) => {
         this.closeItensModal();
         this.getListPedidosItem();
@@ -220,8 +303,12 @@ export class Orders implements OnInit {
     });
   }
 
+  isEstadoAbertoItemPedido(dto: PedidoItemDTO){ return dto.estado === 1 }
+  isEstadoConfirmadoItemPedido(dto: PedidoItemDTO){ return dto.estado === 2 }
+
   editItem(item: PedidoItemDTO) {
     this.formIdItem   = item.idItem;
+    this.formSeq      = item.seq;
     this.formItem     = item.nomeItem;
     this.formDescItem = item.descricaoItem;
     this.formQuantity = item.quantidade;
@@ -242,49 +329,66 @@ export class Orders implements OnInit {
     });
   }
 
-  getItemInfo() {
-    this.request.executeRequestGET('api/getItemInfo', { idItem: this.formIdItem }).subscribe({
-      next: (res: any) => {
-        this.formItem     = res == null? "" : res.nome;
-        this.formDescItem = res == null? "" : res.descricao;
-        this.formQuantity = res == null? 1 : 1;
-        this.formEstoque  = res == null? 0 : res.estoque;
-        this.formValor    = res == null? 0 : res.valor;
-      },
-      error: (err) => {
-        console.error('Erro ao buscar informações do item:', err);
-        this.alert.show('Não foi possível carregar os dados do item.');
-      }
-    });
+  temItemConfirmadoOuEntregue(): boolean {
+    return this.selectedOrder()?.itens.some(item => item.estado === 2 || item.estado === 3) ?? false;
   }
 
 
   askDelete(dto: PedidoItemDTO) {
-    //if(!cat.active) return;
-    //if(dto.estado > 0){
-    //  this.alert.show('');
-    //  return;
-    //}
+    if(dto.estado !== 1){
+     this.alert.show('Não é possivel deletar um item que já está entregue ou confirmado. Por favor, tente novamente.');
+     return;
+    }
 
-    this.confirmDeleteId.set(dto.idItem);
+    this.showModalConfirm.set(true);
+    this.titleModalConfirm.set('Exclusão');
+    this.textModalConfirm.set('Tem certeza que deseja excluir este item do pedido? Está ação não pode ser desfeita.');
+    this.actionModalConfirm.set(1);
+    this.confirmDeleteId.set({idItem: dto.idItem, seq: dto.seq });
   }
 
-  cancelDelete() { this.confirmDeleteId.set(null); }
-
   confirmDelete() {
-      const id = this.confirmDeleteId();
-      if (id !== null) {
+    this.cancelModalConfirm();
+  
+    const id = this.confirmDeleteId();
+    if (id !== null) {
 
-        this.request.executeRequestPOST('api/excluirItemPedido', null, {idPedido: this.selectedOrder()!.id, idItem: id}).subscribe({
-          next: () => {
-            this.getListPedidosItem();
-            this.confirmDeleteId.set(null);
-          },
-          error: (error) => {
-            console.error('Erro:', error);
-            this.alert.show('Erro ao excluir categoria. Por favor, tente novamente.');
-          }
-        });
+      this.request.executeRequestPOST('api/excluirItemPedido', null, {idPedido: this.selectedOrder()!.id, idItem: id.idItem, seq: id.seq}).subscribe({
+        next: () => {
+          this.getListPedidosItem();
+          this.loadOrders();
+          this.confirmDeleteId.set(null);
+        },
+        error: (error) => {
+          console.error('Erro:', error);
+          this.alert.show('Erro ao excluir categoria. Por favor, tente novamente.');
+        }
+      });
+    }
+  }
+
+  confirmarItemPedido(dto: PedidoItemDTO) {
+    this.request.executeRequestPOST('api/alterarEstadoItemPedido', null, {idPedido: this.selectedOrder()!.id, idItem: dto.idItem, seq: dto.seq, estado: 2}).subscribe({
+      next: () => {
+        this.getListPedidosItem();
+        this.loadOrders();
+      },
+      error: (error) => {
+        console.error('Erro:', error);
+        this.alert.show('Erro ao confirmar o item. Por favor, tente novamente.');
       }
+    });
+  }
+  encerrarItemPedido(dto: PedidoItemDTO) {
+    this.request.executeRequestPOST('api/alterarEstadoItemPedido', null, {idPedido: this.selectedOrder()!.id, idItem: dto.idItem, seq: dto.seq, estado: 3}).subscribe({
+      next: () => {
+        this.getListPedidosItem();
+        this.loadOrders();
+      },
+      error: (error) => {
+        console.error('Erro:', error);
+        this.alert.show('Erro ao confirmar o item. Por favor, tente novamente.');
+      }
+    });
   }
 }

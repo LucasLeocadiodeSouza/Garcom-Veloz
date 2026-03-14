@@ -16,6 +16,7 @@ import java.util.List;
 public class PedidoDTO {
     private Long                id;
     private Integer             estado;
+    private String              descEstado;
     private String              observacao;
     private BigDecimal          gorgeta;
     private Integer             mesa;

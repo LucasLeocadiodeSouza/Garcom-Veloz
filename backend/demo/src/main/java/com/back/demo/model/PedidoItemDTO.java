@@ -13,8 +13,11 @@ import java.math.BigDecimal;
 public class PedidoItemDTO {
     private Long       idPedido;
     private Long       idItem;
+    private Long       seq;
     private String     nomeItem;
     private String     descricaoItem;
     private Integer    quantidade;
+    private Integer    estado;
+    private String     descEstado;
     private BigDecimal valorItem;
 }

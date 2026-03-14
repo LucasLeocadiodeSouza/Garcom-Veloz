@@ -126,6 +126,14 @@
     letter-spacing: 1px;
 }
 
+.order-status {
+    font-size: 15px;
+    font-weight: 600;
+    padding: 4px 10px;
+    background: var(--card-accent, rgba(0, 0, 0, 0.05));
+    border-radius: 8px;
+}
+
 .order-time {
     display: flex;
     align-items: center;
@@ -408,9 +416,21 @@
 }
 
 .modal-additens-actions {
-    display: flex;
-    align-items: center;
-    margin-right: 20px;
+  display: flex;
+  align-items: center;
+  margin-right: 20px;
+}
+
+.estado-actions {
+  display:         flex;
+  align-items:     center;
+  justify-content: flex-end;
+  gap:             10px;
+}
+
+.cancel {
+  background: var(--danger);
+  color: white;
 }
 
 .modal-meta-info {
@@ -483,11 +503,14 @@
 }
 
 .height-grid {
-  max-height: 120px;
+  max-height: 100px;
 }
 
-@media screen {
-
+.confirm:hover {
+    background:   var(--green-100) !important;
+    color:        var(--green-600) !important;
+    border-color: var(--green-300) !important;
+    /* transform: scale(1.1); */
 }
 
 .detailed-items-list {
@@ -515,9 +538,9 @@
 }
 
 .item-info {
-    display: flex;
+    display:     flex;
     align-items: center;
-    gap: 12px;
+    gap:         10px;
 }
 
 .item-icon-wrapper {
@@ -544,33 +567,44 @@
 }
 
 .btn-edit-item {
-    width: 30px;
-    height: 30px;
-    border-radius: 8px;
-    border: 1px solid var(--gray-200);
-    background: var(--gray-50);
-    color: var(--gray-500);
-    cursor: pointer;
-    display: flex;
-    align-items: center;
+    width:           30px;
+    height:          30px;
+    border-radius:   8px;
+    border:          1px solid var(--gray-200);
+    background:      var(--gray-50);
+    color:           var(--gray-500);
+    cursor:          pointer;
+    display:         flex;
+    align-items:     center;
     justify-content: center;
-    transition: all 0.2s ease;
-    margin-left: 4px;
-    flex-shrink: 0;
+    transition:      all 0.2s ease;
+    margin-left:     4px;
+    flex-shrink:     0;
 }
 
 .btn-edit-item:hover {
-    background: var(--blue-100);
-    color: var(--blue-600);
+    background:   var(--blue-100);
+    color:        var(--blue-600);
     border-color: var(--blue-300);
-    transform: scale(1.1);
+    /* transform: scale(1.1); */
 }
 
 .observation-box {
-    background: #fffbeb;
-    border: 1px dashed #fcd34d;
-    padding: 16px;
-    border-radius: 12px;
+  background:    #fffbeb;
+  border:        1px dashed #fcd34d;
+  padding:       16px;
+  border-radius: 12px;
+  cursor:        pointer;
+}
+
+.observation-box-mini  {
+  display:       flex;
+  gap:           10px;
+  background:    #fffbeb;
+  border:        1px dashed #fcd34d;
+  padding:       5px;
+  border-radius: 10px;
+  cursor:        pointer;
 }
 
 @media (max-height: 700px) {

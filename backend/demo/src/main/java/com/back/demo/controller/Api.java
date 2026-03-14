@@ -219,12 +219,29 @@ public class Api {
         ));
     }
 
+    @PostMapping("/alterarEstadoPedido")
+    private ResponseEntity<?> alterarEstadoPedido(@RequestParam(name = "idPedido", required = true) Long    idPedido,
+                                                  @RequestParam(name = "estado", required = true)   Integer estado){
+        pedidoSvc.alterarEstadoPedido(idPedido, 
+                                      estado,
+                                      "LUCASSZ");
+        
+        return ResponseEntity.ok(Map.of(
+            "status", "success",
+            "message", "Alterado situação do Pedido com sucesso"
+        ));
+    }
+
+
+
     @PostMapping("/criarAlterarItemPedido")
     private ResponseEntity<?> criarAlterarItemPedido(@RequestParam(name = "idPedido", required = true)   Long idPedido,
                                                      @RequestParam(name = "idItem", required = true)     Long idItem,
-                                                     @RequestParam(name = "quantidade", required = true) Integer quantidade){
+                                                     @RequestParam(name = "quantidade", required = true) Integer quantidade,
+                                                     @RequestParam(name = "seq", required = true)        Long seq){
         pedidoSvc.criarAlterarItemPedido(idPedido, 
                                         idItem,
+                                        seq,
                                         quantidade,
                                         "LUCASSZ");
         
@@ -236,10 +253,12 @@ public class Api {
 
     @PostMapping("/vinculaItemPedido")
     private ResponseEntity<?> vinculaItemPedido(@RequestParam(name = "idPedido", required = true)   Long idPedido,
-                                                     @RequestParam(name = "idItem", required = true)     Long idItem,
-                                                     @RequestParam(name = "quantidade", required = true) Integer quantidade){
+                                                @RequestParam(name = "idItem", required = true)     Long idItem,
+                                                @RequestParam(name = "quantidade", required = true) Integer quantidade,
+                                                @RequestParam(name = "seq", required = true)        Long seq){
         pedidoSvc.vinculaItemPedido(idPedido, 
                                     idItem,
+                                    seq,
                                     quantidade,
                                     "LUCASSZ");
         
@@ -251,14 +270,33 @@ public class Api {
 
     @PostMapping("/excluirItemPedido")
     private ResponseEntity<?> excluirItemPedido(@RequestParam(name = "idPedido", required = true)   Long idPedido,
-                                                @RequestParam(name = "idItem", required = true)     Long idItem){
+                                                @RequestParam(name = "idItem", required = true)     Long idItem,
+                                                @RequestParam(name = "seq", required = true)        Long seq){
         pedidoSvc.excluiItemPedido(idPedido, 
                                    idItem,
+                                   seq,
                                    "LUCASSZ");
         
         return ResponseEntity.ok(Map.of(
             "status", "success",
             "message", "Item do Pedido excluido com sucesso"
+        ));
+    }
+
+    @PostMapping("/alterarEstadoItemPedido")
+    private ResponseEntity<?> alterarEstadoItemPedido(@RequestParam(name = "idPedido", required = true)   Long    idPedido,
+                                                      @RequestParam(name = "idItem", required = true)     Long    idItem,
+                                                      @RequestParam(name = "seq", required = true)        Long    seq,
+                                                      @RequestParam(name = "estado", required = true)     Integer estado){
+        pedidoSvc.alterarEstadoItemPedido(idPedido, 
+                                          idItem,
+                                          seq,
+                                          estado,
+                                          "LUCASSZ");
+        
+        return ResponseEntity.ok(Map.of(
+            "status", "success",
+            "message", "Alterado situação do Item do Pedido com sucesso"
         ));
     }
 }

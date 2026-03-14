@@ -2,7 +2,6 @@ package com.back.demo.repository;
 
 import java.util.List;
 import org.springframework.stereotype.Repository;
-import com.back.demo.model.PedidoDTO;
 import com.back.demo.model.PedidoItemDTO;
 
 import jakarta.persistence.EntityManager;

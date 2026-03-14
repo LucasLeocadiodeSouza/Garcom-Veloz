@@ -10,9 +10,7 @@
             <div class="header-actions">
                 <button class="btn btn-primary" (click)="loadOrders()">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
-                        <path
-                            d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
-                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                        <path d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
                     </svg>
                     Atualizar
                 </button>
@@ -36,15 +34,18 @@
         <div class="orders-grid">
             @for (order of orders; track order.id) {
             <div class="order-card {{ order.colorTheme }}" (click)="openOrderDetails(order)">
-                <div class="order-header">
+              <div class="order-header">
+                  <div class="modal-title-group">
                     <span class="order-id">#{{ order.id }}</span>
-                    <span class="order-time">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
-                            <path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" stroke="currentColor" stroke-width="2"
-                                stroke-linecap="round" />
-                        </svg>
-                        {{ formatTime(order.horario) }}
-                    </span>
+
+                    <span class="order-status">{{ order.descEstado }}</span>
+                  </div>
+                  <span class="order-time">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+                          <path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                      </svg>
+                      {{ formatTime(order.horario) }}
+                  </span>
                 </div>
 
                 <div class="order-body">
@@ -92,6 +93,7 @@
             <div class="modal-title-group">
                 <h2>Pedido #{{ selectedOrder()!.id }}</h2>
                 <span class="table-badge-large">Mesa {{ selectedOrder()!.mesa }}</span>
+                <span class="table-badge-large">{{ selectedOrder()!.descEstado }}</span>
             </div>
             <button class="modal-close" (click)="closeOrderDetails()">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
@@ -143,11 +145,25 @@
                                       <path d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
                                     </svg>
                                 </button>
-                                <div class="item-icon-wrapper">
+                                @if(isEstadoAbertoItemPedido(item)){
+                                  <button class="btn-edit-item confirm" (click)="confirmarItemPedido(item); $event.stopPropagation()" title="Confirmar item">
+                                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+                                        <path d="M20 6L9 17L4 12"/>
+                                      </svg>
+                                  </button>
+                                }
+                                @else if(isEstadoConfirmadoItemPedido(item)){
+                                  <button class="btn-edit-item confirm" (click)="encerrarItemPedido(item); $event.stopPropagation()" title="Entregue">
+                                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+                                        <path d="M20 6L9 17L4 12"/>
+                                      </svg>
+                                  </button>
+                                }
+                                <!-- <div class="item-icon-wrapper">
                                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
                                       <path d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
                                     </svg>
-                                </div>
+                                </div> -->
                                 <span class="item-name item-text">{{ item.nomeItem }}</span>
                             </div>
                             <div class="item-info">
@@ -161,10 +177,17 @@
             </div>
 
             @if (selectedOrder()!.observacao) {
-            <div class="observation-box">
-                <span class="obs-label">Observação:</span>
-                <p>{{ selectedOrder()!.observacao }}</p>
-            </div>
+              @if(showObservacao()){
+                <div class="observation-box" (click)="showObservacao.set(false)" title="clique para ocultar a observação">
+                    <span class="obs-label">Observação:</span>
+                    <p>{{ selectedOrder()!.observacao }}</p>
+                </div>
+              }
+              @else{
+                <div class="observation-box-mini" (click)="showObservacao.set(true)" title="clique para expandir a observação">
+                    <span class="obs-label">Olhar Observação</span>
+                </div>
+              }
             }
 
             <div class="summary-box">
@@ -182,6 +205,11 @@
                     <span>Total</span>
                     <span>R$ {{ getTotalValue() }}</span>
                 </div>
+            </div>
+
+            <div class="estado-actions">
+              @if(temItemConfirmadoOuEntregue()){ <button class="btn btn-primary" (click)="askAlterarEstadoPedido(2)">Encerrar</button> }
+              @else { <button class="btn btn-primary cancel" (click)="askAlterarEstadoPedido(3)">Cancelar Pedido</button> }
             </div>
         </div>
     </div>
@@ -204,10 +232,7 @@
             @if (itemMediaList().length === 0) {
             <div class="empty-media">
                 <svg width="48" height="48" viewBox="0 0 24 24" fill="none">
-                    <path
-                        d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
-                        stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"
-                        opacity="0.3" />
+                    <path d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" opacity="0.3" />
                 </svg>
                 <p>Nenhuma imagem disponível para este item.</p>
             </div>
@@ -323,18 +348,22 @@
 
 
 <!-- Confirm Delete -->
-@if (confirmDeleteId() !== null) {
-<div class="modal-overlay" id="delete-confirm-overlay" (click)="cancelDelete()">
+@if (showModalConfirm()) {
+<div class="modal-overlay" id="delete-confirm-overlay" (click)="cancelModalConfirm()">
     <div class="modal-box modal-sm" (click)="$event.stopPropagation()">
         <div class="modal-header">
-            <h2>Confirmar Exclusão</h2>
+            <h2>Confirmar {{ titleModalConfirm() }}</h2>
         </div>
         <div class="modal-body">
-            <p class="delete-warning">Tem certeza que deseja excluir esta item do pedido? Está ação não pode ser desfeita.</p>
+            <p class="delete-warning">{{ textModalConfirm() }}</p>
         </div>
         <div class="modal-footer">
-            <button class="btn btn-ghost" (click)="cancelDelete()" id="cancel-delete-btn">Cancelar</button>
-            <button class="btn btn-danger" (click)="confirmDelete()" id="confirm-delete-btn">Excluir</button>
+            <button class="btn btn-ghost" (click)="cancelModalConfirm()" id="cancel-delete-btn">Cancelar</button>
+
+            @if(actionModalConfirm() === 1){ <button class="btn btn-primary" (click)="confirmDelete()" id="confirm-delete-btn">Excluir</button> }
+            <!-- @if(actionModalConfirm() === 2){ <button class="btn btn-primary" (click)="encerrarPedido()" id="confirm-delete-btn">Retomar</button> } -->
+            @if(actionModalConfirm() === 3){ <button class="btn btn-primary" (click)="encerrarPedido()" id="confirm-delete-btn">Encerrar</button> }
+            @if(actionModalConfirm() === 4){ <button class="btn btn-primary" (click)="cancelarPedido()" id="confirm-delete-btn">Cancelar</button> }
         </div>
     </div>
 </div>

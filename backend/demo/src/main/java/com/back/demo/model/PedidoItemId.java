@@ -15,6 +15,7 @@ public class PedidoItemId implements Serializable {
 
     private Long idPedido;
     private Long idItem;
+    private Long seq;
 
     @Override
     public boolean equals(Object o) {
@@ -23,11 +24,13 @@ public class PedidoItemId implements Serializable {
         if (!(o instanceof PedidoItemId))
             return false;
         PedidoItemId that = (PedidoItemId) o;
-        return Objects.equals(idPedido, that.idPedido) && Objects.equals(idItem, that.idItem);
+        return Objects.equals(idPedido, that.idPedido) && 
+               Objects.equals(idItem, that.idItem) &&
+               Objects.equals(seq, that.seq);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(idPedido, idItem);
+        return Objects.hash(idPedido, idItem, seq);
     }
 }

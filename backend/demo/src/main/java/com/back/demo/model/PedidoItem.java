@@ -39,6 +39,9 @@ public class PedidoItem {
     @Column(name = "quantidade")
     private Integer quantidade;
 
+    @Column(name = "estado")
+    private Integer estado;
+
     @Column(name = "criado_em")
     private LocalDate criadoEm;
 
