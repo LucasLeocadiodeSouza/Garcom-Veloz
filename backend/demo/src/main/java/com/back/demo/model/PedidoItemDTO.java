@@ -14,5 +14,7 @@ public class PedidoItemDTO {
     private Long       idPedido;
     private Long       idItem;
     private String     nomeItem;
+    private String     descricaoItem;
+    private Integer    quantidade;
     private BigDecimal valorItem;
 }

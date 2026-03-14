@@ -10,3 +10,5 @@
     background: var(--surface-bg);
     transition: margin-left 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 }
+
+.z-10000 {z-index: 10000;}

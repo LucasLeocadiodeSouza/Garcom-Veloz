@@ -36,6 +36,9 @@ public class PedidoItem {
     @JoinColumn(name = "id_item", insertable = false, updatable = false)
     private Item item;
 
+    @Column(name = "quantidade")
+    private Integer quantidade;
+
     @Column(name = "criado_em")
     private LocalDate criadoEm;
 

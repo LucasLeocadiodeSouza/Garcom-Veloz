@@ -2,9 +2,8 @@ package com.back.demo.repository;
 
 import com.back.demo.model.PedidoItem;
 import com.back.demo.model.PedidoItemId;
-
+import java.math.BigDecimal;
 import java.util.List;
-
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -18,6 +17,9 @@ public interface PedidoItemRepository extends JpaRepository<PedidoItem, PedidoIt
 
     @Query("SELECT pi FROM PedidoItem pi WHERE pi.id.idPedido = :idPedido")
     List<PedidoItem> findAllItensByPedido(@Param("idPedido") Long idPedido);
+
+    @Query("SELECT SUM((pi.item.valor * pi.quantidade) - pi.item.desconto) FROM PedidoItem pi WHERE pi.id.idPedido = :idPedido")
+    BigDecimal getValueOrder(@Param("idPedido") Long idPedido);
 
     // List<PedidoItem> findByIdPedido(Long idPedido);
 

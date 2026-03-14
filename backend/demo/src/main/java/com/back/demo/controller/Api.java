@@ -200,7 +200,7 @@ public class Api {
     }
 
     @GetMapping("/getListPedidosItem")
-    private List<PedidoItemDTO> getListPedidosItem(@RequestParam(name = "idPedido", required = false) Long idPedido) {
+    private List<PedidoItemDTO> getListPedidosItem(@RequestParam(name = "idPedido", required = true) Long idPedido) {
         return pedidoSvc.getListPedidosItemDTO(idPedido);
     }
 
@@ -220,15 +220,45 @@ public class Api {
     }
 
     @PostMapping("/criarAlterarItemPedido")
-    private ResponseEntity<?> criarAlterarItemPedido(@RequestParam(name = "idPedido", required = true) Long idPedido,
-                                                     @RequestParam(name = "IdItem", required = true)   Long IdItem){
-        pedidoSvc.vinculaItemPedido(3L, 
-                                    IdItem, 
-                                    "LUCASSZ");
+    private ResponseEntity<?> criarAlterarItemPedido(@RequestParam(name = "idPedido", required = true)   Long idPedido,
+                                                     @RequestParam(name = "idItem", required = true)     Long idItem,
+                                                     @RequestParam(name = "quantidade", required = true) Integer quantidade){
+        pedidoSvc.criarAlterarItemPedido(idPedido, 
+                                        idItem,
+                                        quantidade,
+                                        "LUCASSZ");
         
         return ResponseEntity.ok(Map.of(
             "status", "success",
             "message", "Item do Pedido Criado/Alterado com sucesso"
+        ));
+    }
+
+    @PostMapping("/vinculaItemPedido")
+    private ResponseEntity<?> vinculaItemPedido(@RequestParam(name = "idPedido", required = true)   Long idPedido,
+                                                     @RequestParam(name = "idItem", required = true)     Long idItem,
+                                                     @RequestParam(name = "quantidade", required = true) Integer quantidade){
+        pedidoSvc.vinculaItemPedido(idPedido, 
+                                    idItem,
+                                    quantidade,
+                                    "LUCASSZ");
+        
+        return ResponseEntity.ok(Map.of(
+            "status", "success",
+            "message", "Item do Pedido Vinculado com sucesso"
+        ));
+    }
+
+    @PostMapping("/excluirItemPedido")
+    private ResponseEntity<?> excluirItemPedido(@RequestParam(name = "idPedido", required = true)   Long idPedido,
+                                                @RequestParam(name = "idItem", required = true)     Long idItem){
+        pedidoSvc.excluiItemPedido(idPedido, 
+                                   idItem,
+                                   "LUCASSZ");
+        
+        return ResponseEntity.ok(Map.of(
+            "status", "success",
+            "message", "Item do Pedido excluido com sucesso"
         ));
     }
 }
