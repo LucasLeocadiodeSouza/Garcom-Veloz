@@ -15,9 +15,10 @@ interface NavItem {
   styleUrl: './sidebar.css'
 })
 export class Sidebar {
-  collapsed = signal(false);
+  collapsed          = signal(false);
+  mobileOpen         = signal(false);
   private platformId = inject(PLATFORM_ID);
-  private sanitizer = inject(DomSanitizer);
+  private sanitizer  = inject(DomSanitizer);
 
   mainNav: NavItem[];
   adminNav: NavItem[];
@@ -73,7 +74,17 @@ export class Sidebar {
   }
 
   toggleCollapse() {
-    this.collapsed.update(v => !v);
+    if (isPlatformBrowser(this.platformId) && window.innerWidth <= 768) {
+      this.mobileOpen.update(v => !v);
+    } else {
+      this.collapsed.update(v => !v);
+    }
+  }
+
+  closeMobileMenu() {
+    if (this.mobileOpen()) {
+      this.mobileOpen.set(false);
+    }
   }
 
   isActive(route: string): boolean {

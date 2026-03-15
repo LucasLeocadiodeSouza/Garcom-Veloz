@@ -12,3 +12,10 @@
 }
 
 .z-10000 {z-index: 10000;}
+
+@media (max-width: 768px) {
+    .main-content {
+        margin-left: 0;
+        margin-top: 72px; /* Set room for topbar on mobile */
+    }
+}

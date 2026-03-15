@@ -48,14 +48,18 @@
 
             <!-- Periodo -->
             <div class="filter-period-wrap">
+              <div class="filter-period-1">
                 <svg class="filter-icon" width="16" height="16" viewBox="0 0 24 24" fill="none">
                     <rect x="3" y="4" width="18" height="18" rx="2" stroke="currentColor" stroke-width="2"/>
                     <path d="M16 2v4M8 2v4M3 10h18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
                 </svg>
                 <span class="filter-period-label">De</span>
                 <input class="filter-date-input" type="date" [ngModel]="filterDateFrom()" (ngModelChange)="filterDateFrom.set($event); loadOrders()" />
+              </div>
+              <div class="filter-period-2">
                 <span class="filter-period-label">até</span>
                 <input class="filter-date-input" type="date" [ngModel]="filterDateTo()" (ngModelChange)="filterDateTo.set($event); loadOrders()" />
+              </div>
             </div>
 
             <div class="filter-results">
@@ -173,10 +177,10 @@
                 <div class="items-scroll-wrapper" [class.height-grid]="selectedOrder()!.observacao">
                     <ul class="detailed-items-list">
                         @for (item of selectedOrder()!.itens; track item.idItem) {
-                        <li class="detailed-item" 
+                        <li class="detailed-item"
                             [class.item-state-open]="item.estado === 1"
                             [class.item-state-confirmed]="item.estado === 2"
-                            [class.item-state-delivered]="item.estado === 3" 
+                            [class.item-state-delivered]="item.estado === 3"
                             (click)="openMediaModal(item)" title="Clique para ver imagens">
 
                             <div class="item-info line-left-part">
@@ -227,17 +231,17 @@
             </div>
 
             @if (selectedOrder()!.observacao) {
-            @if(showObservacao()){
-            <div class="observation-box" (click)="showObservacao.set(false)" title="clique para ocultar a observação">
-                <span class="obs-label">Observação:</span>
-                <p>{{ selectedOrder()!.observacao }}</p>
-            </div>
-            }
-            @else{
-            <div class="observation-box-mini" (click)="showObservacao.set(true)" title="clique para expandir a observação">
-                <span class="obs-label">Olhar Observação</span>
-            </div>
-            }
+              @if(showObservacao()){
+              <div class="observation-box" (click)="showObservacao.set(false)" title="clique para ocultar a observação">
+                  <span class="obs-label">Observação:</span>
+                  <p>{{ selectedOrder()!.observacao }}</p>
+              </div>
+              }
+              @else{
+              <div class="observation-box-mini" (click)="showObservacao.set(true)" title="clique para expandir a observação">
+                  <span class="obs-label">Olhar Observação</span>
+              </div>
+              }
             }
 
             <div class="summary-box">
