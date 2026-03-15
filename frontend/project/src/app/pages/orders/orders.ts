@@ -244,6 +244,11 @@ export class Orders implements OnInit {
   }
 
   cancelarPedido(){
+    if(this.selectedOrder()!.estado !== 1){
+      this.alert.show('Cancelamento de pedido somente é possiveis quando está em estado ABERTO.');
+      return;
+    }
+
     this.request.executeRequestPOST('api/alterarEstadoPedido', null, { idPedido: this.selectedOrder()!.id, estado: 0 }).subscribe({
       next: () => {
         this.loadOrders();
@@ -257,7 +262,12 @@ export class Orders implements OnInit {
     });
   }
   encerrarPedido(){
-    this.request.executeRequestPOST('api/alterarEstadoPedido', null, { idPedido: this.selectedOrder()!.id, estado: 3 }).subscribe({
+    if(this.selectedOrder()!.estado !== 1){
+      this.alert.show('Encerramento de pedido somente é possivel quando está em estado ABERTO.');
+      return;
+    }
+
+    this.request.executeRequestPOST('api/alterarEstadoPedido', null, { idPedido: this.selectedOrder()!.id, estado: 2 }).subscribe({
       next: () => {
         this.loadOrders();
         this.cancelModalConfirm();
@@ -285,6 +295,11 @@ export class Orders implements OnInit {
   }
 
   incluirItemNoPedido() {
+    if(this.selectedOrder()!.estado !== 1){
+      this.alert.show('Somente é possivel incluir um novo item no pedido quando o pedido está em estado ABERTO.');
+      return;
+    }
+
     this.request.executeRequestPOST('api/vinculaItemPedido', null, { idPedido: this.selectedOrder()!.id, idItem: this.formIdItem, seq: this.formSeq, quantidade: this.formQuantity }).subscribe({
       next: (res: any) => {
         this.closeItensModal();
@@ -316,6 +331,11 @@ export class Orders implements OnInit {
   }
 
   criarAlterarItemPedido() {
+    if(this.selectedOrder()!.estado !== 1){
+      this.alert.show('Somente é possivel alterar um item no pedido quando o pedido está em estado ABERTO.');
+      return;
+    }
+
     this.request.executeRequestPOST('api/criarAlterarItemPedido', null, { idPedido: this.selectedOrder()!.id, idItem: this.formIdItem, seq: this.formSeq, quantidade: this.formQuantity }).subscribe({
       next: (res: any) => {
         this.closeItensModal();
@@ -361,8 +381,13 @@ export class Orders implements OnInit {
 
 
   askDelete(dto: PedidoItemDTO) {
-    if(dto.estado !== 1){
-      this.alert.show('Não é possivel deletar um item que já está entregue ou confirmado. Por favor, tente novamente.');
+    if(this.selectedOrder()!.estado !== 1){
+      this.alert.show('Somente é possivel excluir um item no pedido quando o pedido está em estado ABERTO.');
+      return;
+    }
+
+    if(dto.estado === 3){
+      this.alert.show('Não é possivel deletar um item que já está entregue. Por favor, tente novamente.');
       return;
     }
 
@@ -386,13 +411,18 @@ export class Orders implements OnInit {
         },
         error: (error) => {
           console.error('Erro:', error);
-          this.alert.show('Erro ao excluir categoria. Por favor, tente novamente.');
+          this.alert.show('Erro ao excluir item do Pedido. Por favor, tente novamente.');
         }
       });
     }
   }
 
   confirmarItemPedido(dto: PedidoItemDTO) {
+    if(this.selectedOrder()!.estado !== 1){
+      this.alert.show('Somente é possivel confirmar itens quando o pedido está em estado ABERTO.');
+      return;
+    }
+
     this.request.executeRequestPOST('api/alterarEstadoItemPedido', null, { idPedido: this.selectedOrder()!.id, idItem: dto.idItem, seq: dto.seq, estado: 2 }).subscribe({
       next: () => {
         this.getListPedidosItem();
@@ -405,6 +435,11 @@ export class Orders implements OnInit {
     });
   }
   encerrarItemPedido(dto: PedidoItemDTO) {
+    if(this.selectedOrder()!.estado !== 1){
+      this.alert.show('Somente é possivel encerrar itens quando o pedido está em estado ABERTO.');
+      return;
+    }
+
     this.request.executeRequestPOST('api/alterarEstadoItemPedido', null, { idPedido: this.selectedOrder()!.id, idItem: dto.idItem, seq: dto.seq, estado: 3 }).subscribe({
       next: () => {
         this.getListPedidosItem();

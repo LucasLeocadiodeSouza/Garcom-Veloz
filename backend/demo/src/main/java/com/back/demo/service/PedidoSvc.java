@@ -40,7 +40,7 @@ public class PedidoSvc {
     @Autowired
     private EmpresaRepository empresaRepo;
 
-    public String getDescEstadoPedido(Integer estado){
+    private String getDescEstadoPedido(Integer estado){
         switch (estado) {
             case 0: return "Cancelada";
             case 1: return "Aberto";
@@ -50,9 +50,8 @@ public class PedidoSvc {
         return "";
     }
 
-    public Integer getCodEstadoPedidoAberto(){
-        return 1;
-    }
+    private Integer getCodEstadoPedidoAberto(){ return 1; }
+    private Integer getCodEstadoPedidoEncerrado(){ return 2; }
 
     public String getDescEstadoItem(Integer estado){
         switch (estado) {
@@ -64,9 +63,9 @@ public class PedidoSvc {
         return "";
     }
 
-    public Integer getCodEstadoItemAberto(){
-        return 1;
-    }
+    private Integer getCodEstadoItemAberto(){ return 1; }
+    private Integer getCodEstadoItemAguardando(){ return 2; }
+    private Integer getCodEstadoItemEntregue(){ return 3; }
 
     public List<PedidoItem> getItensPedidos(Long pedidoId) {
         return pedidoItemRepo.findAllItensByPedido(pedidoId);
@@ -197,11 +196,22 @@ public class PedidoSvc {
         Pedido pedido = pedidoRepo.findPedidoById(pedidoId);
         if (pedido == null) throw new PedidoNotFoundException("Não encontrado o Pedido");
 
+        if(estado == getCodEstadoPedidoEncerrado()){
+          List<PedidoItem> itens = pedidoItemRepo.findAllItensByPedido(pedidoId);
+          for (PedidoItem pedidoItem : itens) {
+            if(pedidoItem.getEstado() == getCodEstadoItemAguardando()) throw new PedidoItemException("Não é possível encerrar um Pedido sem que todos seus itens estejam finalizados!");
+          }
+        }
+
         pedido.setEstado(estado);
 
         pedidoRepo.save(pedido);
     }
 
+    // CRIAR, ALTERAR e EXCLUIR os itens do pedido
+
+
+    //Usado para vincular e atualizar a quantidade de um item no pedidos
     @Transactional
     public void vinculaItemPedido(Long    pedidoId,
                                   Long    itemId,
@@ -215,6 +225,7 @@ public class PedidoSvc {
 
         Pedido pedido = pedidoRepo.findPedidoById(pedidoId);
         if (pedido == null) throw new PedidoNotFoundException("Não encontrado o Pedido");
+        if(pedido.getEstado() != getCodEstadoPedidoAberto()) throw new PedidoException("Somente é possivel Criar/Alterar pedidos que estão com status de ABERTO");
 
         Item item = itemRepo.findItemById(itemId);
         if (item == null) throw new ItemNotFoundException("Não encontrado o Item");
@@ -240,6 +251,8 @@ public class PedidoSvc {
         pedidoItemRepo.save(vinculoPedidoItem);
     }
 
+
+    // Usado nas alteracoes dos pedidos e para criar um novo vinculo
     @Transactional
     public void criarAlterarItemPedido(Long    pedidoId,
                                        Long    itemId,
@@ -252,28 +265,31 @@ public class PedidoSvc {
 
         Pedido pedido = pedidoRepo.findPedidoById(pedidoId);
         if (pedido == null) throw new PedidoNotFoundException("Não encontrado o Pedido");
+        if(pedido.getEstado() != getCodEstadoPedidoAberto()) throw new PedidoException("Somente é possivel Criar/Alterar pedidos que estão com status de ABERTO");
 
         Item item = itemRepo.findItemById(itemId);
         if (item == null) throw new ItemNotFoundException("Não encontrado o Item");
 
         PedidoItem vinculoPedidoItem = pedidoItemRepo.findPedidoItemById(pedidoId, itemId, seq);
-        if (vinculoPedidoItem == null) {
-            Long newSeq = pedidoItemRepo.findMaxSeqByItemAndPedido(pedidoId, itemId);
-            if (newSeq == null) newSeq = 0L;
+        if (vinculoPedidoItem != null) {
+          if(vinculoPedidoItem.getEstado() == 3) throw new PedidoItemException("Não é possível alterar um Item do Pedido que já tenha sido entregue!");
 
-            PedidoItemId id_vinculoPedidoItem = new PedidoItemId();
-            id_vinculoPedidoItem.setIdItem(itemId);
-            id_vinculoPedidoItem.setIdPedido(pedidoId);
-            id_vinculoPedidoItem.setSeq(newSeq + 1L);
+        }else{
+          Long newSeq = pedidoItemRepo.findMaxSeqByItemAndPedido(pedidoId, itemId);
+          if (newSeq == null) newSeq = 0L;
 
-            vinculoPedidoItem = new PedidoItem();
-            vinculoPedidoItem.setId(id_vinculoPedidoItem);
-            vinculoPedidoItem.setItem(item);
-            vinculoPedidoItem.setPedido(pedido);
-            vinculoPedidoItem.setEstado(getCodEstadoItemAberto());
-            vinculoPedidoItem.setIdeusu(ideusu);
-            vinculoPedidoItem.setCriadoEm(LocalDate.now());
+          PedidoItemId id_vinculoPedidoItem = new PedidoItemId();
+          id_vinculoPedidoItem.setIdItem(itemId);
+          id_vinculoPedidoItem.setIdPedido(pedidoId);
+          id_vinculoPedidoItem.setSeq(newSeq + 1L);
 
+          vinculoPedidoItem = new PedidoItem();
+          vinculoPedidoItem.setId(id_vinculoPedidoItem);
+          vinculoPedidoItem.setItem(item);
+          vinculoPedidoItem.setPedido(pedido);
+          vinculoPedidoItem.setEstado(getCodEstadoItemAberto());
+          vinculoPedidoItem.setIdeusu(ideusu);
+          vinculoPedidoItem.setCriadoEm(LocalDate.now());
         }
 
         vinculoPedidoItem.setQuantidade(quantidade);
@@ -292,6 +308,7 @@ public class PedidoSvc {
 
         Pedido pedido = pedidoRepo.findPedidoById(pedidoId);
         if (pedido == null) throw new PedidoNotFoundException("Não encontrado o Pedido");
+        if(pedido.getEstado() != getCodEstadoPedidoAberto()) throw new PedidoException("Somente é possivel excluir pedidos que estão com status de ABERTO");
 
         Item item = itemRepo.findItemById(itemId);
         if (item == null) throw new ItemNotFoundException("Não encontrado o Item");
@@ -299,7 +316,7 @@ public class PedidoSvc {
         PedidoItem vinculoPedidoItem = pedidoItemRepo.findPedidoItemById(pedidoId, itemId, seq);
         if (vinculoPedidoItem == null) return;
 
-        if(vinculoPedidoItem.getEstado() != getCodEstadoItemAberto()) throw new PedidoItemException("Não é possível deletar um Pedido que não estajá em Aberto!");
+        if(vinculoPedidoItem.getEstado() != getCodEstadoItemAberto() && vinculoPedidoItem.getEstado() != getCodEstadoItemAguardando()) throw new PedidoItemException("Não é possível deletar um Pedido que não tenha o estado em Aberto ou Aguardando!");
 
         pedidoItemRepo.delete(vinculoPedidoItem);
     }
@@ -317,7 +334,8 @@ public class PedidoSvc {
         Pedido pedido = pedidoRepo.findPedidoById(pedidoId);
         if (pedido == null) throw new PedidoNotFoundException("Não encontrado o Pedido");
 
-        //if(pedido.getEstado() == 2) throw new PedidoException("Não é possivel alterar a situação de um item para um pedido que já foi finalizado");
+        if(pedido.getEstado() == 2) throw new PedidoException("Não é possivel alterar a situação de um item para um pedido que já foi finalizado");
+        if(pedido.getEstado() == 0) throw new PedidoException("Não é possivel alterar a situação de um item de um pedido que está cancelado");
 
         Item item = itemRepo.findItemById(itemId);
         if (item == null) throw new ItemNotFoundException("Não encontrado o Item");

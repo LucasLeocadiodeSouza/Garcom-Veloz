@@ -258,8 +258,8 @@
             </div>
 
             <div class="estado-actions">
-                @if(temItemConfirmadoOuEntregue()){ <button class="btn btn-primary" (click)="askAlterarEstadoPedido(2)">Encerrar</button> }
-                @else { <button class="btn btn-primary cancel" (click)="askAlterarEstadoPedido(3)">Cancelar Pedido</button> }
+                @if(temItemConfirmadoOuEntregue() && selectedOrder()!.estado !== 2){ <button class="btn btn-primary" (click)="askAlterarEstadoPedido(2)">Encerrar</button> }
+                @else if(!temItemConfirmadoOuEntregue() && selectedOrder()!.estado !== 0){ <button class="btn btn-primary cancel" (click)="askAlterarEstadoPedido(3)">Cancelar Pedido</button> }
             </div>
         </div>
     </div>
