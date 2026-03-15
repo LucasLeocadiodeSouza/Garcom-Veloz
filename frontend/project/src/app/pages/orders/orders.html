@@ -24,7 +24,47 @@
             </div>
         </div>
 
-        @if (orders.length === 0) {
+        <div class="filter-bar">
+            <!-- Busca por mesa e pedido -->
+            <div class="filter-search-wrap">
+                <svg class="filter-icon" width="16" height="16" viewBox="0 0 24 24" fill="none">
+                    <path d="M21 21l-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0z" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                </svg>
+                <input class="filter-input" type="text" placeholder="Buscar por pedido ou mesa..." [ngModel]="filterSearch()" (ngModelChange)="filterSearch.set($event)" />
+            </div>
+
+            <!-- Status -->
+            <div class="filter-status-wrap">
+                <svg class="filter-icon" width="16" height="16" viewBox="0 0 24 24" fill="none">
+                    <path d="M3 4h18M7 8h10M11 12h2M9 16h6" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                </svg>
+                <select class="filter-select" [ngModel]="filterStatus()" (ngModelChange)="filterStatus.set($event)">
+                    <option value="all">Todos os status</option>
+                    <option value="1">Em aberto</option>
+                    <option value="2">Encerrado</option>
+                    <option value="0">Cancelado</option>
+                </select>
+            </div>
+
+            <!-- Periodo -->
+            <div class="filter-period-wrap">
+                <svg class="filter-icon" width="16" height="16" viewBox="0 0 24 24" fill="none">
+                    <rect x="3" y="4" width="18" height="18" rx="2" stroke="currentColor" stroke-width="2"/>
+                    <path d="M16 2v4M8 2v4M3 10h18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                </svg>
+                <span class="filter-period-label">De</span>
+                <input class="filter-date-input" type="date" [ngModel]="filterDateFrom()" (ngModelChange)="filterDateFrom.set($event); loadOrders()" />
+                <span class="filter-period-label">até</span>
+                <input class="filter-date-input" type="date" [ngModel]="filterDateTo()" (ngModelChange)="filterDateTo.set($event); loadOrders()" />
+            </div>
+
+            <div class="filter-results">
+                <span>{{ filteredOrders.length }} pedido(s)</span>
+            </div>
+        </div>
+
+
+        @if (filteredOrders.length === 0) {
         <div class="empty-state">
             <div class="empty-icon">📝</div>
             <p>Nenhum pedido encontrado</p>
@@ -32,7 +72,7 @@
         </div>
         } @else {
         <div class="orders-grid">
-            @for (order of orders; track order.id) {
+            @for (order of filteredOrders; track order.id) {
             <div class="order-card {{ order.colorTheme }}" (click)="openOrderDetails(order)">
               <div class="order-header">
                   <div class="modal-title-group">
@@ -133,41 +173,51 @@
                 <div class="items-scroll-wrapper" [class.height-grid]="selectedOrder()!.observacao">
                     <ul class="detailed-items-list">
                         @for (item of selectedOrder()!.itens; track item.idItem) {
-                        <li class="detailed-item" (click)="openMediaModal(item)" title="Clique para ver imagens">
+                        <li class="detailed-item" 
+                            [class.item-state-open]="item.estado === 1"
+                            [class.item-state-confirmed]="item.estado === 2"
+                            [class.item-state-delivered]="item.estado === 3" 
+                            (click)="openMediaModal(item)" title="Clique para ver imagens">
+
                             <div class="item-info line-left-part">
-                                <button class="btn-edit-item delete" (click)="askDelete(item); $event.stopPropagation()" title="Excluir item">
+                                <button class="btn-edit-item delete" (click)="askDelete(item); $event.stopPropagation()"
+                                    title="Excluir item">
                                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
                                         <path d="M3 6h18M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6M10 11v6M14 11v6M9 6V4h6v2" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
                                     </svg>
                                 </button>
-                                <button class="btn-edit-item" (click)="editItem(item); $event.stopPropagation()" title="Alterar item">
+                                <button class="btn-edit-item" (click)="editItem(item); $event.stopPropagation()"
+                                    title="Alterar item">
                                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
-                                      <path d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                                        <path d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
                                     </svg>
                                 </button>
                                 @if(isEstadoAbertoItemPedido(item)){
-                                  <button class="btn-edit-item confirm" (click)="confirmarItemPedido(item); $event.stopPropagation()" title="Confirmar item">
-                                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
-                                        <path d="M20 6L9 17L4 12"/>
-                                      </svg>
-                                  </button>
+                                <button class="btn-edit-item btn-state btn-state-open" (click)="confirmarItemPedido(item); $event.stopPropagation()" title="Confirmar preparo">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+                                        <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2" />
+                                        <path d="M12 7v5l3 3" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                                    </svg>
+                                </button>
                                 }
                                 @else if(isEstadoConfirmadoItemPedido(item)){
-                                  <button class="btn-edit-item confirm" (click)="encerrarItemPedido(item); $event.stopPropagation()" title="Entregue">
-                                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
-                                        <path d="M20 6L9 17L4 12"/>
-                                      </svg>
-                                  </button>
-                                }
-                                <!-- <div class="item-icon-wrapper">
-                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
-                                      <path d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                                <button class="btn-edit-item btn-state btn-state-confirmed" (click)="encerrarItemPedido(item); $event.stopPropagation()" title="Marcar como entregue">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+                                        <path d="M5 12h14M12 5l7 7-7 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
                                     </svg>
-                                </div> -->
+                                </button>
+                                }
+                                @else {
+                                <span class="btn-edit-item btn-state btn-state-delivered" title="Entregue">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+                                        <path d="M20 6L9 17l-5-5" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" />
+                                    </svg>
+                                </span>
+                                }
                                 <span class="item-name item-text">{{ item.nomeItem }}</span>
                             </div>
                             <div class="item-info">
-                                <span class="item-name">{{ item.quantidade }}x</span>
+                                <span class="item-qty">{{ item.quantidade }}x</span>
                                 <span class="item-price">R$ {{ item.valorItem }}</span>
                             </div>
                         </li>
@@ -177,17 +227,17 @@
             </div>
 
             @if (selectedOrder()!.observacao) {
-              @if(showObservacao()){
-                <div class="observation-box" (click)="showObservacao.set(false)" title="clique para ocultar a observação">
-                    <span class="obs-label">Observação:</span>
-                    <p>{{ selectedOrder()!.observacao }}</p>
-                </div>
-              }
-              @else{
-                <div class="observation-box-mini" (click)="showObservacao.set(true)" title="clique para expandir a observação">
-                    <span class="obs-label">Olhar Observação</span>
-                </div>
-              }
+            @if(showObservacao()){
+            <div class="observation-box" (click)="showObservacao.set(false)" title="clique para ocultar a observação">
+                <span class="obs-label">Observação:</span>
+                <p>{{ selectedOrder()!.observacao }}</p>
+            </div>
+            }
+            @else{
+            <div class="observation-box-mini" (click)="showObservacao.set(true)" title="clique para expandir a observação">
+                <span class="obs-label">Olhar Observação</span>
+            </div>
+            }
             }
 
             <div class="summary-box">
@@ -208,8 +258,8 @@
             </div>
 
             <div class="estado-actions">
-              @if(temItemConfirmadoOuEntregue()){ <button class="btn btn-primary" (click)="askAlterarEstadoPedido(2)">Encerrar</button> }
-              @else { <button class="btn btn-primary cancel" (click)="askAlterarEstadoPedido(3)">Cancelar Pedido</button> }
+                @if(temItemConfirmadoOuEntregue()){ <button class="btn btn-primary" (click)="askAlterarEstadoPedido(2)">Encerrar</button> }
+                @else { <button class="btn btn-primary cancel" (click)="askAlterarEstadoPedido(3)">Cancelar Pedido</button> }
             </div>
         </div>
     </div>

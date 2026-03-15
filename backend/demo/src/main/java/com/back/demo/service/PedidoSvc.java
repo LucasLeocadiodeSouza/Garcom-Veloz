@@ -40,7 +40,6 @@ public class PedidoSvc {
     @Autowired
     private EmpresaRepository empresaRepo;
 
-
     public String getDescEstadoPedido(Integer estado){
         switch (estado) {
             case 0: return "Cancelada";
@@ -73,33 +72,28 @@ public class PedidoSvc {
         return pedidoItemRepo.findAllItensByPedido(pedidoId);
     }
 
-    public List<Pedido> getListPedidos(Integer mesa, Integer estado){
+    public List<Pedido> getListPedidos(Integer mesa, Integer estado, LocalDate dataInicio, LocalDate dataFim){
+        List<Pedido> pedidos;
+        boolean temPeriodo = dataInicio != null && dataFim != null;
 
-        List<Pedido> pedidos = new ArrayList<>();
+        if (estado != null && estado != 0)  pedidos = temPeriodo ? pedidoRepo.findByEstadoAndPeriodo(estado, dataInicio, dataFim) : pedidoRepo.findByEstado(estado);
+        else  pedidos = temPeriodo ? pedidoRepo.findByPeriodo(dataInicio, dataFim) : pedidoRepo.findAll();
 
-        if(estado != null && estado != 0) pedidos = pedidoRepo.findByEstado(estado);
-        else pedidos = pedidoRepo.findAll();
-        
-        if(mesa != null && mesa != 0) {
+        if (mesa != null && mesa != 0) {
             List<Pedido> pedidosMesa = pedidoRepo.findByMesa(mesa);
-
-            for (Pedido pedidoMesa : pedidosMesa) {
-                if(!pedidos.contains(pedidoMesa)) pedidos.remove(pedidoMesa);
-            }
+            pedidos.retainAll(pedidosMesa);
         }
 
         return pedidos;
     }
 
-
-
-    public List<PedidoDTO> getListPedidosDTO(Integer mesa, Integer estado) {
-        List<Pedido> pedidos = getListPedidos(mesa, estado);
+    public List<PedidoDTO> getListPedidosDTO(Integer mesa, Integer estado, LocalDate dataInicio, LocalDate dataFim) {
+        List<Pedido> pedidos = getListPedidos(mesa, estado, dataInicio, dataFim);
         List<PedidoDTO> dtos = new ArrayList<>();
 
         for (Pedido p : pedidos) {
-            BigDecimal total             = pedidoItemRepo.getValueOrder(p.getId());
-            if(total == null) total      = BigDecimal.ZERO;
+            BigDecimal total = pedidoItemRepo.getValueOrder(p.getId());
+            if (total == null) total = BigDecimal.ZERO;
 
             List<PedidoItemDTO> itemDTOs = getListPedidosItemDTO(p.getId());
 
@@ -125,7 +119,7 @@ public class PedidoSvc {
     public List<PedidoItemDTO> getListPedidosItemDTO(Long idPedido) {
         Pedido pedido = pedidoRepo.findPedidoById(idPedido);
 
-        if(pedido == null) throw new PedidoNotFoundException("Não encontrado um pedido para o código informado");
+        if (pedido == null) throw new PedidoNotFoundException("Não encontrado um pedido para o código informado");
 
         BigDecimal total = BigDecimal.ZERO;
         List<PedidoItemDTO> itemDTOs = new ArrayList<>();
@@ -196,7 +190,7 @@ public class PedidoSvc {
     @Transactional
     public void alterarEstadoPedido(Long    pedidoId,
                                     Integer estado,
-                                    String  ideusu){
+                                    String  ideusu) {
 
         if (pedidoId == null || pedidoId == Long.valueOf(0)) throw new PedidoException("É preciso informar o número do pedido alterar o estado do item!");
 
@@ -208,14 +202,12 @@ public class PedidoSvc {
         pedidoRepo.save(pedido);
     }
 
-
     @Transactional
     public void vinculaItemPedido(Long    pedidoId,
                                   Long    itemId,
                                   Long    seq,
                                   Integer quantidade,
-                                  String  ideusu) {
-
+                                  String  ideusu){
         Boolean temItemAberto = false;
 
         if (pedidoId == null || pedidoId == Long.valueOf(0)) throw new PedidoException("É preciso informar o número do pedido para vincular ao item!");
@@ -231,8 +223,8 @@ public class PedidoSvc {
         PedidoItem vinculoPedidoItem = new PedidoItem();
 
         for (PedidoItem pedidoItem : vinculosPedidoItem) {
-            if(pedidoItem.getEstado() == getCodEstadoItemAberto()) {
-                temItemAberto     = true;
+            if (pedidoItem.getEstado() == getCodEstadoItemAberto()) {
+                temItemAberto = true;
                 vinculoPedidoItem = pedidoItem;
             }
         }
@@ -253,7 +245,7 @@ public class PedidoSvc {
                                        Long    itemId,
                                        Long    seq,
                                        Integer quantidade,
-                                       String  ideusu) {
+                                       String  ideusu){
 
         if (pedidoId == null || pedidoId == Long.valueOf(0)) throw new PedidoException("É preciso informar o número do pedido para vincular ao item!");
         if (itemId == null || itemId == Long.valueOf(0)) throw new PedidoException("É preciso informar o código do item para vincular ao pedido!");
@@ -265,15 +257,15 @@ public class PedidoSvc {
         if (item == null) throw new ItemNotFoundException("Não encontrado o Item");
 
         PedidoItem vinculoPedidoItem = pedidoItemRepo.findPedidoItemById(pedidoId, itemId, seq);
-        if (vinculoPedidoItem == null){
+        if (vinculoPedidoItem == null) {
             Long newSeq = pedidoItemRepo.findMaxSeqByItemAndPedido(pedidoId, itemId);
-            if(newSeq == null) newSeq = 0L;
+            if (newSeq == null) newSeq = 0L;
 
             PedidoItemId id_vinculoPedidoItem = new PedidoItemId();
             id_vinculoPedidoItem.setIdItem(itemId);
             id_vinculoPedidoItem.setIdPedido(pedidoId);
             id_vinculoPedidoItem.setSeq(newSeq + 1L);
-    
+
             vinculoPedidoItem = new PedidoItem();
             vinculoPedidoItem.setId(id_vinculoPedidoItem);
             vinculoPedidoItem.setItem(item);
@@ -281,9 +273,9 @@ public class PedidoSvc {
             vinculoPedidoItem.setEstado(getCodEstadoItemAberto());
             vinculoPedidoItem.setIdeusu(ideusu);
             vinculoPedidoItem.setCriadoEm(LocalDate.now());
-            
+
         }
-        
+
         vinculoPedidoItem.setQuantidade(quantidade);
 
         pedidoItemRepo.save(vinculoPedidoItem);
@@ -317,7 +309,7 @@ public class PedidoSvc {
                                         Long    itemId,
                                         Long    seq,
                                         Integer estado,
-                                        String  ideusu){
+                                        String  ideusu) {
 
         if (pedidoId == null || pedidoId == Long.valueOf(0)) throw new PedidoException("É preciso informar o número do pedido alterar o estado do item!");
         if (itemId == null || itemId == Long.valueOf(0)) throw new PedidoException("É preciso informar o código do item para alterar o estado do pedido!");

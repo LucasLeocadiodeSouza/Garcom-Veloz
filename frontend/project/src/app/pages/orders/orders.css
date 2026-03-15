@@ -762,3 +762,194 @@
     min-width: 100%;
     min-height: 40px;
 }
+
+/* ────────────────────────────────────────────────────────────
+   Filtro
+──────────────────────────────────────────────────────────── */
+.filter-bar {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+    padding: 14px 20px;
+    background: var(--gray-50);
+    border: 1px solid var(--gray-200);
+    border-radius: 16px;
+}
+
+.filter-search-wrap,
+.filter-status-wrap,
+.filter-period-wrap {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: #fff;
+    border: 1px solid var(--gray-200);
+    border-radius: 10px;
+    padding: 0 12px;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.filter-search-wrap:focus-within,
+.filter-status-wrap:focus-within,
+.filter-period-wrap:focus-within {
+    border-color: var(--blue-400);
+    box-shadow: 0 0 0 3px var(--blue-50);
+}
+
+.filter-date-input {
+    border: none;
+    outline: none;
+    background: transparent;
+    padding: 9px 0;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--gray-800);
+    font-family: inherit;
+    cursor: pointer;
+    transition: color 0.2s;
+}
+
+.filter-date-input:focus,
+.filter-date-input:hover {
+    color: var(--blue-600);
+}
+
+.filter-date-input::-webkit-calendar-picker-indicator {
+    cursor: pointer;
+    opacity: 0.5;
+    transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.filter-date-input::-webkit-calendar-picker-indicator:hover {
+    opacity: 1;
+    transform: scale(1.1);
+}
+
+.filter-period-label {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--gray-400);
+    text-transform: lowercase;
+    user-select: none;
+}
+
+.filter-icon {
+    color: var(--gray-400);
+    flex-shrink: 0;
+}
+
+.filter-input {
+    border: none;
+    outline: none;
+    background: transparent;
+    padding: 9px 0;
+    font-size: 14px;
+    color: var(--gray-800);
+    min-width: 220px;
+}
+
+.filter-input::placeholder {
+    color: var(--gray-400);
+}
+
+.filter-select {
+    border: none;
+    outline: none;
+    background: transparent;
+    padding: 9px 4px;
+    font-size: 14px;
+    color: var(--gray-800);
+    cursor: pointer;
+    min-width: 160px;
+}
+
+.filter-results {
+    margin-left: auto;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--gray-500);
+    white-space: nowrap;
+}
+
+/* ────────────────────────────────────────────────────────────
+  Linha dos estados
+──────────────────────────────────────────────────────────── */
+
+/* Em aberto — amber/warm */
+.item-state-open {
+    background: #fffbf0;
+    border-left: 4px solid #f59e0b !important;
+}
+
+.item-state-open:hover {
+    background: #fef3c7 !important;
+}
+
+/* Confirmado / aguardando entrega — blue */
+.item-state-confirmed {
+    background: #eff6ff;
+    border-left: 4px solid #3b82f6 !important;
+}
+
+.item-state-confirmed:hover {
+    background: #dbeafe !important;
+}
+
+/* Entregue — green */
+.item-state-delivered {
+    background: #f0fdf4;
+    border-left: 4px solid #22c55e !important;
+    opacity: 0.85;
+}
+
+.item-state-delivered:hover {
+    background: #dcfce7 !important;
+}
+
+/* State-specific action buttons */
+.btn-state {
+    flex-shrink: 0;
+}
+
+.btn-state-open {
+    color: #d97706 !important;
+    border-color: #fde68a !important;
+    background: #fef3c7 !important;
+}
+
+.btn-state-open:hover {
+    color: #92400e !important;
+    border-color: #f59e0b !important;
+    background: #fde68a !important;
+}
+
+.btn-state-confirmed {
+    color: #2563eb !important;
+    border-color: #bfdbfe !important;
+    background: #dbeafe !important;
+}
+
+.btn-state-confirmed:hover {
+    color: #1e40af !important;
+    border-color: #3b82f6 !important;
+    background: #bfdbfe !important;
+}
+
+.btn-state-delivered {
+    color:     #16a34a !important;
+    border-color: #bbf7d0 !important;
+    background: #dcfce7 !important;
+    cursor:      default;
+}
+
+/* quantity badge */
+.item-qty {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--gray-500);
+    background: var(--gray-100);
+    padding: 2px 7px;
+    border-radius: 6px;
+}
+

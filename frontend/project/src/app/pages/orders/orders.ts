@@ -33,7 +33,7 @@ export interface PedidoDTO {
 
 export interface ItemMedia {
   idItem: number;
-  url: string;
+  url:    string;
 }
 
 @Component({
@@ -48,6 +48,28 @@ export class Orders implements OnInit {
 
   orders: PedidoDTO[] = [];
 
+  filterSearch   = signal<string>('');
+  filterStatus   = signal<string>('all');
+  filterDateFrom = signal<string>(this.getDefaultDateFrom());
+  filterDateTo   = signal<string>(this.getDefaultDateTo());
+
+  private getDefaultDateTo(): string { return new Date().toISOString().slice(0, 10) }
+
+  private getDefaultDateFrom(): string { return new Date().toISOString().slice(0, 10) }
+
+
+
+  get filteredOrders(): PedidoDTO[] {
+    const search = this.filterSearch().toLowerCase().trim();
+    const status = this.filterStatus();
+
+    return this.orders.filter(o => {
+      const matchSearch = !search || o.id.toString().includes(search) || o.mesa.toString().includes(search);
+      const matchStatus = status === 'all' || o.estado.toString() === status;
+      return matchSearch && matchStatus;
+    });
+  }
+
   selectedOrder        = signal<PedidoDTO | null>(null);
   selectedItemForMedia = signal<PedidoItemDTO | null>(null);
   itemMediaList        = signal<any[]>([]);
@@ -56,16 +78,16 @@ export class Orders implements OnInit {
   showItensModal       = signal<boolean | null>(null);
   formsOrderModal      = signal<PedidoDTO | null>(null);
 
-  showObservacao       = signal<boolean | null>(null);
+  showObservacao = signal<boolean | null>(null);
 
-  isEditModal          = signal<boolean | null>(false);
+  isEditModal = signal<boolean | null>(false);
 
-  showModalConfirm     = signal<boolean | null>(null);
-  actionModalConfirm   = signal<number | null>(null);
-  titleModalConfirm    = signal<string | null>(null);
-  textModalConfirm     = signal<string | null>(null);
-  
-  confirmDeleteId      = signal<{idItem: number, seq: number } | null>(null);
+  showModalConfirm   = signal<boolean | null>(null);
+  actionModalConfirm = signal<number | null>(null);
+  titleModalConfirm  = signal<string | null>(null);
+  textModalConfirm   = signal<string | null>(null);
+
+  confirmDeleteId    = signal<{ idItem: number, seq: number } | null>(null);
 
   formIdItem     = 0;
   formSeq        = 0;
@@ -85,7 +107,11 @@ export class Orders implements OnInit {
   }
 
   loadOrders() {
-    this.request.executeRequestGET('api/getListPedidos', { estado: 1 }).subscribe({
+    const params: any = {
+      dataInicio: this.filterDateFrom(),
+      dataFim: this.filterDateTo()
+    };
+    this.request.executeRequestGET('api/getListPedidos', params).subscribe({
       next: (res: any) => {
         this.orders = res.map((order: PedidoDTO) => {
           order.colorTheme = this.getRandomTheme();
@@ -154,7 +180,7 @@ export class Orders implements OnInit {
     return timeArray as string;
   }
 
-  getSumValueItens() : number {
+  getSumValueItens(): number {
     var sum = 0;
     this.selectedOrder()?.itens.forEach(item => {
       sum = sum + (item.valorItem * item.quantidade);
@@ -172,15 +198,15 @@ export class Orders implements OnInit {
 
   closeCreateOrderModal() {
     this.showCreateOrderModal.set(false);
-    this.formIdItem     = 0;
-    this.formSeq        = 0;
-    this.formItem       = '';
-    this.formQuantity   = 0;
-    this.formDescItem   = '';
-    this.formEstoque    = 0;
-    this.formValor      = 0;
-    this.formMesa       = 0;
-    this.formGorgeta    = 0;
+    this.formIdItem = 0;
+    this.formSeq = 0;
+    this.formItem = '';
+    this.formQuantity = 0;
+    this.formDescItem = '';
+    this.formEstoque = 0;
+    this.formValor = 0;
+    this.formMesa = 0;
+    this.formGorgeta = 0;
     this.formObservacao = '';
   }
 
@@ -218,7 +244,7 @@ export class Orders implements OnInit {
   }
 
   cancelarPedido(){
-    this.request.executeRequestPOST('api/alterarEstadoPedido', null, {idPedido: this.selectedOrder()!.id, estado: 0}).subscribe({
+    this.request.executeRequestPOST('api/alterarEstadoPedido', null, { idPedido: this.selectedOrder()!.id, estado: 0 }).subscribe({
       next: () => {
         this.loadOrders();
         this.cancelModalConfirm();
@@ -231,7 +257,7 @@ export class Orders implements OnInit {
     });
   }
   encerrarPedido(){
-    this.request.executeRequestPOST('api/alterarEstadoPedido', null, {idPedido: this.selectedOrder()!.id, estado: 3}).subscribe({
+    this.request.executeRequestPOST('api/alterarEstadoPedido', null, { idPedido: this.selectedOrder()!.id, estado: 3 }).subscribe({
       next: () => {
         this.loadOrders();
         this.cancelModalConfirm();
@@ -275,12 +301,12 @@ export class Orders implements OnInit {
   getItemInfo() {
     this.request.executeRequestGET('api/getItemInfo', { idItem: this.formIdItem }).subscribe({
       next: (res: any) => {
-        this.formItem     = res == null? "" : res.nome;
+        this.formItem     = res == null ? "" : res.nome;
         this.formSeq      = 0; // Sempre inicia com 0 para nova inclusão
-        this.formDescItem = res == null? "" : res.descricao;
-        this.formQuantity = res == null? 1 : 1;
-        this.formEstoque  = res == null? 0 : res.estoque;
-        this.formValor    = res == null? 0 : res.valor;
+        this.formDescItem = res == null ? "" : res.descricao;
+        this.formQuantity = res == null ? 1 : 1;
+        this.formEstoque  = res == null ? 0 : res.estoque;
+        this.formValor    = res == null ? 0 : res.valor;
       },
       error: (err) => {
         console.error('Erro ao buscar informações do item:', err);
@@ -336,15 +362,15 @@ export class Orders implements OnInit {
 
   askDelete(dto: PedidoItemDTO) {
     if(dto.estado !== 1){
-     this.alert.show('Não é possivel deletar um item que já está entregue ou confirmado. Por favor, tente novamente.');
-     return;
+      this.alert.show('Não é possivel deletar um item que já está entregue ou confirmado. Por favor, tente novamente.');
+      return;
     }
 
     this.showModalConfirm.set(true);
     this.titleModalConfirm.set('Exclusão');
     this.textModalConfirm.set('Tem certeza que deseja excluir este item do pedido? Está ação não pode ser desfeita.');
     this.actionModalConfirm.set(1);
-    this.confirmDeleteId.set({idItem: dto.idItem, seq: dto.seq });
+    this.confirmDeleteId.set({ idItem: dto.idItem, seq: dto.seq });
   }
 
   confirmDelete() {
@@ -352,8 +378,7 @@ export class Orders implements OnInit {
   
     const id = this.confirmDeleteId();
     if (id !== null) {
-
-      this.request.executeRequestPOST('api/excluirItemPedido', null, {idPedido: this.selectedOrder()!.id, idItem: id.idItem, seq: id.seq}).subscribe({
+      this.request.executeRequestPOST('api/excluirItemPedido', null, { idPedido: this.selectedOrder()!.id, idItem: id.idItem, seq: id.seq }).subscribe({
         next: () => {
           this.getListPedidosItem();
           this.loadOrders();
@@ -368,7 +393,7 @@ export class Orders implements OnInit {
   }
 
   confirmarItemPedido(dto: PedidoItemDTO) {
-    this.request.executeRequestPOST('api/alterarEstadoItemPedido', null, {idPedido: this.selectedOrder()!.id, idItem: dto.idItem, seq: dto.seq, estado: 2}).subscribe({
+    this.request.executeRequestPOST('api/alterarEstadoItemPedido', null, { idPedido: this.selectedOrder()!.id, idItem: dto.idItem, seq: dto.seq, estado: 2 }).subscribe({
       next: () => {
         this.getListPedidosItem();
         this.loadOrders();
@@ -380,7 +405,7 @@ export class Orders implements OnInit {
     });
   }
   encerrarItemPedido(dto: PedidoItemDTO) {
-    this.request.executeRequestPOST('api/alterarEstadoItemPedido', null, {idPedido: this.selectedOrder()!.id, idItem: dto.idItem, seq: dto.seq, estado: 3}).subscribe({
+    this.request.executeRequestPOST('api/alterarEstadoItemPedido', null, { idPedido: this.selectedOrder()!.id, idItem: dto.idItem, seq: dto.seq, estado: 3 }).subscribe({
       next: () => {
         this.getListPedidosItem();
         this.loadOrders();

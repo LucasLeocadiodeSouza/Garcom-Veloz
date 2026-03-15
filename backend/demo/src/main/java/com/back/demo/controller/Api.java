@@ -19,6 +19,7 @@ import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
 import java.io.IOException;
 import java.nio.file.Paths;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,7 +35,7 @@ import java.nio.file.Path;
 @RestController
 @RequestMapping("/api")
 public class Api {
-    
+
     @Autowired
     private ItemSvc itemService;
 
@@ -92,8 +93,7 @@ public class Api {
         
         return ResponseEntity.ok(Map.of(
             "status", "success",
-            "message", "Categoria Criada/Alterada com sucesso"
-        ));
+            "message", "Categoria Criada/Alterada com sucesso"));
     }
 
     @PostMapping("/excluirCategoria")
@@ -141,7 +141,7 @@ public class Api {
     @PostMapping("/ativarInativarItem")
     private ResponseEntity<?> ativarInativarItem(@RequestParam(name = "idItem", required = true) Long itemId, @RequestParam(name = "ativar", required = true) Boolean ativar){
         itemService.ativarInativarItem(itemId, ativar, "LUCASSZ");
-        
+
         return ResponseEntity.ok(Map.of(
             "status", "success",
             "message", "Item ativado/desativado com sucesso"
@@ -151,7 +151,7 @@ public class Api {
     @PostMapping("/excluiItem")
     private ResponseEntity<?> excluiItem(@RequestParam(name = "idItem", required = true) Long itemId){
         itemService.excluiItem(itemId, "LUCASSZ");
-        
+
         return ResponseEntity.ok(Map.of(
             "status", "success",
             "message", "Item excluido com sucesso"
@@ -163,7 +163,7 @@ public class Api {
                                                    @RequestParam(value = "images[]",  required = false) MultipartFile[] images) throws IOException{
 
         itemService.adapterVincularItemImage(images, idItem, "LUCASSZ");
-        
+
         return ResponseEntity.ok(Map.of(
             "status", "success",
             "message", "Media adicionada com sucesso"
@@ -194,9 +194,15 @@ public class Api {
     // ####################### PEDIDOS #######################
 
     @GetMapping("/getListPedidos")
-    private List<PedidoDTO> getListPedidos(@RequestParam(name = "mesa", required = false) Integer mesa,
-                                           @RequestParam(name = "estado", required = false) Integer estado) {
-        return pedidoSvc.getListPedidosDTO(mesa, estado);
+    private List<PedidoDTO> getListPedidos(@RequestParam(name = "mesa", required = false)       Integer mesa,
+                                           @RequestParam(name = "estado", required = false)     Integer estado,
+                                           @RequestParam(name = "dataInicio", required = false) String dataInicio,
+                                           @RequestParam(name = "dataFim", required = false)    String dataFim){
+
+        LocalDate inicio = (dataInicio != null && !dataInicio.isEmpty()) ? LocalDate.parse(dataInicio) : null;
+        LocalDate fim = (dataFim != null && !dataFim.isEmpty()) ? LocalDate.parse(dataFim) : null;
+
+        return pedidoSvc.getListPedidosDTO(mesa, estado, inicio, fim);
     }
 
     @GetMapping("/getListPedidosItem")
@@ -212,7 +218,7 @@ public class Api {
                                      dto.getMesa(), 
                                      1L, 
                                      "LUCASSZ");
-        
+
         return ResponseEntity.ok(Map.of(
             "status", "success",
             "message", "Pedido Criado/Alterado com sucesso"
@@ -231,8 +237,6 @@ public class Api {
             "message", "Alterado situação do Pedido com sucesso"
         ));
     }
-
-
 
     @PostMapping("/criarAlterarItemPedido")
     private ResponseEntity<?> criarAlterarItemPedido(@RequestParam(name = "idPedido", required = true)   Long idPedido,
@@ -278,9 +282,8 @@ public class Api {
                                    "LUCASSZ");
         
         return ResponseEntity.ok(Map.of(
-            "status", "success",
-            "message", "Item do Pedido excluido com sucesso"
-        ));
+                "status", "success",
+                "message", "Item do Pedido excluido com sucesso"));
     }
 
     @PostMapping("/alterarEstadoItemPedido")
