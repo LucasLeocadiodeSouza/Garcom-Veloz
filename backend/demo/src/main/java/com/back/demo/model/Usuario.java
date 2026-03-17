@@ -46,6 +46,6 @@ public class Usuario {
     @JoinColumn(name = "id_perfil")
     private Perfil perfil;
 
-    @OneToMany(mappedBy = "usuario", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Login> logins;
+    // @OneToMany(mappedBy = "usuario", cascade = CascadeType.ALL, orphanRemoval = true)
+    // private List<Login> logins;
 }

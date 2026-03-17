@@ -6,12 +6,19 @@ import { Users } from './pages/users/users';
 import { Categories } from './pages/categories/categories';
 import { NewProduct } from './pages/new-product/new-product';
 import { Orders } from './pages/orders/orders';
+import { Login } from './pages/login/login';
 
 export const routes: Routes = [
 
     {
         path: '',
-        component: Home,
+        redirectTo: '/login',
+        pathMatch: 'full'
+    },
+    {
+        path: 'login',
+        component: Login,
+        title: 'Login - GarçomVeloz CRM'
     },
     {
         path: 'home',

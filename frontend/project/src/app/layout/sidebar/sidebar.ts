@@ -1,6 +1,7 @@
 import { Component, signal, effect, inject, PLATFORM_ID } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
+import { Router } from '@angular/router';
 
 interface NavItem {
   label: string;
@@ -19,6 +20,7 @@ export class Sidebar {
   mobileOpen         = signal(false);
   private platformId = inject(PLATFORM_ID);
   private sanitizer  = inject(DomSanitizer);
+  private router = inject(Router);
 
   mainNav: NavItem[];
   adminNav: NavItem[];
@@ -91,5 +93,9 @@ export class Sidebar {
     if (!isPlatformBrowser(this.platformId)) return false;
     return window.location.pathname === route ||
       window.location.pathname.startsWith(route + '/');
+  }
+
+  logout() {
+    this.router.navigate(['/login']);
   }
 }

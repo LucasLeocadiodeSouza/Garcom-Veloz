@@ -1,0 +1,54 @@
+<div class="login-wrapper">
+    <div class="login-background">
+        <div class="glow-orb orb-1"></div>
+        <div class="glow-orb orb-2"></div>
+        <div class="noise-overlay"></div>
+    </div>
+
+    <main class="login-container">
+        <div class="login-card">
+            <header class="login-header">
+                <div class="logo-mark">
+                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none">
+                        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14H9V8h2v8zm4 0h-2V8h2v8z" fill="currentColor" />
+                    </svg>
+                </div>
+                <h2>GarçomVeloz</h2>
+                <p>Acesso Restrito</p>
+            </header>
+
+            <form class="login-form" (submit)="onLogin($event)">
+                <div class="input-group">
+                    <label for="login">Login</label>
+                    <div class="input-wrapper">
+                        <input type="text" id="login" name="login" placeholder="USER" [(ngModel)]="formLogin" required>
+                        <div class="input-border"></div>
+                    </div>
+                </div>
+
+                <div class="input-group">
+                    <div class="label-row">
+                        <label for="password">Senha</label>
+                        <a href="#" class="forgot-link">Esqueci a senha</a>
+                    </div>
+                    <div class="input-wrapper">
+                        <input type="password" id="password" name="password" placeholder="••••••••" [(ngModel)]="formPasskey" required autocomplete="current-password">
+                        <div class="input-border"></div>
+                    </div>
+                </div>
+
+                <button type="submit" class="submit-btn">
+                    <span>Entrar no Sistema</span>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M5 12h14"></path>
+                        <path d="M12 5l7 7-7 7"></path>
+                    </svg>
+                </button>
+            </form>
+
+            <footer class="login-footer">
+                <p>&copy; 2026 GarçomVeloz CRM. Todos os direitos reservados.</p>
+            </footer>
+        </div>
+    </main>
+</div>
