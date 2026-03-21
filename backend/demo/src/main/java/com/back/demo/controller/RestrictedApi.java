@@ -4,7 +4,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import com.back.demo.model.Perfil;
 import com.back.demo.model.UserDTO;
+import com.back.demo.service.GenSvc;
 import com.back.demo.service.UserSvc;
+import jakarta.servlet.http.HttpServletRequest;
 import java.util.List;
 import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,6 +23,9 @@ public class RestrictedApi {
     @Autowired
     private UserSvc userService;
 
+    @Autowired
+    private GenSvc genSvc;
+
 
     @GetMapping("/teste")
     private String getTeste() {
@@ -30,8 +35,11 @@ public class RestrictedApi {
     @GetMapping("/getListUsers")
     private List<UserDTO> getUsuarioGrid(@RequestParam(name  = "search", required   = false) String search,
                                          @RequestParam(value = "idPerfil", required = false) Long idPerfil,
-                                         @RequestParam(value = "status", required   = false) String status) {
-        return userService.getListUsers(search, status, null, idPerfil);
+                                         @RequestParam(value = "status", required   = false) String status,
+                                         HttpServletRequest request){
+        String ideusu = genSvc.getUserName(request);
+
+        return userService.getListUsers(search, status, genSvc.getCodEmpresaByIdeusu(ideusu), idPerfil);
     }
 
     @GetMapping("/getAllPerfil")
@@ -45,14 +53,16 @@ public class RestrictedApi {
     }
 
     @PostMapping("/criarAlterarUsuario")
-    private ResponseEntity<?> criarAlterarUsuario(@RequestBody UserDTO dto) {
+    private ResponseEntity<?> criarAlterarUsuario(@RequestBody UserDTO dto, HttpServletRequest request) {
+        String ideusu = genSvc.getUserName(request);
+
         userService.criarAlterarUsuario(dto.getIdUsuario(),
                                         dto.getNome(),
                                         dto.getEmail(),
                                         dto.getTelefone(),
                                         dto.getPerfId(),
-                                        1L,
-                                        "LUCASSZ");
+                                        genSvc.getCodEmpresaByIdeusu(ideusu),
+                                        ideusu);
 
         return ResponseEntity.ok(Map.of(
                 "status", "success",
@@ -61,8 +71,9 @@ public class RestrictedApi {
 
     @PostMapping("/ativarInativarUsuario")
     private ResponseEntity<?> ativarInativarUsuario(@RequestParam(name = "idUsuario", required = true) Long idUsuario,
-                                                    @RequestParam(name = "ativar", required = true) Boolean ativar) {
-        userService.ativarInativarUsuario(idUsuario, ativar, "LUCASSZ");
+                                                    @RequestParam(name = "ativar", required = true) Boolean ativar, 
+                                                    HttpServletRequest request) {
+        userService.ativarInativarUsuario(idUsuario, ativar, genSvc.getUserName(request));
 
         return ResponseEntity.ok(Map.of(
                 "status", "success",

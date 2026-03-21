@@ -45,8 +45,8 @@ public class ItemSvc {
     @Autowired
     private ItemDTORepository itemDTORepo;
 
-    // @Autowired
-    // private GenSvc gen;
+    @Autowired
+    private GenSvc genSvc;
 
 
     private String itensDirectory = System.getProperty("user.dir") + "/media/itens";
@@ -93,8 +93,8 @@ public class ItemSvc {
                                       String     icone,
                                       String     cor,
                                       Long       referencia_ext,
-                                      String     ideusu)
-                                      {        
+                                      String     ideusu){
+        genSvc.validaUsuarioByIdeusu(ideusu);     
 
         if(descricao == null || descricao.isBlank()) throw new CategoriaException("É preciso informar a descrição do item!");
 
@@ -116,7 +116,9 @@ public class ItemSvc {
     }
 
     @Transactional
-    public void ativarInativarCategoria(Long id, Boolean ativar){
+    public void ativarInativarCategoria(Long id, Boolean ativar, String ideusu){
+        genSvc.validaUsuarioByIdeusu(ideusu);
+
         Categoria categoria = categoriaRepo.findCategoriaById(id);
         if(categoria == null) throw new CategoriaNotFoundException("Não encontrado a Categoria");
 
@@ -127,6 +129,8 @@ public class ItemSvc {
 
     @Transactional
     public void excluirCategoria(Long id, String ideusu){
+        genSvc.validaUsuarioByIdeusu(ideusu);
+
         Categoria categoria = categoriaRepo.findCategoriaById(id);
         if(categoria == null) throw new CategoriaNotFoundException("Não encontrado a Categoria");
 
@@ -156,8 +160,9 @@ public class ItemSvc {
                                  Integer    estoque,
                                  Long       categoriaId,
                                  Long       referencia_ext,
-                                 String     ideusu)
-                                 {        
+                                 String ideusu){
+        
+        genSvc.validaUsuarioByIdeusu(ideusu);      
 
         if(nome == null || nome.isBlank()) throw new ItemException("É preciso informar o nome do item!");
         //if(descricao == null || descricao.isBlank()) throw new ItemException("É preciso informar a descrição do item!");
@@ -196,6 +201,8 @@ public class ItemSvc {
 
     @Transactional
     public void ativarInativarItem(Long id, Boolean ativar, String ideusu){
+        genSvc.validaUsuarioByIdeusu(ideusu);
+
         Item item = itemRepo.findItemById(id);
         if(item == null) throw new ItemException("Não encontrado o Item");
 
@@ -206,6 +213,8 @@ public class ItemSvc {
 
     @Transactional
     public void excluiItem(Long id, String ideusu){
+        genSvc.validaUsuarioByIdeusu(ideusu);
+
         Item item = itemRepo.findItemById(id);
         if(item == null) throw new ItemException("Não encontrado o Item");
 
@@ -221,6 +230,8 @@ public class ItemSvc {
 
     @Transactional
     private void vincularItemImage(MultipartFile image, Long itemId, String ideusu) throws IOException{
+       genSvc.validaUsuarioByIdeusu(ideusu);
+
        Item item = itemRepo.findItemById(itemId);
         if(item == null) throw new ItemException("Não encontrado o Item");
 
@@ -248,7 +259,9 @@ public class ItemSvc {
     }
 
     @Transactional
-    private void removerMediaItem(Long itemId, Integer sequencia) throws IOException{
+    private void removerMediaItem(Long itemId, Integer sequencia, String ideusu) throws IOException{
+        genSvc.validaUsuarioByIdeusu(ideusu);
+
        Item item = itemRepo.findItemById(itemId);
         if(item == null) throw new ItemException("Não encontrado o Item");
 
@@ -264,12 +277,12 @@ public class ItemSvc {
     }
 
     @Transactional
-    private void removerTodosMediaItem() throws IOException{
+    private void removerTodosMediaItem(String ideusu) throws IOException{
        List<ItemMedia> itens = itemImgRepo.findAll();
         if(itens == null) return;
 
        for (ItemMedia item : itens) {
-           removerMediaItem(item.getId().getIdItem(), item.getId().getSeq());
+           removerMediaItem(item.getId().getIdItem(), item.getId().getSeq(), ideusu);
        }
     }
 

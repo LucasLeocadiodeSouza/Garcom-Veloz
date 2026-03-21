@@ -15,6 +15,7 @@ import com.back.demo.model.PedidoItemDTO;
 import com.back.demo.service.GenSvc;
 import com.back.demo.service.ItemSvc;
 import com.back.demo.service.PedidoSvc;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
 import java.io.IOException;
@@ -44,6 +45,8 @@ public class Api {
 
     @Autowired
     private GenSvc genService;
+
+
 
     @GetMapping("/teste")
     public String getTeste(){
@@ -78,8 +81,10 @@ public class Api {
     }
 
     @PostMapping("/ativarInativarCategoria")
-    private ResponseEntity<?> ativarInativarCategoria(@RequestParam(name = "idCategoria", required = true) Long idCategoria, @RequestParam(value = "ativar", required = true) Boolean ativar){
-        itemService.ativarInativarCategoria(idCategoria, ativar);
+    private ResponseEntity<?> ativarInativarCategoria(@RequestParam(name = "idCategoria", required = true) Long idCategoria, 
+                                                      @RequestParam(value = "ativar", required = true) Boolean ativar,
+                                                      HttpServletRequest request){
+        itemService.ativarInativarCategoria(idCategoria, ativar, genService.getUserName(request));
         
         return ResponseEntity.ok(Map.of(
             "status", "success",
@@ -88,8 +93,8 @@ public class Api {
     }
 
     @PostMapping("/criarAlterarCategoria")
-    private ResponseEntity<?> criarAlterarCategoria(@RequestBody CategoriaDTO dto){
-        itemService.criarAlterarCategoria(dto.getIdCategoria(), dto.getDescricao(), dto.getIcone(), dto.getCor(), null, "LUCASSZ");
+    private ResponseEntity<?> criarAlterarCategoria(@RequestBody CategoriaDTO dto, HttpServletRequest request){
+        itemService.criarAlterarCategoria(dto.getIdCategoria(), dto.getDescricao(), dto.getIcone(), dto.getCor(), null, genService.getUserName(request));
         
         return ResponseEntity.ok(Map.of(
             "status", "success",
@@ -97,8 +102,8 @@ public class Api {
     }
 
     @PostMapping("/excluirCategoria")
-    private ResponseEntity<?> excluirCategoria(@RequestParam(name = "idCategoria", required = true) Long idCategoria){
-        itemService.excluirCategoria(idCategoria, "LUCASSZ");
+    private ResponseEntity<?> excluirCategoria(@RequestParam(name = "idCategoria", required = true) Long idCategoria, HttpServletRequest request ){
+        itemService.excluirCategoria(idCategoria, genService.getUserName(request));
         
         return ResponseEntity.ok(Map.of(
             "status", "success",
@@ -121,7 +126,7 @@ public class Api {
     }
 
     @PostMapping("/criarAlterarItem")
-    private ResponseEntity<?> criarAlterarItem(@RequestBody ItemDTO dto){
+    private ResponseEntity<?> criarAlterarItem(@RequestBody ItemDTO dto, HttpServletRequest request){
         itemService.criarAlterarItem(dto.getIdItem(), 
                                      dto.getNome(), 
                                      dto.getDescricao(), 
@@ -130,7 +135,7 @@ public class Api {
                                      dto.getEstoque(), 
                                      dto.getIdCategoria(),
                                      null,
-                                     "LUCASSZ");
+                                     genService.getUserName(request));
         
         return ResponseEntity.ok(Map.of(
             "status", "success",
@@ -139,8 +144,10 @@ public class Api {
     }
 
     @PostMapping("/ativarInativarItem")
-    private ResponseEntity<?> ativarInativarItem(@RequestParam(name = "idItem", required = true) Long itemId, @RequestParam(name = "ativar", required = true) Boolean ativar){
-        itemService.ativarInativarItem(itemId, ativar, "LUCASSZ");
+    private ResponseEntity<?> ativarInativarItem(@RequestParam(name = "idItem", required = true) Long itemId, 
+                                                 @RequestParam(name = "ativar", required = true) Boolean ativar,
+                                                 HttpServletRequest request){
+        itemService.ativarInativarItem(itemId, ativar, genService.getUserName(request));
 
         return ResponseEntity.ok(Map.of(
             "status", "success",
@@ -149,8 +156,8 @@ public class Api {
     }
 
     @PostMapping("/excluiItem")
-    private ResponseEntity<?> excluiItem(@RequestParam(name = "idItem", required = true) Long itemId){
-        itemService.excluiItem(itemId, "LUCASSZ");
+    private ResponseEntity<?> excluiItem(@RequestParam(name = "idItem", required = true) Long itemId, HttpServletRequest request){
+        itemService.excluiItem(itemId, genService.getUserName(request));
 
         return ResponseEntity.ok(Map.of(
             "status", "success",
@@ -159,10 +166,11 @@ public class Api {
     }
 
     @PostMapping(value = "/registrarMediaProduct", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    private ResponseEntity<?> registrarMediaProduct(@RequestParam(value = "idItem", required = false)    Long idItem,
-                                                   @RequestParam(value = "images[]",  required = false) MultipartFile[] images) throws IOException{
+    private ResponseEntity<?> registrarMediaProduct(@RequestParam(value = "idItem", required = false)   Long idItem,
+                                                    @RequestParam(value = "images[]",  required = false) MultipartFile[] images,
+                                                    HttpServletRequest request ) throws IOException{
 
-        itemService.adapterVincularItemImage(images, idItem, "LUCASSZ");
+        itemService.adapterVincularItemImage(images, idItem, genService.getUserName(request));
 
         return ResponseEntity.ok(Map.of(
             "status", "success",
@@ -211,13 +219,15 @@ public class Api {
     }
 
     @PostMapping("/criarAlterarPedido")
-    private ResponseEntity<?> criarAlterarPedido(@RequestBody PedidoDTO dto){
+    private ResponseEntity<?> criarAlterarPedido(@RequestBody PedidoDTO dto, HttpServletRequest request){
+        String ideusu = genService.getUserName(request);
+
         pedidoSvc.criarAlterarPedido(dto.getId(), 
                                      dto.getObservacao(), 
                                      dto.getGorgeta(), 
                                      dto.getMesa(), 
-                                     1L, 
-                                     "LUCASSZ");
+                                     genService.getCodEmpresaByIdeusu(ideusu), 
+                                     ideusu);
 
         return ResponseEntity.ok(Map.of(
             "status", "success",
@@ -227,10 +237,11 @@ public class Api {
 
     @PostMapping("/alterarEstadoPedido")
     private ResponseEntity<?> alterarEstadoPedido(@RequestParam(name = "idPedido", required = true) Long    idPedido,
-                                                  @RequestParam(name = "estado", required = true)   Integer estado){
+                                                  @RequestParam(name = "estado", required = true)   Integer estado,
+                                                  HttpServletRequest request){
         pedidoSvc.alterarEstadoPedido(idPedido, 
                                       estado,
-                                      "LUCASSZ");
+                                      genService.getUserName(request));
         
         return ResponseEntity.ok(Map.of(
             "status", "success",
@@ -242,12 +253,13 @@ public class Api {
     private ResponseEntity<?> criarAlterarItemPedido(@RequestParam(name = "idPedido", required = true)   Long idPedido,
                                                      @RequestParam(name = "idItem", required = true)     Long idItem,
                                                      @RequestParam(name = "quantidade", required = true) Integer quantidade,
-                                                     @RequestParam(name = "seq", required = true)        Long seq){
+                                                     @RequestParam(name = "seq", required = true)        Long seq,
+                                                     HttpServletRequest request){
         pedidoSvc.criarAlterarItemPedido(idPedido, 
                                         idItem,
                                         seq,
                                         quantidade,
-                                        "LUCASSZ");
+                                        genService.getUserName(request));
         
         return ResponseEntity.ok(Map.of(
             "status", "success",
@@ -259,12 +271,13 @@ public class Api {
     private ResponseEntity<?> vinculaItemPedido(@RequestParam(name = "idPedido", required = true)   Long idPedido,
                                                 @RequestParam(name = "idItem", required = true)     Long idItem,
                                                 @RequestParam(name = "quantidade", required = true) Integer quantidade,
-                                                @RequestParam(name = "seq", required = true)        Long seq){
+                                                @RequestParam(name = "seq", required = true)        Long seq,
+                                                HttpServletRequest request){
         pedidoSvc.vinculaItemPedido(idPedido, 
                                     idItem,
                                     seq,
                                     quantidade,
-                                    "LUCASSZ");
+                                    genService.getUserName(request));
         
         return ResponseEntity.ok(Map.of(
             "status", "success",
@@ -275,11 +288,12 @@ public class Api {
     @PostMapping("/excluirItemPedido")
     private ResponseEntity<?> excluirItemPedido(@RequestParam(name = "idPedido", required = true)   Long idPedido,
                                                 @RequestParam(name = "idItem", required = true)     Long idItem,
-                                                @RequestParam(name = "seq", required = true)        Long seq){
+                                                @RequestParam(name = "seq", required = true)        Long seq,
+                                                HttpServletRequest request){
         pedidoSvc.excluiItemPedido(idPedido, 
                                    idItem,
                                    seq,
-                                   "LUCASSZ");
+                                   genService.getUserName(request));
         
         return ResponseEntity.ok(Map.of(
                 "status", "success",
@@ -290,12 +304,13 @@ public class Api {
     private ResponseEntity<?> alterarEstadoItemPedido(@RequestParam(name = "idPedido", required = true)   Long    idPedido,
                                                       @RequestParam(name = "idItem", required = true)     Long    idItem,
                                                       @RequestParam(name = "seq", required = true)        Long    seq,
-                                                      @RequestParam(name = "estado", required = true)     Integer estado){
+                                                      @RequestParam(name = "estado", required = true)     Integer estado,
+                                                      HttpServletRequest request){
         pedidoSvc.alterarEstadoItemPedido(idPedido, 
                                           idItem,
                                           seq,
                                           estado,
-                                          "LUCASSZ");
+                                          genService.getUserName(request));
         
         return ResponseEntity.ok(Map.of(
             "status", "success",

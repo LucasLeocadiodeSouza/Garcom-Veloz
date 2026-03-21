@@ -1,5 +1,5 @@
 import { Component, input, inject, signal, HostListener, ElementRef } from '@angular/core';
-import { Router } from '@angular/router';
+import { RequestForm } from '../../service/request-form';
 @Component({
   selector: 'app-topbar',
   templateUrl: './topbar.html',
@@ -7,9 +7,10 @@ import { Router } from '@angular/router';
   standalone: true,
 })
 export class Topbar {
-  pageTitle = input<string>('Dashboard');
-  router = inject(Router);
+  pageTitle  = input<string>('Dashboard');
   elementRef = inject(ElementRef);
+
+  private request = inject(RequestForm);
 
   dropdownOpen = signal(false);
 
@@ -26,6 +27,6 @@ export class Topbar {
 
   logout() {
     this.dropdownOpen.set(false);
-    this.router.navigate(['/login']);
+    this.request.logout();
   }
 }

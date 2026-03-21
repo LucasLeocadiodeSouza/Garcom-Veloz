@@ -40,6 +40,10 @@ public class PedidoSvc {
     @Autowired
     private EmpresaRepository empresaRepo;
 
+    @Autowired
+    private GenSvc genSvc;
+
+
     private String getDescEstadoPedido(Integer estado){
         switch (estado) {
             case 0: return "Cancelada";
@@ -155,6 +159,8 @@ public class PedidoSvc {
                                    Long       idEmpresa,
                                    String     ideusu) {
 
+        genSvc.validaUsuarioByIdeusu(ideusu);
+
         if (mesa == null || mesa == 0) throw new PedidoException("É preciso informar o número da mesa para criar o pedido!");
 
         Empresa empresa = empresaRepo.findEmpresaById(idEmpresa);
@@ -180,6 +186,8 @@ public class PedidoSvc {
 
     @Transactional
     public void excluiPedido(Long id, String ideusu) {
+        genSvc.validaUsuarioByIdeusu(ideusu);
+
         Pedido pedido = pedidoRepo.findPedidoById(id);
         if (pedido == null) throw new PedidoNotFoundException("Não encontrado o Pedido");
 
@@ -190,6 +198,7 @@ public class PedidoSvc {
     public void alterarEstadoPedido(Long    pedidoId,
                                     Integer estado,
                                     String  ideusu) {
+        genSvc.validaUsuarioByIdeusu(ideusu);
 
         if (pedidoId == null || pedidoId == Long.valueOf(0)) throw new PedidoException("É preciso informar o número do pedido alterar o estado do item!");
 
@@ -222,6 +231,8 @@ public class PedidoSvc {
 
         if (pedidoId == null || pedidoId == Long.valueOf(0)) throw new PedidoException("É preciso informar o número do pedido para vincular ao item!");
         if (itemId == null || itemId == Long.valueOf(0)) throw new PedidoException("É preciso informar o código do item para vincular ao pedido!");
+
+        genSvc.validaUsuarioByIdeusu(ideusu);
 
         Pedido pedido = pedidoRepo.findPedidoById(pedidoId);
         if (pedido == null) throw new PedidoNotFoundException("Não encontrado o Pedido");
@@ -258,10 +269,12 @@ public class PedidoSvc {
                                        Long    itemId,
                                        Long    seq,
                                        Integer quantidade,
-                                       String  ideusu){
-
+                                       String ideusu){
+                                           
         if (pedidoId == null || pedidoId == Long.valueOf(0)) throw new PedidoException("É preciso informar o número do pedido para vincular ao item!");
         if (itemId == null || itemId == Long.valueOf(0)) throw new PedidoException("É preciso informar o código do item para vincular ao pedido!");
+        
+        genSvc.validaUsuarioByIdeusu(ideusu);
 
         Pedido pedido = pedidoRepo.findPedidoById(pedidoId);
         if (pedido == null) throw new PedidoNotFoundException("Não encontrado o Pedido");
@@ -302,10 +315,12 @@ public class PedidoSvc {
                                  Long   itemId,
                                  Long   seq,
                                  String ideusu){
-
+                                     
         if (pedidoId == null || pedidoId == Long.valueOf(0)) throw new PedidoException("É preciso informar o número do pedido para remover o item!");
         if (itemId == null || itemId == Long.valueOf(0)) throw new PedidoException("É preciso informar o código do item para remover o pedido!");
-
+                                    
+         genSvc.validaUsuarioByIdeusu(ideusu);
+                                     
         Pedido pedido = pedidoRepo.findPedidoById(pedidoId);
         if (pedido == null) throw new PedidoNotFoundException("Não encontrado o Pedido");
         if(pedido.getEstado() != getCodEstadoPedidoAberto()) throw new PedidoException("Somente é possivel excluir pedidos que estão com status de ABERTO");
@@ -326,10 +341,13 @@ public class PedidoSvc {
                                         Long    itemId,
                                         Long    seq,
                                         Integer estado,
-                                        String  ideusu) {
+                                        String ideusu){
 
+                                            
         if (pedidoId == null || pedidoId == Long.valueOf(0)) throw new PedidoException("É preciso informar o número do pedido alterar o estado do item!");
         if (itemId == null || itemId == Long.valueOf(0)) throw new PedidoException("É preciso informar o código do item para alterar o estado do pedido!");
+
+        genSvc.validaUsuarioByIdeusu(ideusu);
 
         Pedido pedido = pedidoRepo.findPedidoById(pedidoId);
         if (pedido == null) throw new PedidoNotFoundException("Não encontrado o Pedido");

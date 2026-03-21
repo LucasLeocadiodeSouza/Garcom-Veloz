@@ -38,8 +38,6 @@ export class StatsRow {
           categoriaSemana:    number,
         }) => {
 
-        console.log(response)
-
         this.stats = [
           {
             cod: 1,

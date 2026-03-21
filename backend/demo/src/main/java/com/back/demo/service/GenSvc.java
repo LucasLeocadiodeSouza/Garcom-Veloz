@@ -2,10 +2,11 @@ package com.back.demo.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import com.back.demo.exception.LoginNotFoundException;
+import com.back.demo.exception.UsuarioException;
 import com.back.demo.infra.security.TokenService;
 import com.back.demo.model.EstatisticasDTO;
 import com.back.demo.model.Login;
-import com.back.demo.model.Usuario;
 import com.back.demo.repository.CategoriaRepository;
 import com.back.demo.repository.EstatisticasDTORepository;
 import com.back.demo.repository.ItemRepository;
@@ -37,16 +38,20 @@ public class GenSvc {
 
 
     public String getUserName(HttpServletRequest request) {
-        Cookie[] cookies = request.getCookies();
-        if(cookies != null){
-            for(Cookie cookie : cookies){
-                if("authToken".equals(cookie.getName())){
-                    String token = cookie.getValue();
-                    String username = tokenService.getExtractedUsernameFromToken(token);
-                    return username;
-                }
-            }
-        }
+        var auth = request.getHeader("Authorization");
+        
+        if(request.getHeader("Authorization") != null) return tokenService.getExtractedUsernameFromToken(auth.replace("Bearer ", ""));
+
+        //Cookie[] cookies = request.getCookies();
+        //if(cookies != null){
+        //    for(Cookie cookie : cookies){
+        //        if("authToken".equals(cookie.getName())){
+        //            String token = cookie.getValue();
+        //            String username = tokenService.getExtractedUsernameFromToken(token);
+        //            return username;
+        //        }
+        //    }
+        //}
         return "";
     }
 
@@ -55,6 +60,22 @@ public class GenSvc {
         if(loginIdeusu != null) return loginIdeusu.getName();
 
         return "";
+    }
+
+    public void validaUsuarioByIdeusu(String ideusu){
+        Login loginIdeusu = loginRepo.findByName(ideusu);
+
+        if(loginIdeusu == null) throw new LoginNotFoundException("Usuário informado não encontrado ");
+    }
+
+    public Long getCodEmpresaByIdeusu(String ideusu){
+        Login loginIdeusu = loginRepo.findByName(ideusu);
+
+        if(loginIdeusu == null) throw new LoginNotFoundException("Usuário informado não encontrado.");
+
+        if(loginIdeusu.getUsuario() == null) throw new UsuarioException("Usuário não vinculado para o login.");
+            
+        return loginIdeusu.getUsuario().getEmpresa().getId();
     }
 
     public EstatisticasDTO getStatsHome(){

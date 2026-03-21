@@ -9,7 +9,7 @@ import { AlertService } from './service/alert-service';
   templateUrl: './app.html',
   styleUrl: './app.css'
 })
-export class App { 
+export class App {
   alert = inject(AlertService);
   router = inject(Router);
 

@@ -198,15 +198,15 @@ export class Orders implements OnInit {
 
   closeCreateOrderModal() {
     this.showCreateOrderModal.set(false);
-    this.formIdItem = 0;
-    this.formSeq = 0;
-    this.formItem = '';
-    this.formQuantity = 0;
-    this.formDescItem = '';
-    this.formEstoque = 0;
-    this.formValor = 0;
-    this.formMesa = 0;
-    this.formGorgeta = 0;
+    this.formIdItem     = 0;
+    this.formSeq        = 0;
+    this.formItem       = '';
+    this.formQuantity   = 0;
+    this.formDescItem   = '';
+    this.formEstoque    = 0;
+    this.formValor      = 0;
+    this.formMesa       = 0;
+    this.formGorgeta    = 0;
     this.formObservacao = '';
   }
 
@@ -400,7 +400,7 @@ export class Orders implements OnInit {
 
   confirmDelete() {
     this.cancelModalConfirm();
-  
+
     const id = this.confirmDeleteId();
     if (id !== null) {
       this.request.executeRequestPOST('api/excluirItemPedido', null, { idPedido: this.selectedOrder()!.id, idItem: id.idItem, seq: id.seq }).subscribe({

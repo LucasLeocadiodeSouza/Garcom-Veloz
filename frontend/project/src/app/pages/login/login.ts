@@ -1,3 +1,4 @@
+import { Response } from 'express';
 import { Component, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -25,8 +26,9 @@ export class Login {
   }
 
   authentication(){
-    this.request.executeRequestPOST('auth/login', { login: this.formLogin, passkey: this.formPasskey }).subscribe({
-      next: () => {
+    this.request.executeRequestPOST('auth/login', { login: this.formLogin, passkey: this.formPasskey }, {}, true).subscribe({
+      next: (response) => {
+        localStorage.setItem('token', response.token);
         this.router.navigate(['/home']);
       },
       error: (error) => {

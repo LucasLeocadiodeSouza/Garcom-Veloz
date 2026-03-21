@@ -1,12 +1,12 @@
 @if (!isLoginPage()) {
 <div class="app-shell">
-  <app-sidebar />
-  <div class="main-content">
-    <router-outlet />
-  </div>
+    <app-sidebar />
+    <div class="main-content">
+        <router-outlet />
+    </div>
 </div>
 } @else {
-  <router-outlet />
+<router-outlet />
 }
 
 

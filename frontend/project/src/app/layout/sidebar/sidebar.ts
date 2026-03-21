@@ -1,7 +1,7 @@
 import { Component, signal, effect, inject, PLATFORM_ID } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
-import { Router } from '@angular/router';
+import { RequestForm } from '../../service/request-form';
 
 interface NavItem {
   label: string;
@@ -16,11 +16,12 @@ interface NavItem {
   styleUrl: './sidebar.css'
 })
 export class Sidebar {
+  private request = inject(RequestForm);
+
   collapsed          = signal(false);
   mobileOpen         = signal(false);
   private platformId = inject(PLATFORM_ID);
   private sanitizer  = inject(DomSanitizer);
-  private router = inject(Router);
 
   mainNav: NavItem[];
   adminNav: NavItem[];
@@ -91,11 +92,10 @@ export class Sidebar {
 
   isActive(route: string): boolean {
     if (!isPlatformBrowser(this.platformId)) return false;
-    return window.location.pathname === route ||
-      window.location.pathname.startsWith(route + '/');
+    return window.location.pathname === route || window.location.pathname.startsWith(route + '/');
   }
 
   logout() {
-    this.router.navigate(['/login']);
+    this.request.logout();
   }
 }
