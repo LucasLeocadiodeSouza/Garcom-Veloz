@@ -651,6 +651,13 @@
   .form-group label {
     font-size: 12px !important;
   }
+
+  .form-group input,
+  .form-group textarea,
+  .form-group select {
+    padding:   8px 11px;
+    font-size: 11px;
+  }
 }
 
 
@@ -889,6 +896,13 @@
   .filter-period-wrap {
     flex-direction: column;
   }
+
+  .form-group input,
+  .form-group textarea,
+  .form-group select {
+    padding:   8px 11px;
+    font-size: 12px;
+  }
 }
 
 .filter-period-1, .filter-period-2 {
@@ -1041,4 +1055,212 @@
     border-color: #bbf7d0 !important;
     background: #dcfce7 !important;
     cursor:      default;
+}
+
+/* ────────────────────────────────────────────────────────────
+   Zoom Modal — Product Selector
+──────────────────────────────────────────────────────────── */
+
+.row-with-zoom{
+  gap: 0px !important;
+}
+
+/* Inline "Buscar" button inside the label */
+.zoom-link {
+  display:       inline-flex;
+  align-items:   center;
+  gap:           4px;
+  margin-left:   8px;
+  padding:       9px 12px;
+  font-size:     14px;
+  font-weight:   600;
+  color:         var(--blue-600);
+  background:    var(--blue-50);
+  border:        1px solid var(--blue-200);
+  border-radius: 5px;
+  cursor:        pointer;
+  transition:    all 0.15s ease;
+  vertical-align: middle;
+  line-height:   1.4;
+}
+
+.zoom-link:hover:not(:disabled) {
+  background:    var(--blue-100);
+  border-color:  var(--blue-400);
+  color:         var(--blue-700);
+}
+
+.zoom-link:disabled {
+  opacity: 0.35;
+  cursor:  not-allowed;
+}
+
+.zoom-modal {
+  max-width:  680px;
+  max-height: 85vh;
+  display:    flex;
+  flex-direction: column;
+}
+
+.zoom-search-wrap {
+  display:      flex;
+  align-items:  center;
+  gap:          10px;
+  padding:      12px 20px;
+  border-bottom: 1px solid var(--gray-100);
+  background:   var(--gray-50);
+  color:        var(--gray-400);
+}
+
+.zoom-search-input {
+  flex: 1;
+  border:      none;
+  outline:     none;
+  background:  transparent;
+  font-size:   14px;
+  color:       var(--gray-800);
+  font-family: inherit;
+}
+
+.zoom-search-input::placeholder {
+  color: var(--gray-400);
+}
+
+.zoom-results-info {
+  padding:     6px 20px;
+  font-size:   12px;
+  font-weight: 600;
+  color:       var(--gray-400);
+  background:  var(--gray-50);
+  border-bottom: 1px solid var(--gray-100);
+}
+
+.zoom-grid-wrap {
+  flex:      1;
+  overflow-y: auto;
+  padding:   16px;
+}
+
+.zoom-grid {
+  display:               grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap:                   12px;
+}
+
+.zoom-card {
+  display:       flex;
+  flex-direction: column;
+  gap:           6px;
+  padding:       14px;
+  border-radius: 14px;
+  border:        1px solid var(--gray-200);
+  background:    #fff;
+  cursor:        pointer;
+  transition:    all 0.18s ease;
+  box-shadow:    0 1px 3px rgba(0,0,0,0.04);
+}
+
+.zoom-card:hover {
+  border-color: var(--blue-300);
+  background:   var(--blue-50);
+  transform:    translateY(-2px);
+  box-shadow:   0 6px 16px -4px rgba(59,130,246,0.18);
+}
+
+.zoom-card:active {
+  transform: translateY(0);
+}
+
+.zoom-card-header {
+  display:         flex;
+  justify-content: space-between;
+  align-items:     center;
+}
+
+.zoom-card-code {
+  font-size:   11px;
+  font-weight: 700;
+  color:       var(--gray-400);
+  font-family: monospace;
+  background:  var(--gray-100);
+  padding:     2px 6px;
+  border-radius: 4px;
+}
+
+.zoom-card-price {
+  font-size:   13px;
+  font-weight: 800;
+  color:       var(--blue-700);
+}
+
+.zoom-card-name {
+  font-size:   14px;
+  font-weight: 700;
+  color:       var(--gray-800);
+  line-height: 1.3;
+}
+
+.zoom-card-category {
+  font-size:   11px;
+  font-weight: 600;
+  color:       var(--gray-400);
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+
+.zoom-card-stock {
+  display:     flex;
+  align-items: center;
+  gap:         5px;
+  font-size:   12px;
+  color:       var(--gray-500);
+  margin-top:  2px;
+}
+
+.zoom-empty {
+  display:        flex;
+  flex-direction: column;
+  align-items:    center;
+  justify-content: center;
+  gap:            12px;
+  padding:        48px 20px;
+  color:          var(--gray-400);
+  font-weight:    500;
+  text-align:     center;
+}
+
+@media (max-width: 480px) {
+  .zoom-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+
+  .zoom-card {
+    padding: 11px;
+  }
+
+  .zoom-card-name {
+    font-size: 13px;
+  }
+
+  .zoom-card-price {
+    font-size: 12px;
+  }
+
+  .zoom-link {
+    margin-left:   5px;
+    padding:       10px 8px;
+    font-size:     12px;
+  }
+}
+
+@media (max-width: 360px) {
+  .zoom-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .zoom-link {
+    padding:       10px 4px;
+    font-size:     10px;
+  }
 }

@@ -1,5 +1,6 @@
 import { Component, inject, OnInit, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { DecimalPipe } from '@angular/common';
 import { Topbar } from '../../layout/topbar/topbar';
 import { RequestForm } from '../../service/request-form';
 import { AlertService } from '../../service/alert-service';
@@ -36,9 +37,18 @@ export interface ItemMedia {
   url:    string;
 }
 
+export interface ZoomProduct {
+  idItem:    number;
+  nome:      string;
+  descricao: string;
+  valor:     number;
+  estoque:   number;
+  categoria: string;
+}
+
 @Component({
   selector: 'app-orders',
-  imports: [FormsModule, Topbar],
+  imports: [FormsModule, Topbar, DecimalPipe],
   templateUrl: './orders.html',
   styleUrl: './orders.css'
 })
@@ -88,6 +98,46 @@ export class Orders implements OnInit {
   textModalConfirm   = signal<string | null>(null);
 
   confirmDeleteId    = signal<{ idItem: number, seq: number } | null>(null);
+
+  showZoomModal    = signal<boolean>(false);
+  zoomAllProducts: ZoomProduct[] = [];
+  zoomSearch       = '';
+
+  get zoomFilteredProducts(): ZoomProduct[] {
+    const q = this.zoomSearch.toLowerCase().trim();
+    if (!q) return this.zoomAllProducts;
+    return this.zoomAllProducts.filter(p =>
+      p.nome.toLowerCase().includes(q) || p.idItem.toString().includes(q) || (p.categoria || '').toLowerCase().includes(q)
+    );
+  }
+
+  openZoomModal() {
+    this.zoomSearch = '';
+    if (this.zoomAllProducts.length === 0) {
+      this.request.executeRequestGET('api/getItensGrid', {}).subscribe({
+        next: (res: any) => {
+          this.zoomAllProducts = res.filter((item: any) => item.ativo).map((item: any) => ({
+              idItem:    item.idItem,
+              nome:      item.nome,
+              descricao: item.descricao,
+              valor:     item.valor,
+              estoque:   item.estoque,
+              categoria: item.categDecricao
+            }));
+        },
+        error: () => this.alert.show('Não foi possível carregar os produtos.')
+      });
+    }
+    this.showZoomModal.set(true);
+  }
+
+  closeZoomModal() { this.showZoomModal.set(false); }
+
+  selectZoomProduct(prod: ZoomProduct) {
+    this.formIdItem = prod.idItem;
+    this.getItemInfo();
+    this.closeZoomModal();
+  }
 
   formIdItem     = 0;
   formSeq        = 0;
