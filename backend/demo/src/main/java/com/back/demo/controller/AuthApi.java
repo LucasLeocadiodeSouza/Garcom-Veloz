@@ -18,7 +18,6 @@ import com.back.demo.infra.security.TokenService;
 import com.back.demo.model.Login;
 import com.back.demo.model.securityLogin.AuthenticationDTO;
 import com.back.demo.model.securityLogin.LoginResponseDTO;
-import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 

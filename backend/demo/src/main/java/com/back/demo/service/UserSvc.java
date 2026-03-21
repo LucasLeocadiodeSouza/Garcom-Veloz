@@ -46,9 +46,7 @@ public class UserSvc implements UserDetailsService  {
     private GenSvc genSvc;
 
     @Override
-    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        return loginRepository.findByName(username);
-    }
+    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException { return loginRepository.findByName(username); }
 
     public Empresa getEmpresaUsuario(Long id, String login){
         if(id != null && id != Long.valueOf(0)){

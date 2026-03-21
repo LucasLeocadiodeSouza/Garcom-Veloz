@@ -2,6 +2,7 @@ package com.back.demo.infra.security;
 
 import com.back.demo.model.Login;
 import com.back.demo.repository.LoginRepository;
+import com.back.demo.service.GenSvc;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -24,13 +25,16 @@ public class SecurityFilter extends OncePerRequestFilter {
     @Autowired
     private LoginRepository loginRepository;
 
+    @Autowired
+    private GenSvc genSvc;
+
     @Override
     protected void doFilterInternal(HttpServletRequest request,
                                     HttpServletResponse response,
                                     FilterChain filterChain)
                                     throws ServletException, IOException {
 
-        String token = recuperarToken(request);
+        String token = genSvc.recuperarToken(request);
 
         if (token != null) {
             String subject = tokenService.validarToken(token);
@@ -45,13 +49,5 @@ public class SecurityFilter extends OncePerRequestFilter {
         }
 
         filterChain.doFilter(request, response);
-    }
-
-    private String recuperarToken(HttpServletRequest request) {
-        String authHeader = request.getHeader("Authorization");
-        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-            return null;
-        }
-        return authHeader.replace("Bearer ", "").trim();
     }
 }

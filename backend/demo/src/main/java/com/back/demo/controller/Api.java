@@ -55,6 +55,11 @@ public class Api {
 
     private String mediaDirectory = System.getProperty("user.dir") + "/media/itens";
 
+    @GetMapping("/validarAutenticacao")
+    private Boolean validarAutenticacao(HttpServletRequest request) {
+        return genService.validarAutenticacao(request);
+    }
+
     // ####################### ITENS #######################
 
     @GetMapping("/getStatsHome")

@@ -12,7 +12,6 @@ import com.back.demo.repository.EstatisticasDTORepository;
 import com.back.demo.repository.ItemRepository;
 import com.back.demo.repository.LoginRepository;
 import com.back.demo.repository.UsuarioRepository;
-import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 
 @Service
@@ -37,10 +36,17 @@ public class GenSvc {
     private TokenService tokenService;
 
 
+    public String recuperarToken(HttpServletRequest request) {
+        String authHeader = request.getHeader("Authorization");
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) return null;
+
+        return authHeader.replace("Bearer ", "").trim();
+    }
+
     public String getUserName(HttpServletRequest request) {
-        var auth = request.getHeader("Authorization");
+        var auth = recuperarToken(request);
         
-        if(request.getHeader("Authorization") != null) return tokenService.getExtractedUsernameFromToken(auth.replace("Bearer ", ""));
+        if(auth != null) return tokenService.getExtractedUsernameFromToken(auth);
 
         //Cookie[] cookies = request.getCookies();
         //if(cookies != null){
@@ -53,6 +59,17 @@ public class GenSvc {
         //    }
         //}
         return "";
+    }
+
+    public Boolean validarAutenticacao(HttpServletRequest request){
+        String token = recuperarToken(request);
+
+        if (token != null) {
+            String subject = tokenService.validarToken(token);
+            return subject != null && !subject.isBlank();
+        }
+
+        return false;
     }
 
     public String getNomeUsuarioByIdeusu(String ideusu){

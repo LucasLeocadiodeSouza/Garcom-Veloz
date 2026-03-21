@@ -15,10 +15,10 @@ public class UserDTORepository {
 
 
     public List<UserDTO> getListUsuarios(String nome, String ativo, Long idEmpresa, Long idPerfil){
-        Boolean filtroPorDescricao = nome != null && !nome.isBlank();
-        Boolean filtroPorPerfil    = idPerfil != null && idPerfil != 0;
+        Boolean filtroPorDescricao = nome      != null && !nome.isBlank();
+        Boolean filtroPorPerfil    = idPerfil  != null && idPerfil  != 0;
         Boolean filtroPorEmpresa   = idEmpresa != null && idEmpresa != 0;
-        Boolean filtroPorStatus    = ativo != null && !ativo.isBlank();
+        Boolean filtroPorStatus    = ativo     != null && !ativo.isBlank();
         Boolean temAnd             = false;
 
         String query = "SELECT new UserDTO(" + 
@@ -33,21 +33,21 @@ public class UserDTORepository {
                        "u.criadoEm) " +
                        "FROM Usuario u " + 
                        "JOIN u.perfil p " +
-                       "JOIN u.empresa e";
+                       "JOIN u.empresa e ";
 
         if(filtroPorDescricao){
             query += " WHERE u.nome LIKE CONCAT('%', :nomeItem ,'%') ";
             temAnd = true;
         }
         if(filtroPorPerfil){
-            query += (temAnd?" AND ":" ") + "p.id = :idPerfil";
+            query += (temAnd?" AND ":" WHERE ") + "p.id = :idPerfil";
             temAnd = true;
         }
         if(filtroPorEmpresa){
-            query += (temAnd?" AND ":" ") + "e.id = :idEmpresa";
+            query += (temAnd?" AND ":" WHERE ") + "e.id = :idEmpresa";
             temAnd = true;
         }
-        if(filtroPorStatus) query += (temAnd?" AND ":" ") + "u.ativo = :ativo";
+        if(filtroPorStatus) query += (temAnd?" AND ":" WHERE ") + "u.ativo = :ativo";
 
         var q = em.createQuery(query, UserDTO.class);
 

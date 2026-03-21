@@ -50,15 +50,6 @@ export class RequestForm {
 
     const token = localStorage.getItem('token');
 
-    if (!token && path !== 'auth/login') {
-      this.http.get(`${this.apiUrl}/auth/me`, { withCredentials: true }).subscribe({
-        next: () => {
-          return this.http.post(url, body, {withCredentials: true});
-        },
-        error: (error) => this.router.navigate(['/login'])
-      });
-    }
-
     return this.http.post(url, body, {withCredentials: true, headers: {
                                                                         Authorization: `Bearer ${token}`
                                                                       }
