@@ -61,17 +61,15 @@ public class Api {
         return genService.validarAutenticacao(request);
     }
 
-
-    @GetMapping("/getUsername")
-    private ResponseEntity<?> getUsername(HttpServletRequest request) {
+    @GetMapping("/getInfoUser")
+    private ResponseEntity<?> getInfoUser(HttpServletRequest request) {
         String username = genService.getUserName(request);
-        return ResponseEntity.ok(Map.of("username", username));
-    }
+        String perfil   = genService.getPerfilUsuario(username).getDescricao();
 
-    @GetMapping("/getPerfilUsuario")
-    private ResponseEntity<?> getPerfilUsuario(HttpServletRequest request) {
-        String perfil = genService.getPerfilUsuario(genService.getUserName(request)).getDescricao();
-        return ResponseEntity.ok(Map.of("perfil", perfil));
+        return ResponseEntity.ok(Map.of(
+            "username", username,
+            "perfil", perfil
+        ));
     }
 
 

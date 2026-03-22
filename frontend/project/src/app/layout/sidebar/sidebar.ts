@@ -1,8 +1,8 @@
-import { Response } from 'express';
 import { Component, signal, effect, inject, PLATFORM_ID, OnInit } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { RequestForm } from '../../service/request-form';
+import { UserService } from '../../service/user-service';
 
 interface NavItem {
   label: string;
@@ -18,6 +18,9 @@ interface NavItem {
 })
 export class Sidebar implements OnInit {
   private request = inject(RequestForm);
+  private userService = inject(UserService);
+
+  user = this.userService.getUser();
 
   collapsed          = signal(false);
   mobileOpen         = signal(false);
@@ -27,8 +30,7 @@ export class Sidebar implements OnInit {
   mainNav:  NavItem[] = [];
   adminNav: NavItem[] = [];
 
-  username: string = "";
-  perfil: string = "";
+
 
   constructor() {
     effect(() => {
@@ -41,7 +43,7 @@ export class Sidebar implements OnInit {
     });
   }
 
-  ngOnInit(): void { this.getUsername(); this.loadFormTelas(); }
+  ngOnInit(): void { this.loadFormTelas(); }
 
   loadFormTelas(): void {
     this.request.executeRequestGET('api/getTelasByPerfil').subscribe({
@@ -66,22 +68,7 @@ export class Sidebar implements OnInit {
     });
   }
 
-  getUsername(): void {
-    this.request.executeRequestGET('api/getUsername').subscribe({
-      next: (response: {username: string}) => {
-        this.username = response.username;
-        this.getPerfilUsuario();
-      },
-      error: (error) => console.error("Erro ao carregar o username: ", error)
-    });
-  }
 
-  getPerfilUsuario(): void {
-    this.request.executeRequestGET('api/getPerfilUsuario').subscribe({
-      next: (response: {perfil: string}) => this.perfil = response.perfil,
-      error: (error) => console.error("Erro ao carregar o perfil do usuário", error)
-    });
-  }
 
   hasMainPages(){ return this.mainNav.length != 0 }
   hasAdmPages(){ return this.adminNav.length != 0 }

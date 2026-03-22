@@ -66,11 +66,11 @@
 
     <div class="sidebar-footer">
         <div class="user-info" [class.centered]="collapsed()">
-            <div class="avatar">A</div>
+            <div class="avatar">{{ user()!.username!.substring(0, 1) }}</div>
             @if (!collapsed()) {
             <div class="user-details">
-                <span class="user-name">{{ username }}</span>
-                <span class="user-role">{{ perfil }}</span>
+                <span class="user-name">{{ user()!.username }}</span>
+                <span class="user-role">{{ user()!.perfil }}</span>
             </div>
             <button class="logout-btn" title="Sair" (click)="logout()">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none">

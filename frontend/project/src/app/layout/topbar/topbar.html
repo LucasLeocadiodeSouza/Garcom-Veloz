@@ -11,8 +11,8 @@
     <div class="topbar-right">
         <div class="user-chip-wrapper">
             <div class="user-chip" (click)="toggleDropdown()" [class.active]="dropdownOpen()">
-                <div class="chip-avatar">{{ username.substring(0, 1) }}</div>
-                <span class="chip-name">{{ username }}</span>
+                <div class="chip-avatar">  {{ user()!.username!.substring(0, 1) }} </div>
+                <span class="chip-name">{{ user()!.username }}</span>
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" class="dropdown-icon" [style.transform]="dropdownOpen() ? 'rotate(180deg)' : 'rotate(0)'">
                     <path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
                 </svg>
@@ -21,8 +21,8 @@
             @if (dropdownOpen()) {
             <div class="user-dropdown">
                 <div class="dropdown-header">
-                    <span class="user-name">{{ username }}</span>
-                    <span class="user-role">{{ perfil }}</span>
+                    <span class="user-name">{{ user()!.username }}</span>
+                    <span class="user-role">{{ user()!.perfil }}</span>
                 </div>
                 <div class="dropdown-divider"></div>
                 <button class="dropdown-item" (click)="logout()">
