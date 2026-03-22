@@ -20,6 +20,7 @@ import com.back.demo.model.Usuario;
 import com.back.demo.repository.EmpresaRepository;
 import com.back.demo.repository.LoginRepository;
 import com.back.demo.repository.PerfilRepository;
+import com.back.demo.repository.RestricaoTelaRepository;
 import com.back.demo.repository.UserDTORepository;
 import com.back.demo.repository.UsuarioRepository;
 import jakarta.transaction.Transactional;
@@ -44,6 +45,9 @@ public class UserSvc implements UserDetailsService  {
 
     @Autowired
     private GenSvc genSvc;
+
+    @Autowired
+    private RestricaoTelaRepository restricaoTelaRepo;
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException { return loginRepository.findByName(username); }
@@ -78,8 +82,11 @@ public class UserSvc implements UserDetailsService  {
 
     public List<UserDTO> getAllRestricoesPerfil(){
         List<UserDTO> usuarios = userDTORepo.getAllRestricoesPerfil();
-
         return usuarios;
+    }
+
+    public List<Object[]> getAllRestricoesTela(){
+        return restricaoTelaRepo.findAllFlat();
     }
 
     public List<Perfil> getAllPerfil(){
@@ -180,4 +187,17 @@ public class UserSvc implements UserDetailsService  {
 
         usuarioRepo.save(usuario);
     }
+
+
+    // #################### Permissões de Perfil ####################
+
+    // @Transactional
+    // public void usuarioTemPermissao(Long id, Boolean ativar, String ideusu){
+    //     Usuario usuario = usuarioRepo.findUsuarioById(id);
+    //     if(usuario == null) throw new UsuarioNotFoundException("Não encontrado o usuário no sistema vinculado a empresa informada");
+
+    //     usuario.setAtivo(ativar);
+
+    //     usuarioRepo.save(usuario);
+    // }
 }

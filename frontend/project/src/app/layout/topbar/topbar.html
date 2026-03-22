@@ -9,15 +9,6 @@
     </div>
 
     <div class="topbar-right">
-        <button class="icon-btn" title="Configurações" id="settings-btn">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-                <circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="1.8" />
-                <path
-                    d="M12 2v2m0 16v2M4.22 4.22l1.42 1.42m12.72 12.72l1.42 1.42M2 12h2m16 0h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"
-                    stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
-            </svg>
-        </button>
-
         <div class="user-chip-wrapper">
             <div class="user-chip" (click)="toggleDropdown()" [class.active]="dropdownOpen()">
                 <div class="chip-avatar">A</div>
@@ -26,7 +17,7 @@
                     <path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
                 </svg>
             </div>
-            
+
             @if (dropdownOpen()) {
             <div class="user-dropdown">
                 <div class="dropdown-header">

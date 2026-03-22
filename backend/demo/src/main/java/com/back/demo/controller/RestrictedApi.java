@@ -52,6 +52,11 @@ public class RestrictedApi {
         return userService.getAllRestricoesPerfil();
     }
 
+    @GetMapping("/getAllRestricoesTela")
+    private List<Object[]> getAllRestricoesTela() {
+        return userService.getAllRestricoesTela();
+    }
+
     @PostMapping("/criarAlterarUsuario")
     private ResponseEntity<?> criarAlterarUsuario(@RequestBody UserDTO dto, HttpServletRequest request) {
         String ideusu = genSvc.getUserName(request);

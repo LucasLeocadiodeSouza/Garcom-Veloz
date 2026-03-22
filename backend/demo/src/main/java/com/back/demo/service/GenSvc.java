@@ -7,11 +7,16 @@ import com.back.demo.exception.UsuarioException;
 import com.back.demo.infra.security.TokenService;
 import com.back.demo.model.EstatisticasDTO;
 import com.back.demo.model.Login;
+import com.back.demo.model.RestricaoTela;
+import com.back.demo.model.FormTela;
 import com.back.demo.repository.CategoriaRepository;
 import com.back.demo.repository.EstatisticasDTORepository;
+import com.back.demo.repository.FormTelaRepository;
 import com.back.demo.repository.ItemRepository;
 import com.back.demo.repository.LoginRepository;
+import com.back.demo.repository.RestricaoTelaRepository;
 import com.back.demo.repository.UsuarioRepository;
+import java.util.List;
 import jakarta.servlet.http.HttpServletRequest;
 
 @Service
@@ -30,7 +35,13 @@ public class GenSvc {
     private CategoriaRepository categoriaRepo; 
 
     @Autowired
-    private ItemRepository itemRepo; 
+    private ItemRepository itemRepo;
+
+    @Autowired
+    private FormTelaRepository formTelaRepo;
+
+    @Autowired
+    private RestricaoTelaRepository restTelaRepo;
 
     @Autowired
     private TokenService tokenService;
@@ -128,5 +139,24 @@ public class GenSvc {
 
     public String[] getAllIconeCategoria(){
         return new String[]{"🍽️", "🥤", "🍔", "🍕", "🥗", "🍰", "🍷", "🥩", "🌮", "🍜", "🍣", "🧃"};
+    }
+
+    public List<FormTela> getFormTelas() {
+        return formTelaRepo.findAllOrderedByLabel();
+    }
+
+    public List<FormTela> getFormTelasByPerfilUsu(String ideusu) {
+        Login loginIdeusu = loginRepo.findByName(ideusu);
+        if(loginIdeusu == null) throw new LoginNotFoundException("Usuário informado não encontrado ");
+
+        List<RestricaoTela> restricoes = restTelaRepo.findAtivasByIdPerfil(loginIdeusu.getUsuario().getPerfil().getId());
+        
+        List<FormTela> telasForm = formTelaRepo.findAllOrderedByLabel();
+
+        for(RestricaoTela restricao : restricoes){
+            if(telasForm.contains(restricao.getTela())) telasForm.remove(restricao.getTela());
+        }
+
+        return telasForm;
     }
 }

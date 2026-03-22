@@ -1,5 +1,6 @@
 import { RequestForm } from './../../service/request-form';
 import { Component, inject, OnInit, signal } from '@angular/core';
+import { forkJoin } from 'rxjs';
 import { FormsModule } from '@angular/forms';
 import { Topbar } from '../../layout/topbar/topbar';
 import { AlertService } from '../../service/alert-service';
@@ -41,8 +42,10 @@ export class Users implements OnInit {
   get totAdmins() { return this.filteredUsers.filter(u => u.roleDesc === 'Administrador').length; }
 
   roles: { label: string, value: number }[] = [];
-
   permissions: { id: number; name: string; roles: string[] }[] = [];
+
+  telas:     { label: string; value: number }[] = [];
+  restricoes: { name: string; idPerfil: number; telas: number[] }[] = [];
 
   showModal = signal(false);
   editingUser = signal<User | null>(null);
@@ -145,8 +148,8 @@ export class Users implements OnInit {
           value: info.id
         }));
 
-
         this.getAllRestricoesPerfil();
+        this.getAllRestricoesTela();
       },
       error: (error) => {
         console.error('Erro:', error);
@@ -183,6 +186,38 @@ export class Users implements OnInit {
       error: (error) => {
         console.error('Erro:', error);
         this.alert.show('Erro ao carregar as restricoes. Por favor, tente novamente.');
+      }
+    });
+  }
+
+  getAllRestricoesTela() {
+    forkJoin({
+      todasTelas: this.request.executeRequestGET('api/getFormTelas'),
+      restricoes: this.request.executeRequestGET('restrictedApi/getAllRestricoesTela')
+    }).subscribe({
+      next: (responses) => {
+        const telasArr = responses.todasTelas as any[];
+        const restArr  = responses.restricoes as any[]; // [idPerfil, perfDescricao, idTela, labelTela]
+        
+        this.telas = telasArr.map(t => ({ label: t.label, value: t.id }));
+        this.restricoes = [];
+
+        // Build restricoes rows (one per perfil)
+        this.roles.forEach(role => {
+          const telasBloqueadas = restArr
+            .filter((row: any[]) => Number(row[0]) === role.value)
+            .map((row: any[]) => Number(row[2]));
+
+          this.restricoes.push({
+            name: role.label,
+            idPerfil: role.value,
+            telas: telasBloqueadas
+          });
+        });
+      },
+      error: (error) => {
+        console.error('Erro:', error);
+        this.alert.show('Erro ao carregar as restrições de tela. Por favor, tente novamente.');
       }
     });
   }

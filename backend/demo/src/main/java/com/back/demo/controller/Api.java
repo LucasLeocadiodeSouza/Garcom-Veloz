@@ -7,6 +7,7 @@ import org.springframework.http.MediaType;
 import com.back.demo.model.Categoria;
 import com.back.demo.model.CategoriaDTO;
 import com.back.demo.model.EstatisticasDTO;
+import com.back.demo.model.FormTela;
 import com.back.demo.model.Item;
 import com.back.demo.model.ItemDTO;
 import com.back.demo.model.ItemMedia;
@@ -67,6 +68,15 @@ public class Api {
         return genService.getStatsHome();
     }
 
+    @GetMapping("/getFormTelas")
+    private List<FormTela> getFormTelas(HttpServletRequest request){
+        return genService.getFormTelas();
+    }
+
+    @GetMapping("/getTelasByPerfil")
+    private List<FormTela> getTelasByPerfil(HttpServletRequest request){
+        return genService.getFormTelasByPerfilUsu(genService.getUserName(request));
+    }
 
     // ####################### CATEGORIAS #######################
 

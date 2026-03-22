@@ -135,7 +135,6 @@
             </div>
         </div>
 
-        <!-- Permissions Matrix -->
         <div class="card permissions-card">
             <div class="card-header">
                 <h3>Matriz de Permissões por Perfil</h3>
@@ -176,7 +175,55 @@
                 </table>
             </div>
         </div>
-    </div>
+
+        <div class="card permissions-card">
+            <div class="card-header">
+                <h3>Matriz de Restrições de Tela por Perfil</h3>
+                <span class="badge badge-blue">Telas bloqueadas por perfil</span>
+            </div>
+            <div class="permissions-table-wrap">
+                @if (telas.length === 0) {
+                <div class="empty-state" style="padding: 40px 20px;">
+                    <div class="empty-icon">🖥️</div>
+                    <p>Nenhuma restrição de tela cadastrada</p>
+                </div>
+                } @else {
+                <table class="permissions-table">
+                    <thead>
+                        <tr>
+                            <th>Perfil</th>
+                            @for (tela of telas; track tela.value) {
+                            <th>{{ tela.label }}</th>
+                            }
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @for (rest of restricoes; track rest.idPerfil) {
+                        <tr>
+                            <td class="perm-name">{{ rest.name }}</td>
+                            @for (tela of telas; track tela.value) {
+                            <td class="perm-cell">
+                                @if (rest.telas.includes(tela.value)) {
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" class="cross-icon">
+                                    <path d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"
+                                        fill="#fee2e2" stroke="#ef4444" stroke-width="1.5" />
+                                </svg>
+                                } @else {
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" class="check-icon">
+                                    <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" fill="#d1fae5"
+                                        stroke="#059669" stroke-width="1.5" />
+                                </svg>
+                                }
+                            </td>
+                            }
+                        </tr>
+                        }
+                    </tbody>
+                </table>
+                }
+            </div>
+        </div>
+
 </div>
 
 @if (showModal()) {
