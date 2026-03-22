@@ -12,7 +12,12 @@ export class Topbar {
 
   private request = inject(RequestForm);
 
+  username: string = "";
+  perfil: string = "";
+
   dropdownOpen = signal(false);
+
+  ngOnInit(){ this.getUsername() }
 
   toggleDropdown() {
     this.dropdownOpen.update(v => !v);
@@ -23,6 +28,23 @@ export class Topbar {
     if (!this.elementRef.nativeElement.contains(event.target)) {
       this.dropdownOpen.set(false);
     }
+  }
+
+  getUsername(): void {
+    this.request.executeRequestGET('api/getUsername').subscribe({
+      next: (response: {username: string}) => {
+        this.username = response.username;
+        this.getPerfilUsuario();
+      },
+      error: (error) => console.error("Erro ao carregar o username: ", error)
+    });
+  }
+
+  getPerfilUsuario(): void {
+    this.request.executeRequestGET('api/getPerfilUsuario').subscribe({
+      next: (response: {perfil: string}) => this.perfil = response.perfil,
+      error: (error) => console.error("Erro ao carregar o perfil do usuário", error)
+    });
   }
 
   logout() {

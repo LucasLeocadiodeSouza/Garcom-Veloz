@@ -44,10 +44,10 @@ public class UserSvc implements UserDetailsService  {
     private PerfilRepository perfilRepo;
 
     @Autowired
-    private GenSvc genSvc;
-
-    @Autowired
     private RestricaoTelaRepository restricaoTelaRepo;
+    
+    @Autowired
+    private GenSvc genSvc;
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException { return loginRepository.findByName(username); }
@@ -115,6 +115,8 @@ public class UserSvc implements UserDetailsService  {
 
         if(genSvc.formataTelefoneBanco(telefone).length() != 11) throw new UsuarioException("Vincule um número valido para cadastrar o usuário");
 
+        genSvc.usuarioTemPermissao("Gerenciar Usuários", ideusu);
+
         Perfil perfil = perfilRepo.findPerfilById(idPerfil);
         if(perfil == null) throw new PerfilNotFoundException("Tipo de Perfil informado não encontrado!");
 
@@ -180,6 +182,10 @@ public class UserSvc implements UserDetailsService  {
 
     @Transactional
     public void ativarInativarUsuario(Long id, Boolean ativar, String ideusu){
+        genSvc.validaUsuarioByIdeusu(ideusu);
+
+        genSvc.usuarioTemPermissao("Gerenciar Usuários", ideusu);
+
         Usuario usuario = usuarioRepo.findUsuarioById(id);
         if(usuario == null) throw new UsuarioNotFoundException("Não encontrado o usuário no sistema vinculado a empresa informada");
 
@@ -187,17 +193,4 @@ public class UserSvc implements UserDetailsService  {
 
         usuarioRepo.save(usuario);
     }
-
-
-    // #################### Permissões de Perfil ####################
-
-    // @Transactional
-    // public void usuarioTemPermissao(Long id, Boolean ativar, String ideusu){
-    //     Usuario usuario = usuarioRepo.findUsuarioById(id);
-    //     if(usuario == null) throw new UsuarioNotFoundException("Não encontrado o usuário no sistema vinculado a empresa informada");
-
-    //     usuario.setAtivo(ativar);
-
-    //     usuarioRepo.save(usuario);
-    // }
 }

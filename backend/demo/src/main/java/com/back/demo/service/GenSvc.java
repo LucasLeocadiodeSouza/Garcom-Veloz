@@ -3,10 +3,16 @@ package com.back.demo.service;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import com.back.demo.exception.LoginNotFoundException;
+import com.back.demo.exception.PerfilNotFoundException;
+import com.back.demo.exception.RestricaoException;
+import com.back.demo.exception.RestricaoNotFoundException;
 import com.back.demo.exception.UsuarioException;
 import com.back.demo.infra.security.TokenService;
 import com.back.demo.model.EstatisticasDTO;
 import com.back.demo.model.Login;
+import com.back.demo.model.Perfil;
+import com.back.demo.model.Restricao;
+import com.back.demo.model.RestricaoPerfil;
 import com.back.demo.model.RestricaoTela;
 import com.back.demo.model.FormTela;
 import com.back.demo.repository.CategoriaRepository;
@@ -14,6 +20,8 @@ import com.back.demo.repository.EstatisticasDTORepository;
 import com.back.demo.repository.FormTelaRepository;
 import com.back.demo.repository.ItemRepository;
 import com.back.demo.repository.LoginRepository;
+import com.back.demo.repository.RestricaoPerfilRepository;
+import com.back.demo.repository.RestricaoRepository;
 import com.back.demo.repository.RestricaoTelaRepository;
 import com.back.demo.repository.UsuarioRepository;
 import java.util.List;
@@ -42,6 +50,12 @@ public class GenSvc {
 
     @Autowired
     private RestricaoTelaRepository restTelaRepo;
+
+    @Autowired
+    private RestricaoPerfilRepository restricaoPerfilRepo;
+
+    @Autowired
+    private RestricaoRepository restricaoRepo;
 
     @Autowired
     private TokenService tokenService;
@@ -106,6 +120,16 @@ public class GenSvc {
         return loginIdeusu.getUsuario().getEmpresa().getId();
     }
 
+    public Perfil getPerfilUsuario(String ideusu){
+        Login loginIdeusu = loginRepo.findByName(ideusu);
+        if(loginIdeusu == null) throw new LoginNotFoundException("Usuário informado não encontrado.");
+
+        Perfil perfil = loginIdeusu.getUsuario().getPerfil();
+        if(perfil == null) throw new PerfilNotFoundException("Perfil do usuário informado não encontrado.");
+
+        return perfil;
+    }
+
     public EstatisticasDTO getStatsHome(){
         EstatisticasDTO estatisticas = new EstatisticasDTO();
 
@@ -158,5 +182,20 @@ public class GenSvc {
         }
 
         return telasForm;
+    }
+
+    // #################### Permissões de Perfil ####################
+
+    public void usuarioTemPermissao(String restricao, String ideusu){
+        Login loginIdeusu = loginRepo.findByName(ideusu);
+
+        Restricao rest = restricaoRepo.findRestricaoByDescricao(restricao);
+        if(rest == null) throw new RestricaoNotFoundException("Não encontrado a restrição informada");
+
+        Perfil perfilUsuario = loginIdeusu.getUsuario().getPerfil();
+        if(perfilUsuario == null) throw new PerfilNotFoundException("Não encontrado o perfil do usuário informado");
+
+        RestricaoPerfil restPerfil = restricaoPerfilRepo.findRestricaoPerfilActiveById(perfilUsuario.getId(), rest.getId());
+        if(restPerfil == null) throw new RestricaoException("Usuário não possui permissão para executar a ação");
     }
 }

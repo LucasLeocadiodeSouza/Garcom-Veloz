@@ -61,6 +61,20 @@ public class Api {
         return genService.validarAutenticacao(request);
     }
 
+
+    @GetMapping("/getUsername")
+    private ResponseEntity<?> getUsername(HttpServletRequest request) {
+        String username = genService.getUserName(request);
+        return ResponseEntity.ok(Map.of("username", username));
+    }
+
+    @GetMapping("/getPerfilUsuario")
+    private ResponseEntity<?> getPerfilUsuario(HttpServletRequest request) {
+        String perfil = genService.getPerfilUsuario(genService.getUserName(request)).getDescricao();
+        return ResponseEntity.ok(Map.of("perfil", perfil));
+    }
+
+
     // ####################### ITENS #######################
 
     @GetMapping("/getStatsHome")

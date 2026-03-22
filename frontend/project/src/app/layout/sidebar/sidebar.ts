@@ -1,3 +1,4 @@
+import { Response } from 'express';
 import { Component, signal, effect, inject, PLATFORM_ID, OnInit } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
@@ -26,6 +27,9 @@ export class Sidebar implements OnInit {
   mainNav:  NavItem[] = [];
   adminNav: NavItem[] = [];
 
+  username: string = "";
+  perfil: string = "";
+
   constructor() {
     effect(() => {
       if (isPlatformBrowser(this.platformId)) {
@@ -37,7 +41,7 @@ export class Sidebar implements OnInit {
     });
   }
 
-  ngOnInit(): void { this.loadFormTelas() }
+  ngOnInit(): void { this.getUsername(); this.loadFormTelas(); }
 
   loadFormTelas(): void {
     this.request.executeRequestGET('api/getTelasByPerfil').subscribe({
@@ -53,12 +57,29 @@ export class Sidebar implements OnInit {
           .filter(t => t.admtype)
           .map(t => ({ label: t.label, route: t.router, icon: svg(t.svg ?? '') }));
       },
-      error: () => {
+      error: (error) => {
         // Fallback to default nav on error
         //this.loadDefaultNav();
 
-        console.error("Erro ao carregar as telas");
+        console.error("Erro ao carregar as telas", error);
       }
+    });
+  }
+
+  getUsername(): void {
+    this.request.executeRequestGET('api/getUsername').subscribe({
+      next: (response: {username: string}) => {
+        this.username = response.username;
+        this.getPerfilUsuario();
+      },
+      error: (error) => console.error("Erro ao carregar o username: ", error)
+    });
+  }
+
+  getPerfilUsuario(): void {
+    this.request.executeRequestGET('api/getPerfilUsuario').subscribe({
+      next: (response: {perfil: string}) => this.perfil = response.perfil,
+      error: (error) => console.error("Erro ao carregar o perfil do usuário", error)
     });
   }
 

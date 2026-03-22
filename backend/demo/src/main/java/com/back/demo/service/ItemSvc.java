@@ -46,8 +46,7 @@ public class ItemSvc {
     private ItemDTORepository itemDTORepo;
 
     @Autowired
-    private GenSvc genSvc;
-
+    private GenSvc genSvc; 
 
     private String itensDirectory = System.getProperty("user.dir") + "/media/itens";
 
@@ -98,6 +97,8 @@ public class ItemSvc {
 
         if(descricao == null || descricao.isBlank()) throw new CategoriaException("É preciso informar a descrição do item!");
 
+        genSvc.usuarioTemPermissao("Editar Categoria", ideusu);
+
         Categoria categoria = categoriaRepo.findCategoriaById(id);
 
         if(categoria == null){
@@ -119,6 +120,8 @@ public class ItemSvc {
     public void ativarInativarCategoria(Long id, Boolean ativar, String ideusu){
         genSvc.validaUsuarioByIdeusu(ideusu);
 
+        genSvc.usuarioTemPermissao("Editar Categoria", ideusu);
+
         Categoria categoria = categoriaRepo.findCategoriaById(id);
         if(categoria == null) throw new CategoriaNotFoundException("Não encontrado a Categoria");
 
@@ -130,6 +133,8 @@ public class ItemSvc {
     @Transactional
     public void excluirCategoria(Long id, String ideusu){
         genSvc.validaUsuarioByIdeusu(ideusu);
+
+        genSvc.usuarioTemPermissao("Excluir Categoria", ideusu);
 
         Categoria categoria = categoriaRepo.findCategoriaById(id);
         if(categoria == null) throw new CategoriaNotFoundException("Não encontrado a Categoria");
@@ -171,6 +176,8 @@ public class ItemSvc {
         //if(desconto == null || desconto.equals(BigDecimal.ZERO)) throw new ItemException("É preciso informar um desconto para o item!");
         if(valor.compareTo(desconto) < 0) throw new ItemException("O desconto do item não pode ser maior que o valor do item");
 
+        genSvc.usuarioTemPermissao("Editar Produtos", ideusu);
+
         Item item = itemRepo.findItemById(id);
 
         if(item == null){
@@ -203,6 +210,8 @@ public class ItemSvc {
     public void ativarInativarItem(Long id, Boolean ativar, String ideusu){
         genSvc.validaUsuarioByIdeusu(ideusu);
 
+        genSvc.usuarioTemPermissao("Editar Produtos", ideusu);
+
         Item item = itemRepo.findItemById(id);
         if(item == null) throw new ItemException("Não encontrado o Item");
 
@@ -214,6 +223,8 @@ public class ItemSvc {
     @Transactional
     public void excluiItem(Long id, String ideusu){
         genSvc.validaUsuarioByIdeusu(ideusu);
+
+        genSvc.usuarioTemPermissao("Excluir Produtos", ideusu);
 
         Item item = itemRepo.findItemById(id);
         if(item == null) throw new ItemException("Não encontrado o Item");
@@ -231,6 +242,8 @@ public class ItemSvc {
     @Transactional
     private void vincularItemImage(MultipartFile image, Long itemId, String ideusu) throws IOException{
        genSvc.validaUsuarioByIdeusu(ideusu);
+
+        genSvc.usuarioTemPermissao("Editar Produtos", ideusu);
 
        Item item = itemRepo.findItemById(itemId);
         if(item == null) throw new ItemException("Não encontrado o Item");
@@ -261,6 +274,8 @@ public class ItemSvc {
     @Transactional
     private void removerMediaItem(Long itemId, Integer sequencia, String ideusu) throws IOException{
         genSvc.validaUsuarioByIdeusu(ideusu);
+
+        genSvc.usuarioTemPermissao("Editar Produtos", ideusu);
 
        Item item = itemRepo.findItemById(itemId);
         if(item == null) throw new ItemException("Não encontrado o Item");

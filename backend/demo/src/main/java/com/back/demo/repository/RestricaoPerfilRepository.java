@@ -13,6 +13,9 @@ public interface RestricaoPerfilRepository extends JpaRepository<RestricaoPerfil
     @Query("SELECT rp FROM RestricaoPerfil rp WHERE rp.id.idPerfil = :idPerfil AND rp.id.idRestricao = :idRestricao")
     RestricaoPerfil findRestricaoPerfilById(@Param("idPerfil") Long idPerfil, @Param("idRestricao") Long idRestricao);
 
+    @Query("SELECT rp FROM RestricaoPerfil rp WHERE rp.id.idPerfil = :idPerfil AND rp.id.idRestricao = :idRestricao AND rp.ativo = TRUE")
+    RestricaoPerfil findRestricaoPerfilActiveById(@Param("idPerfil") Long idPerfil, @Param("idRestricao") Long idRestricao);
+
     List<RestricaoPerfil> findByPerfil(Perfil perfil);
 
     List<RestricaoPerfil> findByRestricao(Restricao restricao);

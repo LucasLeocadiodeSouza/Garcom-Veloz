@@ -20,7 +20,7 @@ public class Restricao {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "descricao", length = 20)
+    @Column(name = "descricao", length = 20, unique = true)
     private String descricao;
 
     @Column(columnDefinition = "TINYINT(1)")

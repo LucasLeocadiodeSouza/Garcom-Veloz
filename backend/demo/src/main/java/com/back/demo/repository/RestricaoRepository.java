@@ -12,8 +12,8 @@ public interface RestricaoRepository extends JpaRepository<Restricao, Long>{
     @Query("SELECT r FROM Restricao r WHERE r.id = :id")
     Restricao findRestricaoById(@Param("id") Long id);
 
-    @Query("SELECT r FROM Restricao r WHERE r.descricao LIKE CONCAT('%', :descricao, '%')")
-    List<Restricao> findRestricaoByDescricao(@Param("descricao") String descricao);
+    @Query("SELECT r FROM Restricao r WHERE r.descricao LIKE :descricao")
+    Restricao findRestricaoByDescricao(@Param("descricao") String descricao);
 
     @Query("SELECT r FROM Restricao r WHERE r.ativo = :status")
     List<Restricao> findRestricaoByStatus(@Param("status") Boolean status);
