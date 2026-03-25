@@ -13,22 +13,7 @@ import { UserService } from '../../service/user-service';
   styleUrl: './home.css'
 })
 export class Home {
-  private request     = inject(RequestForm);
   private userService = inject(UserService);
-
-  ngOnInit(){ this.getInfoUser() }
-
-  getInfoUser(): void {
-    this.request.executeRequestGET('api/getInfoUser').subscribe({
-      next: (response: {username: string, perfil: string}) => {
-        this.userService.setUser({
-          username: response.username,
-          perfil:   response.perfil
-        });
-      },
-      error: (error) => console.error("Erro ao carregar informacoes do username: ", error)
-    });
-  }
 
 
   quickActions = [

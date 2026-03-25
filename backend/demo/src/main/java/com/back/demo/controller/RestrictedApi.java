@@ -4,6 +4,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import com.back.demo.model.Perfil;
 import com.back.demo.model.UserDTO;
+import com.back.demo.model.UsuarioHistorico;
 import com.back.demo.service.GenSvc;
 import com.back.demo.service.UserSvc;
 import jakarta.servlet.http.HttpServletRequest;
@@ -40,6 +41,13 @@ public class RestrictedApi {
         String ideusu = genSvc.getUserName(request);
 
         return userService.getListUsers(search, status, genSvc.getCodEmpresaByIdeusu(ideusu), idPerfil);
+    }
+
+    @GetMapping("/getRecentHistoricoByUsuario")
+    private List<UsuarioHistorico> getRecentHistoricoByUsuario(HttpServletRequest request){
+        String ideusu = genSvc.getUserName(request);
+
+        return userService.getRecentHistoricoByUsuario(ideusu);
     }
 
     @GetMapping("/getAllPerfil")

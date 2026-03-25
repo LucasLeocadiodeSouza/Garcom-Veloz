@@ -2,6 +2,8 @@ package com.back.demo.model;
 
 import jakarta.persistence.*;
 import java.time.LocalDate;
+import java.time.LocalTime;
+
 import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -12,25 +14,23 @@ import lombok.Setter;
 @Getter
 @Setter
 @Entity
-@Table(name = "restricao_tela")
-public class RestricaoTela {
+@Table(name = "usuario_historico")
+public class UsuarioHistorico {
 
     @EmbeddedId
-    private RestricaoTelaId id;
+    private UsuarioHistoricoId id;
 
     @ManyToOne
-    @MapsId("idPerfil")
-    @JoinColumn(name = "id_perfil")
-    private Perfil perfil;
+    @MapsId("idUsuario")
+    @JoinColumn(name = "id_usuario")
+    private Usuario usuario;
 
-    @ManyToOne
-    @MapsId("idTela")
-    @JoinColumn(name = "id_tela")
-    private FormTela tela;
-
-    @Column(columnDefinition = "TINYINT")
-    private Integer ativo;
+    @Column(name = "label", length = 75)
+    private String label;
 
     @Column(name = "criado_em")
     private LocalDate criadoEm;
+
+    @Column(name = "horario")
+    private LocalTime horario;
 }

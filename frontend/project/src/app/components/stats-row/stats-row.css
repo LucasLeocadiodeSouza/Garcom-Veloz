@@ -65,24 +65,31 @@
 }
 
 .stat-trend {
-    position: absolute;
-    top: 14px;
-    right: 16px;
-    display: flex;
-    align-items: center;
-    gap: 3px;
-    font-size: 11px;
-    font-weight: 600;
-    padding: 3px 8px;
-    border-radius: 20px;
+  position:      absolute;
+  top:           14px;
+  right:         16px;
+  display:       flex;
+  align-items:   center;
+  gap:           3px;
+  font-size:     11px;
+  font-weight:   600;
+  padding:       3px 8px;
+  border-radius: 20px;
 }
 
 .stat-trend.up {
-    background: var(--success-light);
-    color: #065f46;
+  background: var(--success-light);
+  color: #065f46;
 }
 
 .stat-trend.down {
-    background: var(--danger-light);
-    color: #991b1b;
+  background: var(--danger-light);
+  color: #991b1b;
+}
+
+@media(max-width: 1300px){
+  .stat-trend {
+    top:   -7px;
+    right: 0px;
+  }
 }

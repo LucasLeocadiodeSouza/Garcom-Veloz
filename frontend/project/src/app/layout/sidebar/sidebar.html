@@ -66,6 +66,7 @@
 
     <div class="sidebar-footer">
         <div class="user-info" [class.centered]="collapsed()">
+            @if (user()) {
             <div class="avatar">{{ user()!.username!.substring(0, 1) }}</div>
             @if (!collapsed()) {
             <div class="user-details">
@@ -78,6 +79,7 @@
                         stroke="currentColor" stroke-width="2" stroke-linecap="round" />
                 </svg>
             </button>
+            }
             }
         </div>
     </div>

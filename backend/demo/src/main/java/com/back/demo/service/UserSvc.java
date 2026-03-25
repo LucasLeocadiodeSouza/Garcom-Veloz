@@ -1,6 +1,7 @@
 package com.back.demo.service;
 
 import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -17,11 +18,14 @@ import com.back.demo.model.Login;
 import com.back.demo.model.Perfil;
 import com.back.demo.model.UserDTO;
 import com.back.demo.model.Usuario;
+import com.back.demo.model.UsuarioHistorico;
+import com.back.demo.model.UsuarioHistoricoId;
 import com.back.demo.repository.EmpresaRepository;
 import com.back.demo.repository.LoginRepository;
 import com.back.demo.repository.PerfilRepository;
 import com.back.demo.repository.RestricaoTelaRepository;
 import com.back.demo.repository.UserDTORepository;
+import com.back.demo.repository.UsuarioHistoricoRepository;
 import com.back.demo.repository.UsuarioRepository;
 import jakarta.transaction.Transactional;
 
@@ -45,6 +49,9 @@ public class UserSvc implements UserDetailsService  {
 
     @Autowired
     private RestricaoTelaRepository restricaoTelaRepo;
+
+    @Autowired
+    private UsuarioHistoricoRepository userHistRepo;
     
     @Autowired
     private GenSvc genSvc;
@@ -95,6 +102,17 @@ public class UserSvc implements UserDetailsService  {
         return perfil;
     }
 
+    public List<UsuarioHistorico> getRecentHistoricoByUsuario(String ideusu){
+        Login loginIdeusu = loginRepository.findByName(ideusu);
+        if(loginIdeusu == null) throw new UsuarioNotFoundException("Usuário não autenticado");
+
+        Long idUsuario = loginIdeusu.getUsuario().getId();
+
+        List<UsuarioHistorico> historico = userHistRepo.findTop5ByIdIdUsuarioOrderByCriadoEmDesc(idUsuario);
+
+        return historico;
+    }
+
     @Transactional
     public void criarAlterarUsuario(Long    id,
                                     String  nome, 
@@ -142,6 +160,8 @@ public class UserSvc implements UserDetailsService  {
         usuarioRepo.save(usuario);
 
         if(ehNovoUsuario){ criarAlterarLogin(usuario.getId(), ideusu); }
+
+        salvarHistoricoUsuario("Usuário '" + usuario.getNome() + "' " + (ehNovoUsuario? "Cadastrado" : "Atualizado"), ideusu);
     }
 
     @Transactional
@@ -192,5 +212,34 @@ public class UserSvc implements UserDetailsService  {
         usuario.setAtivo(ativar);
 
         usuarioRepo.save(usuario);
+
+        salvarHistoricoUsuario("Usuário '" + usuario.getNome() + "' " + (ativar? "ativado" : "desativado"), ideusu);
+    }
+
+    @Transactional
+    public void salvarHistoricoUsuario(String  label, String  ideusu){        
+        if(label == null || label.isBlank()) throw new UsuarioException("É preciso informar um texto informando o historico do usuário");
+
+        Login loginIdeusu = loginRepository.findByName(ideusu);
+        if(loginIdeusu == null) throw new UsuarioNotFoundException("Usuário não autenticado");
+
+        Long idUsuario = loginIdeusu.getUsuario().getId();
+
+        Long seq = userHistRepo.findMaxSeqByHistoricoUsuario(idUsuario);
+        if(seq == null || seq.equals(0L)) seq = 1L;
+        else seq += 1;
+
+        UsuarioHistoricoId idHistorico = new UsuarioHistoricoId();
+        idHistorico.setIdUsuario(idUsuario);
+        idHistorico.setSeq(seq);
+
+        UsuarioHistorico historico = new UsuarioHistorico();
+        historico.setId(idHistorico);
+        historico.setUsuario(loginIdeusu.getUsuario());
+        historico.setLabel(label);
+        historico.setCriadoEm(LocalDate.now());
+        historico.setHorario(LocalTime.now());
+        
+        userHistRepo.save(historico);
     }
 }

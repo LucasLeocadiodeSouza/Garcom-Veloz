@@ -43,6 +43,9 @@ public class ItemSvc {
     private CategoriaDTORepository categoriaDTORepo;
 
     @Autowired
+    private UserSvc userSvc;
+
+    @Autowired
     private ItemDTORepository itemDTORepo;
 
     @Autowired
@@ -93,6 +96,8 @@ public class ItemSvc {
                                       String     cor,
                                       Long       referencia_ext,
                                       String     ideusu){
+        Boolean isNewCateg = false;
+
         genSvc.validaUsuarioByIdeusu(ideusu);     
 
         if(descricao == null || descricao.isBlank()) throw new CategoriaException("É preciso informar a descrição do item!");
@@ -106,6 +111,8 @@ public class ItemSvc {
             categoria.setIdeusu(ideusu);
             categoria.setCriadoEm(LocalDate.now());
             categoria.setAtivo(true);
+
+            isNewCateg = true;
         }
 
         categoria.setDescricao(descricao);
@@ -114,6 +121,8 @@ public class ItemSvc {
         categoria.setRefereciaExt(referencia_ext);
 
         categoriaRepo.save(categoria);
+
+        userSvc.salvarHistoricoUsuario("Categoria '" + descricao + "' " + (isNewCateg? "Cadastrado" : "Atualizado"), ideusu);
     }
 
     @Transactional
@@ -128,10 +137,14 @@ public class ItemSvc {
         categoria.setAtivo(ativar);
 
         categoriaRepo.save(categoria);
+
+        userSvc.salvarHistoricoUsuario("Categoria '" + categoria.getDescricao() + "' " + (ativar? "Ativada" : "Desativada"), ideusu);
     }
 
     @Transactional
     public void excluirCategoria(Long id, String ideusu){
+        String descCateg = "";
+
         genSvc.validaUsuarioByIdeusu(ideusu);
 
         genSvc.usuarioTemPermissao("Excluir Categoria", ideusu);
@@ -142,7 +155,11 @@ public class ItemSvc {
         Long countProdutosVinculados = categoriaDTORepo.getCountProductByCategoria(categoria.getId(), null, null);
         if(countProdutosVinculados >= 1) throw new CategoriaException("Categoria possui itens vinculados, altere a categoria dos itens para excluir a categoria selecionada");
 
+        descCateg = categoria.getDescricao();
+
         categoriaRepo.delete(categoria);
+
+        userSvc.salvarHistoricoUsuario("Categoria '" + descCateg + "' excluida", ideusu);
     }
 
 
@@ -167,7 +184,9 @@ public class ItemSvc {
                                  Long       referencia_ext,
                                  String ideusu){
         
-        genSvc.validaUsuarioByIdeusu(ideusu);      
+        genSvc.validaUsuarioByIdeusu(ideusu);
+
+        Boolean isNewItem = false;
 
         if(nome == null || nome.isBlank()) throw new ItemException("É preciso informar o nome do item!");
         //if(descricao == null || descricao.isBlank()) throw new ItemException("É preciso informar a descrição do item!");
@@ -185,6 +204,8 @@ public class ItemSvc {
             item.setIdeusu(ideusu);
             item.setCriadoEm(LocalDate.now());
             item.setAtivo(true);
+
+            isNewItem = true;
         }
 
         if(categoriaId != null && categoriaId != 0){
@@ -204,6 +225,8 @@ public class ItemSvc {
         item.setReferencia_ext(referencia_ext);
 
         itemRepo.save(item);
+
+        userSvc.salvarHistoricoUsuario("Item '" + nome + "' " + (isNewItem? "Cadastrado" : "Atualizado"), ideusu);
     }
 
     @Transactional
@@ -218,6 +241,8 @@ public class ItemSvc {
         item.setAtivo(ativar);
 
         itemRepo.save(item);
+
+        userSvc.salvarHistoricoUsuario("Item '" + item.getNome() + "' " + (ativar? "Ativado" : "Desativado"), ideusu);
     }
 
     @Transactional
@@ -226,10 +251,16 @@ public class ItemSvc {
 
         genSvc.usuarioTemPermissao("Excluir Produtos", ideusu);
 
+        String descItem = "";
+
         Item item = itemRepo.findItemById(id);
         if(item == null) throw new ItemException("Não encontrado o Item");
 
+        descItem = item.getDescricao();
+
         itemRepo.delete(item);
+
+        userSvc.salvarHistoricoUsuario("Item '" + descItem + "' excluido", ideusu);
     }
 
     @Transactional
