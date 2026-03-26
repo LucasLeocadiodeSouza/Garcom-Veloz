@@ -1,8 +1,10 @@
 import { Component, inject } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
 import { Topbar } from '../../layout/topbar/topbar';
 import { RequestForm } from '../../service/request-form';
 import { AlertService } from '../../service/alert-service';
+import { SlicePipe } from '@angular/common';
 
 interface HistoryItem {
   id: number;
@@ -15,29 +17,20 @@ interface HistoryItem {
 
 @Component({
   selector: 'app-import-export',
-  imports: [FormsModule, Topbar],
+  imports: [FormsModule, Topbar, SlicePipe],
   templateUrl: './import-export.html',
   styleUrl: './import-export.css'
 })
 export class ImportExport {
   private request = inject(RequestForm);
   private alert   = inject(AlertService);
+  private http    = inject(HttpClient);
 
-  // Export
+
   exportCategory = '';
-  exportStatus = '';
-  isExporting = false;
-  exportSuccess = false;
-
-  exportFields = [
-    { key: 'code', label: 'Código', selected: true },
-    { key: 'name', label: 'Nome', selected: true },
-    { key: 'category', label: 'Categoria', selected: true },
-    { key: 'price', label: 'Preço', selected: true },
-    { key: 'stock', label: 'Estoque', selected: true },
-    { key: 'status', label: 'Status', selected: true },
-    { key: 'desc', label: 'Descrição', selected: false },
-  ];
+  exportStatus   = '';
+  isExporting    = false;
+  exportSuccess  = false;
 
   get previewCount() {
     const base = 16;
@@ -46,41 +39,64 @@ export class ImportExport {
 
   categories = ['Lanches', 'Bebidas', 'Sobremesas', 'Entradas', 'Pratos Principais', 'Acompanhamentos'];
 
-  // Import
-  selectedFile: File | null = null;
-  isDragging = false;
-  isImporting = false;
-  importSuccess = false;
-  importResultMessage = '';
-  importErrors: string[] = [];
-  overwriteExisting = false;
-  skipErrors = true;
 
-  // History
-  history: HistoryItem[] = [
-    { id: 1, datetime: '27/02/2026 14:32', type: 'Exportação', file: 'produtos_export_27022026.xlsx', records: 248, status: 'Concluído' },
-    { id: 2, datetime: '25/02/2026 09:15', type: 'Importação', file: 'novos_produtos_fev.xlsx', records: 12, status: 'Concluído' },
-    { id: 3, datetime: '20/02/2026 16:48', type: 'Exportação', file: 'produtos_ativos.xlsx', records: 236, status: 'Concluído' },
-    { id: 4, datetime: '18/02/2026 11:05', type: 'Importação', file: 'produtos_jan_update.xlsx', records: 0, status: 'Erro' },
+  selectedFile: File | null = null;
+  isDragging          = false;
+  isImporting         = false;
+  importSuccess       = false;
+  importResultMessage = '';
+  overwriteExisting   = false;
+  importErrors: string[] = [];
+
+  showPreviewModal = false;
+  previewHeaders: string[] = [];
+  previewRows: any[] = [];
+  columnMapping: any = {};
+
+  availableColumns = [
+    { value: '',            label: 'Ignorar' },
+    { value: 'id',          label: 'ID' },
+    { value: 'nome',        label: 'Nome' },
+    { value: 'ativo',       label: 'Ativo' },
+    { value: 'idCategoria', label: 'ID Categoria' },
+    { value: 'categoria',   label: 'Categoria' },
+    { value: 'estoque',     label: 'Estoque' },
+    { value: 'vlrItem',     label: 'Vlr Item' },
+    { value: 'desconto',    label: 'Desconto' },
+    { value: 'valorLiq',    label: 'Valor Liq' }
   ];
-  private nextHistoryId = 5;
 
   exportExcel() {
-    this.isExporting = true;
+    this.isExporting   = true;
     this.exportSuccess = false;
+
     setTimeout(() => {
-      this.isExporting = false;
-      this.exportSuccess = true;
-      const filename = `produtos_export_${new Date().toLocaleDateString('pt-BR').replace(/\//g, '')}.xlsx`;
-      this.history.unshift({
-        id: this.nextHistoryId++,
-        datetime: new Date().toLocaleString('pt-BR').replace(',', ''),
-        type: 'Exportação',
-        file: filename,
-        records: this.previewCount,
-        status: 'Concluído'
+      const url = `http://localhost:8080/api/exportarProdutosCSV?status=${this.exportStatus || ''}`;
+      const token = localStorage.getItem('token');
+      this.http.get(url, { headers: { Authorization: `Bearer ${token}` }, responseType: 'blob', withCredentials: true }).subscribe({
+        next: (blob: Blob) => {
+          this.isExporting   = false;
+          this.exportSuccess = true;
+
+          const a = document.createElement('a');
+          const objectUrl = URL.createObjectURL(blob);
+          a.href = objectUrl;
+          a.download = 'produtos.csv';
+          document.body.appendChild(a);
+          a.click();
+          URL.revokeObjectURL(objectUrl);
+          document.body.removeChild(a);
+
+          setTimeout(() => this.exportSuccess = false, 4000);
+        },
+        error: (err: any) => {
+          console.error('Erro ao buscar exportar planilha:', err);
+          this.alert.show('Não foi possível exportar a planilha dos produtos.');
+
+          this.isExporting   = false;
+          this.exportSuccess = false;
+        }
       });
-      setTimeout(() => this.exportSuccess = false, 4000);
     }, 1800);
   }
 
@@ -105,8 +121,8 @@ export class ImportExport {
 
   validateAndSetFile(file: File) {
     this.importErrors = [];
-    if (!file.name.match(/\.(xlsx|xls)$/i)) {
-      this.importErrors = ['Formato inválido. Envie um arquivo .xlsx ou .xls'];
+    if (!file.name.match(/\.(xlsx|xls|csv)$/i)) {
+      this.importErrors = ['Formato inválido. Envie um arquivo .xlsx, .xls ou .csv'];
       return;
     }
     if (file.size > 10 * 1024 * 1024) {
@@ -133,24 +149,90 @@ export class ImportExport {
   importExcel() {
     if (!this.selectedFile) return;
     this.isImporting = true;
-    this.importSuccess = false;
-    setTimeout(() => {
-      this.isImporting = false;
-      this.importSuccess = true;
-      const count = Math.floor(Math.random() * 20) + 5;
-      this.importResultMessage = `${count} produto(s) importado(s) com sucesso!`;
-      this.history.unshift({
-        id: this.nextHistoryId++,
-        datetime: new Date().toLocaleString('pt-BR').replace(',', ''),
-        type: 'Importação',
-        file: this.selectedFile!.name,
-        records: count,
-        status: 'Concluído'
-      });
-      this.selectedFile = null;
-      setTimeout(() => this.importSuccess = false, 4000);
-    }, 2000);
+    this.importErrors = [];
+
+    const formData = new FormData();
+    formData.append('file', this.selectedFile);
+
+    this.request.executeRequestPOST('api/previewImportacao', formData).subscribe({
+      next: (res: any) => {
+        this.isImporting = false;
+        this.previewRows = res;
+        if(this.previewRows && this.previewRows.length > 0) {
+            this.previewHeaders = Object.keys(this.previewRows[0]);
+            // Auto mapping
+            this.columnMapping = {};
+            this.previewHeaders.forEach(h => {
+                let hLower = h.toLowerCase();
+                let mapped = '';
+                if(hLower === 'id' || hLower === 'codigo') mapped = 'id';
+                else if(hLower === 'nome') mapped = 'nome';
+                else if(hLower === 'ativo') mapped = 'ativo';
+                else if(hLower === 'idcategoria' || hLower === 'id categoria') mapped = 'idCategoria';
+                else if(hLower === 'categoria') mapped = 'categoria';
+                else if(hLower === 'estoque') mapped = 'estoque';
+                else if(hLower.includes('vlr') || hLower.includes('valor base')) mapped = 'vlrItem';
+                else if(hLower === 'desconto') mapped = 'desconto';
+                else if(hLower.includes('liq')) mapped = 'valorLiq';
+                this.columnMapping[h] = mapped;
+            });
+            this.showPreviewModal = true;
+        } else {
+            this.importErrors = ['Planilha vazia'];
+        }
+      },
+      error: (err: any) => {
+        console.error(err);
+        this.isImporting = false;
+        this.importErrors = [err?.error?.message || 'Erro ao pre-visualizar planilha'];
+      }
+    });
   }
 
-  clearHistory() { this.history = []; }
+  cancelImport() {
+      this.showPreviewModal = false;
+  }
+
+  confirmImport() {
+      const itemsToImport = this.previewRows.map(row => {
+          let item: any = {};
+          this.previewHeaders.forEach(h => {
+              const mapped = this.columnMapping[h];
+              if(mapped) {
+                  let val = row[h];
+                  if(mapped === 'id' || mapped === 'idCategoria' || mapped === 'estoque') {
+                      item[mapped] = val ? parseInt(val) : null;
+                  } else if(mapped === 'vlrItem' || mapped === 'desconto' || mapped === 'valorLiq') {
+                      item[mapped] = val ? parseFloat(val.toString().replace(',', '.')) : 0.0;
+                  } else if(mapped === 'ativo') {
+                      val = val ? val.toString().toLowerCase() : 'false';
+                      item[mapped] = (val === 'true' || val === 'sim' || val === '1');
+                  } else {
+                      item[mapped] = val;
+                  }
+              }
+          });
+          return item;
+      });
+
+      this.isImporting = true;
+      this.showPreviewModal = false;
+
+      this.request.executeRequestPOST('api/importarProdutos', itemsToImport).subscribe({
+          next: (res: any) => {
+            this.isImporting = false;
+            this.importSuccess = true;
+            this.importResultMessage = `${itemsToImport.length} produto(s) importado(s) com sucesso!`;
+
+            this.selectedFile = null;
+            setTimeout(() => this.importSuccess = false, 4000);
+          },
+          error: (err: any) => {
+              console.error(err);
+              this.isImporting = false;
+              this.importSuccess = false;
+              this.importErrors = [err?.error?.message || 'Erro ao importar produtos'];
+          }
+      });
+  }
 }

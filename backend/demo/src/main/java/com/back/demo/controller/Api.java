@@ -13,10 +13,13 @@ import com.back.demo.model.ItemDTO;
 import com.back.demo.model.ItemMedia;
 import com.back.demo.model.PedidoDTO;
 import com.back.demo.model.PedidoItemDTO;
+import com.back.demo.service.ExportaImportaSvc;
 import com.back.demo.service.GenSvc;
 import com.back.demo.service.ItemSvc;
 import com.back.demo.service.PedidoSvc;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
 import java.io.IOException;
@@ -46,6 +49,9 @@ public class Api {
 
     @Autowired
     private GenSvc genService;
+
+    @Autowired
+    private ExportaImportaSvc exportaImportaSvc;
 
 
 
@@ -343,5 +349,53 @@ public class Api {
             "status", "success",
             "message", "Alterado situação do Item do Pedido com sucesso"
         ));
+    }
+
+
+    // ####################### EXPORTADOR/IMPORTADOR #######################
+
+    @PostMapping(value = "/previewImportacao", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<?> previewImportacao(@RequestParam(value = "file", required = true) MultipartFile file) {
+        try {
+            List<Map<String, String>> result = exportaImportaSvc.previewImportacao(file);
+            return ResponseEntity.ok(result);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(500).body(Map.of(
+                "status", "error",
+                "message", e.getMessage()
+            ));
+        }
+    }
+
+    @PostMapping("/importarProdutos")
+    public ResponseEntity<?> importarProdutos(@RequestBody List<com.back.demo.model.ItemImportDTO> itens, HttpServletRequest request) {
+        try {
+            exportaImportaSvc.importarProdutos(itens, genService.getUserName(request));
+            return ResponseEntity.ok(Map.of(
+                "status", "success",
+                "message", "Produtos importados com sucesso"
+            ));
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(500).body(Map.of(
+                "status", "error",
+                "message", e.getMessage()
+            ));
+        }
+    }
+
+    @GetMapping("/exportarProdutosCSV")
+    public void exportarProdutosCSV(@RequestParam(name = "status", required = false) String status,
+                                                  HttpServletResponse response){
+
+        try {
+            response.setContentType("text/csv");
+            response.setHeader("Content-Disposition", "attachment; filename=produtos.csv");
+
+            exportaImportaSvc.exportarProdutos(status, response.getWriter());
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 }

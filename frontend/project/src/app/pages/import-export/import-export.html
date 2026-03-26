@@ -8,7 +8,6 @@
         </div>
 
         <div class="two-col-grid">
-            <!-- Export Section -->
             <div class="card section-card">
                 <div class="section-icon-wrap export-icon">
                     <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
@@ -34,22 +33,9 @@
                     <label for="export-status">Filtrar por Status</label>
                     <select id="export-status" [(ngModel)]="exportStatus">
                         <option value="">Todos os status</option>
-                        <option value="ativo">Ativos</option>
-                        <option value="inativo">Inativos</option>
+                        <option value="A">Ativos</option>
+                        <option value="I">Inativos</option>
                     </select>
-                </div>
-
-                <div class="form-group">
-                    <label>Campos a exportar</label>
-                    <div class="checkbox-grid">
-                        @for (field of exportFields; track field.key) {
-                        <label class="checkbox-item">
-                            <input type="checkbox" [id]="'field-' + field.key" [(ngModel)]="field.selected" />
-                            <span class="checkmark"></span>
-                            {{ field.label }}
-                        </label>
-                        }
-                    </div>
                 </div>
 
                 <button class="btn btn-primary export-btn" (click)="exportExcel()" id="export-btn"
@@ -77,7 +63,6 @@
                 }
             </div>
 
-            <!-- Import Section -->
             <div class="card section-card">
                 <div class="section-icon-wrap import-icon">
                     <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
@@ -99,7 +84,6 @@
                             planilha</a> antes de importar</span>
                 </div>
 
-                <!-- Drop Zone -->
                 <div class="drop-zone" id="drop-zone" [class.drag-over]="isDragging" [class.has-file]="selectedFile"
                     (dragover)="onDragOver($event)" (dragleave)="onDragLeave()" (drop)="onDrop($event)"
                     (click)="fileInput.click()">
@@ -115,7 +99,7 @@
                         </div>
                         <p class="drop-text">Arraste seu arquivo aqui</p>
                         <span class="drop-subtext">ou clique para selecionar</span>
-                        <span class="drop-formats">Formatos aceitos: .xlsx, .xls</span>
+                        <span class="drop-formats">Formatos aceitos: .csv, .xlsx, .xls</span>
                     </div>
                     } @else {
                     <div class="file-selected">
@@ -139,7 +123,7 @@
                     </div>
                     }
                 </div>
-                <input type="file" #fileInput accept=".xlsx,.xls" (change)="onFileSelected($event)" style="display:none"
+                <input type="file" #fileInput accept=".xlsx,.xls,.csv" (change)="onFileSelected($event)" style="display:none"
                     id="file-input">
 
                 @if (importErrors.length > 0) {
@@ -156,11 +140,6 @@
                         <input type="checkbox" id="overwrite-existing" [(ngModel)]="overwriteExisting" />
                         <span class="checkmark"></span>
                         Substituir produtos existentes (por código)
-                    </label>
-                    <label class="checkbox-item">
-                        <input type="checkbox" id="skip-errors" [(ngModel)]="skipErrors" />
-                        <span class="checkmark"></span>
-                        Ignorar erros e continuar importação
                     </label>
                 </div>
 
@@ -189,53 +168,65 @@
                 }
             </div>
         </div>
+    </div>
 
-        <!-- History -->
-        <div class="card history-card">
-            <div class="card-header">
-                <h3>Histórico de Operações</h3>
-                <button class="btn btn-ghost btn-sm" id="clear-history-btn" (click)="clearHistory()">Limpar
-                    Histórico</button>
+    @if (showPreviewModal) {
+    <div class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Verificar Importação</h3>
+                <button class="remove-file" (click)="cancelImport()">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                        <path d="M6 18L18 6M6 6l12 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                    </svg>
+                </button>
             </div>
-            <div class="history-table-wrap">
-                <table class="data-table history-table">
-                    <thead>
-                        <tr>
-                            <th>Data / Hora</th>
-                            <th>Tipo</th>
-                            <th>Arquivo</th>
-                            <th>Registros</th>
-                            <th>Status</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @for (h of history; track h.id) {
-                        <tr>
-                            <td>{{ h.datetime }}</td>
-                            <td>
-                                <span class="badge" [class.badge-blue]="h.type === 'Exportação'"
-                                    [class.badge-green]="h.type === 'Importação'">
-                                    {{ h.type }}
-                                </span>
-                            </td>
-                            <td class="file-cell">{{ h.file }}</td>
-                            <td>{{ h.records }} registros</td>
-                            <td>
-                                <span class="badge" [class.badge-green]="h.status === 'Concluído'"
-                                    [class.badge-red]="h.status === 'Erro'">
-                                    {{ h.status }}
-                                </span>
-                            </td>
-                        </tr>
-                        }
-                        @if (history.length === 0) {
-                        <tr>
-                            <td colspan="5" class="empty-row">Nenhuma operação registrada ainda</td>
-                        </tr>
-                        }
-                    </tbody>
-                </table>
+            <div class="modal-body">
+                <p style="margin-bottom: 15px; color: var(--gray-600); font-size: 14px;">
+                    Mapeie as colunas da sua planilha com os campos do sistema.
+                </p>
+                <div class="preview-table-wrap">
+                    <table class="preview-table">
+                        <thead>
+                            <tr>
+                                @for (h of previewHeaders; track h) {
+                                <th>
+                                    <div style="margin-bottom: 6px;">Planilha: <b>{{h}}</b></div>
+                                    <select [(ngModel)]="columnMapping[h]">
+                                        @for (col of availableColumns; track col.value) {
+                                            <option [value]="col.value">{{ col.label }}</option>
+                                        }
+                                    </select>
+                                </th>
+                                }
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @let limit = previewRows.length > 5 ? 5 : previewRows.length;
+                            @for (row of previewRows | slice:0:limit; track $index) {
+                            <tr>
+                                @for (h of previewHeaders; track h) {
+                                <td>{{ row[h] }}</td>
+                                }
+                            </tr>
+                            }
+                            @if (previewRows.length > 5) {
+                            <tr>
+                                <td [colSpan]="previewHeaders.length" style="text-align: center; color: var(--gray-500); background: var(--gray-50);">
+                                    Mais {{ previewRows.length - 5 }} linha(s) não mostrada(s)
+                                </td>
+                            </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-ghost" (click)="cancelImport()">Cancelar</button>
+                <button class="btn btn-primary" (click)="confirmImport()">Confirmar Importação ({{previewRows.length}} registros)</button>
             </div>
         </div>
     </div>
+    }
+
 </div>

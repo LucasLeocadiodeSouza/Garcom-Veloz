@@ -21,9 +21,9 @@ export class NavigationCards {
       iconBg: 'linear-gradient(135deg, #10b981, #059669)',
     },
     {
-      title: 'Usuários',
-      description: 'Gerencie os usuários e permissões de acesso ao sistema.',
-      route: '/usuarios',
+      title: 'Pedidos',
+      description: 'Gerencie os pedidos em andamentos no sistema.',
+      route: '/pedidos',
       iconBg: 'linear-gradient(135deg, #8b5cf6, #7c3aed)',
     },
   ];

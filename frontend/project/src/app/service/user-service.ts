@@ -28,6 +28,7 @@ export class UserService {
       error: (error) => console.error("Erro ao carregar informacoes do username: ", error)
     });
   }
+  
 
   setUser(data: User) {
     this.user.set(data);
