@@ -69,7 +69,7 @@ public class PedidoSvc {
 
     private Integer getCodEstadoItemAberto(){ return 1; }
     private Integer getCodEstadoItemAguardando(){ return 2; }
-    private Integer getCodEstadoItemEntregue(){ return 3; }
+    //private Integer getCodEstadoItemEntregue(){ return 3; }
 
     public List<PedidoItem> getItensPedidos(Long pedidoId) {
         return pedidoItemRepo.findAllItensByPedido(pedidoId);

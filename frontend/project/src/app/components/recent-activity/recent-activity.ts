@@ -11,8 +11,9 @@ import { Time } from '@angular/common';
 export class RecentActivity {
   private request = inject(RequestForm);
 
-  recentActivity: { text: string,
-                    time: string,
+  recentActivity: { id:    number,
+                    text:  string,
+                    time:  string,
                     color: string }[] = [];
 
   themes = [
@@ -32,6 +33,7 @@ export class RecentActivity {
       next: (response: any[]) => {
 
         this.recentActivity = response.map((hist: any) => ({
+          id:     hist.id,
           text:   hist.label,
           time:   this.formatRelativeTime(hist.criadoEm, hist.horario),
           color:  this.getRandomTheme()

@@ -30,11 +30,11 @@ export class StatsRow {
         response: {
           totalprodutos:      number,
           totalUsuariosAtivos:number,
-          totalExportacoes:   number,
+          totalPedidos:       number,
           totalCategorias:    number,
           produtoMes:         number,
           usuarioMes:         number,
-          exportacaoSemana:   number,
+          pedidoSemana:       number,
           categoriaSemana:    number,
         }) => {
 
@@ -55,10 +55,10 @@ export class StatsRow {
           },
           {
             cod: 3,
-            label: 'Exportações',
-            value: response.totalExportacoes.toString(),
+            label: 'Pedidos',
+            value: response.totalPedidos.toString(),
             iconBg: '#fef3c7', iconColor: '#d97706',
-            trendUp: response.exportacaoSemana > 0, trendText: response.exportacaoSemana.toString() + ' esta semana'
+            trendUp: response.pedidoSemana > 0, trendText: response.pedidoSemana.toString() + ' esta semana'
           },
           {
             cod: 4,

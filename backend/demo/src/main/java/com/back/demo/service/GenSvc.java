@@ -24,6 +24,7 @@ import com.back.demo.repository.RestricaoPerfilRepository;
 import com.back.demo.repository.RestricaoRepository;
 import com.back.demo.repository.RestricaoTelaRepository;
 import com.back.demo.repository.UsuarioRepository;
+import com.back.demo.repository.PedidoRepository;
 import java.util.List;
 import jakarta.servlet.http.HttpServletRequest;
 
@@ -38,6 +39,9 @@ public class GenSvc {
     
     @Autowired
     private LoginRepository loginRepo;
+
+    @Autowired
+    private PedidoRepository pedidoRepo;
 
     @Autowired
     private CategoriaRepository categoriaRepo; 
@@ -136,10 +140,10 @@ public class GenSvc {
         estatisticas.setTotalCategorias(categoriaRepo.countAllCategoria());
         estatisticas.setTotalUsuariosAtivos(usuarioRepo.countAllUsuarioByStatus(true));
         estatisticas.setTotalprodutos(itemRepo.countAllItens());
-        estatisticas.setTotalExportacoes(0L);
+        estatisticas.setTotalPedidos(pedidoRepo.count());
 
         estatisticas.setProdutoMes(estatisticasDTORepo.getCountRegisterByDate("Item", 30));
-        estatisticas.setExportacaoSemana(estatisticasDTORepo.getCountRegisterByDate("Item", 7));
+        estatisticas.setPedidoSemana(estatisticasDTORepo.getCountRegisterByDate("Pedido", 7));
         estatisticas.setUsuarioMes(estatisticasDTORepo.getCountRegisterByDate("Usuario", 30));
         estatisticas.setCategoriaSemana(estatisticasDTORepo.getCountRegisterByDate("Categoria", 7));
 

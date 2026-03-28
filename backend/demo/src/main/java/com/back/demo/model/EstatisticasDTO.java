@@ -12,11 +12,11 @@ import lombok.Setter;
 public class EstatisticasDTO {
     private Long totalprodutos;
     private Long totalUsuariosAtivos;
-    private Long totalExportacoes;
+    private Long totalPedidos;
     private Long totalCategorias;
 
     private Long produtoMes;
     private Long usuarioMes;
-    private Long exportacaoSemana;
+    private Long pedidoSemana;
     private Long categoriaSemana;
 }

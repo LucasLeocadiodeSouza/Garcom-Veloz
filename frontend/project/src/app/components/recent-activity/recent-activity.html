@@ -1,10 +1,10 @@
 <div class="card activity-card">
     <div class="card-header">
         <h3>Atividade Recente</h3>
-        <button class="btn btn-ghost btn-sm">Ver tudo</button>
+        <!-- <button class="btn btn-ghost btn-sm">Ver tudo</button> -->
     </div>
     <div class="activity-list">
-        @for (item of recentActivity; track item.time) {
+        @for (item of recentActivity; track item.id) {
         <div class="activity-item">
             <div class="activity-dot" [style.background]="item.color"></div>
             <div class="activity-content">

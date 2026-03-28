@@ -1,19 +1,10 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, ViewChild, ViewContainerRef, HostListener } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
 import { Topbar } from '../../layout/topbar/topbar';
 import { RequestForm } from '../../service/request-form';
 import { AlertService } from '../../service/alert-service';
 import { SlicePipe } from '@angular/common';
-
-interface HistoryItem {
-  id: number;
-  datetime: string;
-  type: 'Exportação' | 'Importação';
-  file: string;
-  records: number;
-  status: 'Concluído' | 'Erro';
-}
 
 @Component({
   selector: 'app-import-export',
@@ -26,6 +17,12 @@ export class ImportExport {
   private alert   = inject(AlertService);
   private http    = inject(HttpClient);
 
+  showInfoTooltip = false;
+
+  @HostListener('document:click')
+  onDocumentClick() { this.showInfoTooltip = false; }
+
+  @ViewChild('templateDownloadLink', { read: ViewContainerRef }) templateDownloadLink!: ViewContainerRef;
 
   exportCategory = '';
   exportStatus   = '';
@@ -37,16 +34,16 @@ export class ImportExport {
     return base;
   }
 
-  categories = ['Lanches', 'Bebidas', 'Sobremesas', 'Entradas', 'Pratos Principais', 'Acompanhamentos'];
+  categories: { label: string, value: string }[] = [];
 
 
   selectedFile: File | null = null;
-  isDragging          = false;
-  isImporting         = false;
-  importSuccess       = false;
-  importResultMessage = '';
-  overwriteExisting   = false;
-  importErrors: string[] = [];
+  isDragging                = false;
+  isImporting               = false;
+  importSuccess             = false;
+  importResultMessage       = '';
+  overwriteExisting         = false;
+  importErrors: string[]    = [];
 
   showPreviewModal = false;
   previewHeaders: string[] = [];
@@ -54,38 +51,79 @@ export class ImportExport {
   columnMapping: any = {};
 
   availableColumns = [
-    { value: '',            label: 'Ignorar' },
-    { value: 'id',          label: 'ID' },
-    { value: 'nome',        label: 'Nome' },
-    { value: 'ativo',       label: 'Ativo' },
-    { value: 'idCategoria', label: 'ID Categoria' },
-    { value: 'categoria',   label: 'Categoria' },
-    { value: 'estoque',     label: 'Estoque' },
-    { value: 'vlrItem',     label: 'Vlr Item' },
-    { value: 'desconto',    label: 'Desconto' },
-    { value: 'valorLiq',    label: 'Valor Liq' }
+    { value: '',             label: 'Ignorar' },
+    { value: 'id',           label: 'ID' },
+    { value: 'nome',         label: 'Nome' },
+    { value: 'idReferencia', label: 'ID Referência' },
+    { value: 'ativo',        label: 'Ativo' },
+    { value: 'idCategoria',  label: 'ID Categoria' },
+    { value: 'categoria',    label: 'Categoria' },
+    { value: 'estoque',      label: 'Estoque' },
+    { value: 'vlrItem',      label: 'Vlr Item' },
+    { value: 'desconto',     label: 'Desconto' },
+    { value: 'valorLiq',     label: 'Valor Liq' }
   ];
+
+
+  ngOnInit() {
+    this.getAllCategoria();
+  }
+
+  getAllCategoria() {
+    this.request.executeRequestGET('api/getAllCategoria').subscribe({
+      next: (response: any) => {
+        const categoriesReq: {
+          id:           number,
+          descricao:    string,
+          icone:        string,
+          cor:          string,
+          refereciaExt: number,
+          ativo:        boolean,
+          criadoEm:     Date,
+          ideusu:       string
+        }[] = response;
+
+
+        this.categories = categoriesReq.map(info => ({
+            label: info.descricao,
+            value: info.id.toString()
+        }));
+      },
+      error: (error) => {
+        console.error('Erro:', error);
+        this.alert.show('Erro ao carregar as categoria. Por favor, tente novamente.');
+      }
+    });
+  }
 
   exportExcel() {
     this.isExporting   = true;
     this.exportSuccess = false;
 
     setTimeout(() => {
-      const url = `http://localhost:8080/api/exportarProdutosCSV?status=${this.exportStatus || ''}`;
+      const url = `http://localhost:8080/api/exportarProdutosCSV?status=${this.exportStatus || ''}&idCategoria=${this.exportCategory || ''}`;
       const token = localStorage.getItem('token');
+
       this.http.get(url, { headers: { Authorization: `Bearer ${token}` }, responseType: 'blob', withCredentials: true }).subscribe({
         next: (blob: Blob) => {
           this.isExporting   = false;
           this.exportSuccess = true;
 
-          const a = document.createElement('a');
+          const a = this.templateDownloadLink.element.nativeElement;
           const objectUrl = URL.createObjectURL(blob);
+
           a.href = objectUrl;
-          a.download = 'produtos.csv';
-          document.body.appendChild(a);
+
+          const categName = this.categories.find(c => c.value == this.exportCategory)?.label || '';
+
+          if(this.exportCategory && this.exportStatus) a.download = `produtos_${categName}_${this.exportStatus}.csv`;
+          else if(this.exportCategory) a.download = `produtos_${categName}.csv`;
+          else if(this.exportStatus) a.download = `produtos_${this.exportStatus}.csv`;
+          else a.download = 'produtos.csv';
+
           a.click();
+
           URL.revokeObjectURL(objectUrl);
-          document.body.removeChild(a);
 
           setTimeout(() => this.exportSuccess = false, 4000);
         },
@@ -101,8 +139,25 @@ export class ImportExport {
   }
 
   downloadTemplate(e: Event) {
-    e.preventDefault();
-    alert('Modelo de planilha baixado! (simulação)');
+    const url = `http://localhost:8080/api/baixarPlanilhaModelo`;
+    const token = localStorage.getItem('token');
+
+    this.http.get(url, { headers: { Authorization: `Bearer ${token}` }, responseType: 'blob', withCredentials: true }).subscribe({
+      next: (blob: Blob) => {
+          const a = this.templateDownloadLink.element.nativeElement;
+          const objectUrl = URL.createObjectURL(blob);
+
+          a.href = objectUrl;
+          a.download = 'planilhaModelo.csv';
+          a.click();
+
+          URL.revokeObjectURL(objectUrl);
+      },
+      error: (err: any) => {
+        console.error(err);
+        this.alert.show('Não foi possível baixar a planilha modelo.');
+      }
+    });
   }
 
   onDragOver(e: DragEvent) { e.preventDefault(); this.isDragging = true; }

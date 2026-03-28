@@ -39,10 +39,13 @@ public class ItemDTORepository {
                        "cat.descricao, " +
                        "i.nome, " +
                        "i.descricao, " +
-                       "i.valor," +
+                       "i.valor, " +
                        "i.desconto, " +
                        "i.estoque, " +
-                       "i.ativo " +
+                       "i.ativo, " +
+                       "i.criadoEm, " +
+                       "i.ideusu, " +
+                       "i.referencia_ext " +
                        ") " +
                        " FROM Item i JOIN i.categoria cat ";
 
@@ -60,13 +63,13 @@ public class ItemDTORepository {
             query += (temAnd?" AND ":" WHERE ") + "cat.id = :idCategoria";
             temAnd = true;
         }
-        if(filtroPorStatus) query += (temAnd?" AND ":" WHERE ") + "id.ativo = :ativo";
+        if(filtroPorStatus) query += (temAnd?" AND ":" WHERE ") + "i.ativo = :isActive";
 
         var q = em.createQuery(query, ItemDTO.class);
 
         if(filtroPorDescricao) q.setParameter("nomeItem", nome);
-        if(filtroPorStatus) q.setParameter("ativo", ativo == "A");
-        if(filtroPorCategoria)    q.setParameter("idCategoria", idCategoria);
+        if(filtroPorStatus)    q.setParameter("isActive", ativo.equals("A"));
+        if(filtroPorCategoria) q.setParameter("idCategoria", idCategoria);
 
         return q.getResultList();
     }

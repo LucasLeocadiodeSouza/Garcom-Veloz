@@ -13,6 +13,7 @@ import java.math.BigDecimal;
 public class ItemImportDTO {
     private Long       id;
     private String     nome;
+    private Long       idReferencia;
     private Boolean    ativo;
     private Long       idCategoria;
     private String     categoria;

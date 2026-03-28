@@ -7,8 +7,10 @@ import org.apache.commons.csv.CSVPrinter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import com.back.demo.model.ItemDTO;
+import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
+import java.io.Writer;
 import java.util.ArrayList;
 import java.util.Map;
 import org.springframework.web.multipart.MultipartFile;
@@ -23,9 +25,6 @@ public class ExportaImportaSvc {
     
     @Autowired
     private ItemSvc itemSvc;
-
-    @Autowired
-    private GenSvc gensvc;
 
     @Autowired
     private CategoriaRepository categoriaRepo;
@@ -64,13 +63,23 @@ public class ExportaImportaSvc {
             if (categId == null || categId <= 0) {
                 String categNome = dto.getCategoria() != null && !dto.getCategoria().isBlank() ? dto.getCategoria() : "Importada";
 
-                List<Categoria> matchs = categoriaRepo.findCategoriaByDescricao(categNome);
+                List<Categoria> matchs = categoriaRepo.findCategoriaByDescricaoAprox(categNome);
                 if (matchs != null && !matchs.isEmpty()) categId = matchs.get(0).getId();
                 else {
-                    itemSvc.criarAlterarCategoria(null, categNome, "", "", null, ideusu);
-                    List<Categoria> newCategs = categoriaRepo.findCategoriaByDescricao(categNome);
-                    if (newCategs != null && !newCategs.isEmpty()) categId = newCategs.get(0).getId();
+                    itemSvc.criarAlterarCategoria(null, categNome, "⬇️", "#ef4444", null, ideusu);
+                    Categoria newCategs = categoriaRepo.findCategoriaByDescricao(categNome);
+                    if (newCategs != null) categId = newCategs.getId();
                 }
+            }else{
+                Categoria categoriaId    = categoriaRepo.findCategoriaById(categId);
+                Categoria categoriasNome = categoriaRepo.findCategoriaByDescricao(dto.getCategoria());
+
+                if( categoriaId == null && categoriasNome == null ){
+                    itemSvc.criarAlterarCategoria(null, dto.getCategoria(), "", "#a7a7a7", null, ideusu);
+                    Categoria newCategs = categoriaRepo.findCategoriaByDescricao(dto.getCategoria());
+                    if (newCategs != null) categId = newCategs.getId();
+
+                }else if(categoriasNome != null) categId = categoriasNome.getId(); // Achou a categoria pelo nome
             }
             
             BigDecimal desconto = dto.getDesconto() != null ? dto.getDesconto() : BigDecimal.ZERO;
@@ -85,11 +94,11 @@ public class ExportaImportaSvc {
                 desconto,
                 estoque,
                 categId,
-                null,
+                dto.getIdReferencia(),
                 ideusu
             );
             
-            // Ativar or desativar based on status 
+            // Ativar ou desativar baseado no status
             if (dto.getId() != null) {
                 try {
                     itemSvc.ativarInativarItem(dto.getId(), ativo, ideusu);
@@ -98,16 +107,16 @@ public class ExportaImportaSvc {
         }
     }
 
-    public void exportarProdutos(String status, java.io.Writer writer) throws java.io.IOException {
+    public void exportarProdutos(String status, Long idCategoria, Writer writer) throws IOException {
         try (CSVPrinter csvPrinter = new CSVPrinter(writer, 
                                                     CSVFormat.DEFAULT.builder()
                                                         .setDelimiter(';')
-                                                        .setHeader("id", "nome", "ativo", "idCategoria", "categoria", "estoque", "vlr item", "desconto", "valor liq", "data", "ideusu")
+                                                        .setHeader("id", "nome", "idReferencia", "ativo", "idCategoria", "categoria", "estoque", "vlr item", "desconto", "valor liq", "data", "ideusu")
                                                         .build()
                                                     )
             ){
 
-            List<ItemDTO> itensDTO = itemSvc.getListItem("", status, null);
+            List<ItemDTO> itensDTO = itemSvc.getListItem("", status, idCategoria);
 
             for (ItemDTO itemDTO : itensDTO) {
                 BigDecimal vlrliquido = itemDTO.getValor().subtract(itemDTO.getDesconto());
@@ -115,17 +124,29 @@ public class ExportaImportaSvc {
                 csvPrinter.printRecord(
                     itemDTO.getIdItem(),
                     itemDTO.getNome(),
-                    itemDTO.getAtivo(),
+                    itemDTO.getIdItemRef(),
+                    itemDTO.getAtivo()? "Ativo" : "Inativo",
                     itemDTO.getIdCategoria(),
                     itemDTO.getCategDecricao(),
                     itemDTO.getEstoque(),
                     itemDTO.getValor(),
                     itemDTO.getDesconto(),
                     vlrliquido,
-                    "",
-                    ""
+                    itemDTO.getDate(),
+                    itemDTO.getIdeusu()
                 );
             }
+        }
+    }
+
+    public void baixarPlanilhaModelo(Writer writer) throws IOException {
+        try (CSVPrinter csvPrinter = new CSVPrinter(writer,
+                CSVFormat.DEFAULT.builder()
+                    .setDelimiter(';')
+                    .setHeader("id", "nome", "idReferencia", "ativo", "idCategoria", "categoria", "estoque", "vlr item", "desconto")
+                    .build()
+        )) {
+            // NÃO precisa colocar o printer
         }
     }
 

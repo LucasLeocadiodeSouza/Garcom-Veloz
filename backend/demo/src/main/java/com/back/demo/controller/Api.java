@@ -10,6 +10,7 @@ import com.back.demo.model.EstatisticasDTO;
 import com.back.demo.model.FormTela;
 import com.back.demo.model.Item;
 import com.back.demo.model.ItemDTO;
+import com.back.demo.model.ItemImportDTO;
 import com.back.demo.model.ItemMedia;
 import com.back.demo.model.PedidoDTO;
 import com.back.demo.model.PedidoItemDTO;
@@ -19,7 +20,6 @@ import com.back.demo.service.ItemSvc;
 import com.back.demo.service.PedidoSvc;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
 import java.io.IOException;
@@ -369,7 +369,8 @@ public class Api {
     }
 
     @PostMapping("/importarProdutos")
-    public ResponseEntity<?> importarProdutos(@RequestBody List<com.back.demo.model.ItemImportDTO> itens, HttpServletRequest request) {
+    public ResponseEntity<?> importarProdutos(@RequestBody List<ItemImportDTO> itens, 
+                                              HttpServletRequest request) {
         try {
             exportaImportaSvc.importarProdutos(itens, genService.getUserName(request));
             return ResponseEntity.ok(Map.of(
@@ -378,6 +379,7 @@ public class Api {
             ));
         } catch (Exception e) {
             e.printStackTrace();
+
             return ResponseEntity.status(500).body(Map.of(
                 "status", "error",
                 "message", e.getMessage()
@@ -386,14 +388,27 @@ public class Api {
     }
 
     @GetMapping("/exportarProdutosCSV")
-    public void exportarProdutosCSV(@RequestParam(name = "status", required = false) String status,
-                                                  HttpServletResponse response){
+    public void exportarProdutosCSV(@RequestParam(name = "status", required = false)      String status,
+                                    @RequestParam(name = "idCategoria", required = false) Long idCategoria,
+                                    HttpServletResponse response){
 
         try {
             response.setContentType("text/csv");
             response.setHeader("Content-Disposition", "attachment; filename=produtos.csv");
 
-            exportaImportaSvc.exportarProdutos(status, response.getWriter());
+            exportaImportaSvc.exportarProdutos(status, idCategoria, response.getWriter());
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    @GetMapping("/baixarPlanilhaModelo")
+    public void baixarPlanilhaModelo(HttpServletResponse response){
+        try {
+            response.setContentType("text/csv");
+            response.setHeader("Content-Disposition", "attachment; filename=planilhaModelo.csv");
+
+            exportaImportaSvc.baixarPlanilhaModelo(response.getWriter());
         } catch (IOException e) {
             e.printStackTrace();
         }

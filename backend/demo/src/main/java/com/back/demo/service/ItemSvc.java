@@ -101,9 +101,14 @@ public class ItemSvc {
         genSvc.validaUsuarioByIdeusu(ideusu);     
 
         if(descricao == null || descricao.isBlank()) throw new CategoriaException("É preciso informar a descrição do item!");
-
+        
         genSvc.usuarioTemPermissao("Editar Categoria", ideusu);
 
+        if(id != null){
+            Categoria categoriaNome = categoriaRepo.findCategoriaByDescricao(descricao);
+            if(categoriaNome != null) throw new CategoriaException("Categoria '" + categoriaNome.getDescricao() + "' já está vinculada [código '" + categoriaNome.getId() + "'].");
+        }
+        
         Categoria categoria = categoriaRepo.findCategoriaById(id);
 
         if(categoria == null){
@@ -182,7 +187,7 @@ public class ItemSvc {
                                  Integer    estoque,
                                  Long       categoriaId,
                                  Long       referencia_ext,
-                                 String ideusu){
+                                 String     ideusu){
         
         genSvc.validaUsuarioByIdeusu(ideusu);
 
@@ -210,7 +215,7 @@ public class ItemSvc {
 
         if(categoriaId != null && categoriaId != 0){
             Categoria categoria = categoriaRepo.findCategoriaById(categoriaId);
-            if(categoria == null) throw new CategoriaNotFoundException("Categoria informada não encontrada!");
+            if(categoria == null) throw new CategoriaNotFoundException("Categoria informada [código " + categoriaId + "] não encontrada!");
 
             if(!categoria.getAtivo()) throw new CategoriaException("Categoria do Item esta inativa!");
 

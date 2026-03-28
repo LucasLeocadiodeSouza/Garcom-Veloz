@@ -83,8 +83,10 @@ export class Products {
     this.getItensGrid();
   }
 
-  filterProducts() {
-    this.currentPage = 1;
+  filterProducts(keepPage: boolean = false) {
+    if (!keepPage) {
+      this.currentPage = 1;
+    }
     this.filteredProducts = this.allProducts.filter(p => {
       const matchSearch = !this.searchQuery || p.name.toLowerCase().includes(this.searchQuery.toLowerCase()) || p.code == this.searchQuery;
 
@@ -95,6 +97,10 @@ export class Products {
       return matchSearch && matchCat && matchStatus;
     });
     if (this.sortField) this.applySorting();
+
+    if (this.totalPages > 0 && this.currentPage > this.totalPages)this.currentPage = this.totalPages;
+    else if (this.totalPages === 0) this.currentPage = 1;
+
     this.paginate();
   }
 
@@ -198,7 +204,7 @@ export class Products {
     img.onerror = null;
   }
 
-  getItensGrid() {
+  getItensGrid(keepPage: boolean = false) {
     this.allProducts = [];
 
     this.request.executeRequestGET('api/getItensGrid', { search: this.searchQuery, idCategoria: this.selectedCategory, status: this.selectedStatus }).subscribe({
@@ -230,7 +236,7 @@ export class Products {
 
         this.getAllCategoria();
 
-        this.filterProducts();
+        this.filterProducts(keepPage);
 
         this.cdRef.detectChanges();
       },
@@ -277,7 +283,8 @@ export class Products {
     if (id !== null) {
       this.request.executeRequestPOST('api/excluiItem', null, {idItem: id}).subscribe({
         next: () => {
-          this.getItensGrid();
+          this.cancelDelete();
+          this.getItensGrid(true);
           this.closeModal();
         },
         error: (error) => {
@@ -301,7 +308,7 @@ export class Products {
 
     this.request.executeRequestPOST('api/criarAlterarItem', dto).subscribe({
       next: () => {
-        this.getItensGrid();
+        this.getItensGrid(true);
 
         this.closeModal();
       },
@@ -315,7 +322,7 @@ export class Products {
   ativarDesativarItem(idItem: number, ativo: boolean) {
     this.request.executeRequestPOST('api/ativarInativarItem', null, { idItem: idItem, ativar: ativo }).subscribe({
       next: () => {
-        this.getItensGrid();
+        this.getItensGrid(true);
 
         this.cdRef.detectChanges();
       },
@@ -349,7 +356,7 @@ export class Products {
 
     this.request.executeRequestPOST('api/registrarMediaProduct', formData).subscribe({
       next: (response) => {
-        this.getItensGrid();
+        this.getItensGrid(true);
         this.closeModal();
        },
       error: (error) => {
