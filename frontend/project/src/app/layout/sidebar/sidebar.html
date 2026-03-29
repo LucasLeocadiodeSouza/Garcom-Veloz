@@ -28,21 +28,21 @@
 
     <nav class="sidebar-nav">
         <div class="nav-section">
-            @if (!collapsed()) {
+            @if (!collapsed() || isMobile()) {
             <span class="nav-section-label">Principal</span>
             }
-            <a class="nav-item" href="/home" title="Home" (click)="closeMobileMenu()">
+            <a class="nav-item" routerLink="/home" title="Home" (click)="closeMobileMenu()">
                 <span class="nav-icon">
                   <svg viewBox="0 0 24 24" fill="none" width="20" height="20"><path d="M3 9.5L12 3l9 6.5V20a1 1 0 01-1 1H4a1 1 0 01-1-1V9.5z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M9 21V12h6v9" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
                 </span>
-                @if (!collapsed()) {
+                @if (!collapsed() || isMobile()) {
                 <span class="nav-label">Home</span>
                 }
             </a>
             @for (item of mainNav; track item.route) {
-            <a class="nav-item" [class.active]="isActive(item.route)" [href]="item.route" [title]="item.label" (click)="closeMobileMenu()">
+            <a class="nav-item" [class.active]="isActive(item.route)" [routerLink]="item.route" [title]="item.label" (click)="closeMobileMenu()">
                 <span class="nav-icon" [innerHTML]="item.icon"></span>
-                @if (!collapsed()) {
+                @if (!collapsed() || isMobile()) {
                 <span class="nav-label">{{ item.label }}</span>
                 }
             </a>
@@ -50,13 +50,13 @@
         </div>
 
         <div class="nav-section">
-            @if (!collapsed() && hasAdmPages()) {
+            @if ((!collapsed() || isMobile()) && hasAdmPages()) {
             <span class="nav-section-label">Administração</span>
             }
             @for (item of adminNav; track item.route) {
-            <a class="nav-item" [class.active]="isActive(item.route)" [href]="item.route" [title]="item.label" (click)="closeMobileMenu()">
+            <a class="nav-item" [class.active]="isActive(item.route)" [routerLink]="item.route" [title]="item.label" (click)="closeMobileMenu()">
                 <span class="nav-icon" [innerHTML]="item.icon"></span>
-                @if (!collapsed()) {
+                @if (!collapsed() || isMobile()) {
                 <span class="nav-label">{{ item.label }}</span>
                 }
             </a>
@@ -65,10 +65,10 @@
     </nav>
 
     <div class="sidebar-footer">
-        <div class="user-info" [class.centered]="collapsed()">
+        <div class="user-info" [class.centered]="collapsed() && !isMobile()">
             @if (user()) {
             <div class="avatar">{{ user()!.username!.substring(0, 1) }}</div>
-            @if (!collapsed()) {
+            @if (!collapsed() || isMobile()) {
             <div class="user-details">
                 <span class="user-name">{{ user()!.username }}</span>
                 <span class="user-role">{{ user()!.perfil }}</span>

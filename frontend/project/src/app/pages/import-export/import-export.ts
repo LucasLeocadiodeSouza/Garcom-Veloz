@@ -47,8 +47,8 @@ export class ImportExport {
 
   showPreviewModal = false;
   previewHeaders: string[] = [];
-  previewRows: any[] = [];
-  columnMapping: any = {};
+  previewRows:    any[]    = [];
+  columnMapping:  any      = {};
 
   availableColumns = [
     { value: '',             label: 'Ignorar' },
@@ -60,8 +60,7 @@ export class ImportExport {
     { value: 'categoria',    label: 'Categoria' },
     { value: 'estoque',      label: 'Estoque' },
     { value: 'vlrItem',      label: 'Vlr Item' },
-    { value: 'desconto',     label: 'Desconto' },
-    { value: 'valorLiq',     label: 'Valor Liq' }
+    { value: 'desconto',     label: 'Desconto' }
   ];
 
 

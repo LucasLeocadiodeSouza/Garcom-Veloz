@@ -7,6 +7,7 @@ import { Categories } from './pages/categories/categories';
 import { NewProduct } from './pages/new-product/new-product';
 import { Orders } from './pages/orders/orders';
 import { Login } from './pages/login/login';
+import { authGuard } from './guards/auth-guard';
 
 export const routes: Routes = [
 
@@ -27,31 +28,37 @@ export const routes: Routes = [
     {
         path: 'produtos',
         component: Products,
-        title: 'Produtos - GarçomVeloz CRM'
+        title: 'Produtos - GarçomVeloz CRM',
+        canActivate: [authGuard]
     },
     {
         path: 'pedidos',
         component: Orders,
-        title: 'Pedidos - GarçomVeloz CRM'
+        title: 'Pedidos - GarçomVeloz CRM',
+        canActivate: [authGuard]
     },
     {
         path: 'produtos/novo',
         component: NewProduct,
-        title: 'Novo Produto - GarçomVeloz CRM'
+        title: 'Novo Produto - GarçomVeloz CRM',
+        canActivate: [authGuard]
     },
     {
         path: 'importar-exportar',
         component: ImportExport,
-        title: 'Importar / Exportar - GarçomVeloz CRM'
+        title: 'Importar / Exportar - GarçomVeloz CRM',
+        canActivate: [authGuard]
     },
     {
         path: 'usuarios',
         component: Users,
-        title: 'Usuários - GarçomVeloz CRM'
+        title: 'Usuários - GarçomVeloz CRM',
+        canActivate: [authGuard]
     },
     {
         path: 'categorias',
         component: Categories,
-        title: 'Categorias - GarçomVeloz CRM'
+        title: 'Categorias - GarçomVeloz CRM',
+        canActivate: [authGuard]
     }
 ];

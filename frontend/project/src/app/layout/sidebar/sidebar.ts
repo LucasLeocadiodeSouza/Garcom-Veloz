@@ -1,6 +1,7 @@
-import { Component, signal, effect, inject, PLATFORM_ID, OnInit } from '@angular/core';
+import { Component, signal, effect, inject, PLATFORM_ID, OnInit, HostListener } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
+import { RouterLink } from '@angular/router';
 import { RequestForm } from '../../service/request-form';
 import { UserService } from '../../service/user-service';
 
@@ -12,7 +13,7 @@ interface NavItem {
 
 @Component({
   selector: 'app-sidebar',
-  imports: [],
+  imports: [RouterLink],
   templateUrl: './sidebar.html',
   styleUrl: './sidebar.css'
 })
@@ -24,6 +25,7 @@ export class Sidebar implements OnInit {
 
   collapsed          = signal(false);
   mobileOpen         = signal(false);
+  isMobile           = signal(false);
   private platformId = inject(PLATFORM_ID);
   private sanitizer  = inject(DomSanitizer);
 
@@ -37,13 +39,29 @@ export class Sidebar implements OnInit {
       if (isPlatformBrowser(this.platformId)) {
         document.documentElement.style.setProperty(
           '--sidebar-width',
-          this.collapsed() ? '72px' : '260px'
+          (this.collapsed() && !this.isMobile()) ? '72px' : '260px'
         );
       }
     });
   }
 
-  ngOnInit(): void { this.loadFormTelas(); }
+  ngOnInit(): void { 
+    if (isPlatformBrowser(this.platformId)) {
+      this.isMobile.set(window.innerWidth <= 768);
+    }
+    this.loadFormTelas(); 
+  }
+
+  @HostListener('window:resize')
+  onResize() {
+    if (isPlatformBrowser(this.platformId)) {
+      const mobile = window.innerWidth <= 768;
+      this.isMobile.set(mobile);
+      if (!mobile && this.mobileOpen()) {
+        this.mobileOpen.set(false);
+      }
+    }
+  }
 
   loadFormTelas(): void {
     this.request.executeRequestGET('api/getTelasByPerfil').subscribe({

@@ -16,22 +16,4 @@ export class Home {
   private userService = inject(UserService);
 
 
-  quickActions = [
-    {
-      label: 'Novo Produto',
-      route: '/produtos'
-    },
-    {
-      label: 'Exportar Excel',
-      route: '/importar-exportar'
-    },
-    {
-      label: 'Adicionar Usuário',
-      route: '/usuarios'
-    },
-    {
-      label: 'Importar Planilha',
-      route: '/importar-exportar'
-    },
-  ];
 }

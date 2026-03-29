@@ -1,13 +1,24 @@
-import { Component } from '@angular/core';
+import { Component, inject, OnInit } from '@angular/core';
+import { RouterLink } from '@angular/router';
+import { RequestForm } from '../../service/request-form';
+
+interface NavCard {
+  title:       string;
+  description: string;
+  route:       string;
+  iconBg:      string;
+}
 
 @Component({
   selector: 'app-navigation-cards',
-  imports: [],
+  imports: [RouterLink],
   templateUrl: './navigation-cards.html',
   styleUrl: './navigation-cards.css',
 })
-export class NavigationCards {
-  quickNavCards = [
+export class NavigationCards implements OnInit {
+  private request = inject(RequestForm);
+
+  private allNavCards: NavCard[] = [
     {
       title: 'Produtos',
       description: 'Visualize e gerencie todos os produtos cadastrados no sistema.',
@@ -27,4 +38,19 @@ export class NavigationCards {
       iconBg: 'linear-gradient(135deg, #8b5cf6, #7c3aed)',
     },
   ];
+
+  quickNavCards: NavCard[] = [];
+
+  ngOnInit(): void {
+    this.request.executeRequestGET('api/getTelasByPerfil').subscribe({
+      next: (telas: { router: string; label: string }[]) => {
+        const allowedRoutes = new Set(telas.map(t => t.router));
+        this.quickNavCards = this.allNavCards.filter(c => allowedRoutes.has(c.route));
+      },
+      error: () => {
+        // Em caso de erro, não exibe nenhum card (fail-safe)
+        this.quickNavCards = [];
+      }
+    });
+  }
 }
