@@ -2,7 +2,6 @@ package com.back.demo.model;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -25,8 +24,8 @@ public class ItemDTO {
     private LocalDate  date;
     private String     ideusu;
     private Long       idItemRef;
-
-    private List<String> mediaPath;
+    private Integer    quantidade;
+    private String     mediaPath;
 
     // Grid Principal tela Produtos
     public ItemDTO(Long       idItem, 
@@ -57,16 +56,24 @@ public class ItemDTO {
     }
 
     // Tela de cardapio
-    public ItemDTO(String nome, 
-                   String descricao, 
-                   BigDecimal valor, 
-                   BigDecimal desconto, 
-                   List<String> mediaPath) {
-        this.nome      = nome;
-        this.descricao  = descricao;
-        this.valor     = valor;
-        this.desconto  = desconto;
-        this.mediaPath = mediaPath;
+    public ItemDTO(Long         idItem, 
+                   String       nome, 
+                   String       descricao, 
+                   Long         idCategoria, 
+                   String       categDecricao, 
+                   Integer      estoque, 
+                   BigDecimal   valor, 
+                   BigDecimal   desconto, 
+                   String       mediaPath){
+        this.idItem        = idItem;
+        this.nome          = nome;
+        this.descricao     = descricao;
+        this.idCategoria   = idCategoria;
+        this.categDecricao = categDecricao;
+        this.estoque       = estoque;
+        this.valor         = valor;
+        this.desconto      = desconto;
+        this.mediaPath     = mediaPath;
     }
 
     

@@ -1,0 +1,207 @@
+<div class="menu-container">
+    @if (activeMesa()) {
+    <header class="menu-header">
+        <div class="header-brand">
+            <div class="logo">GV</div>
+            <div class="brand-text">
+                <h1>Garçom Veloz</h1>
+                <span class="status-indicator">Fazendo pedido</span>
+            </div>
+        </div>
+        <div class="table-badge" (click)="sairDaMesa()">
+            <span>Mesa</span>
+            <strong>{{ activeMesa() }}</strong>
+            <div class="table-exit-hint">Trocar</div>
+        </div>
+    </header>
+
+    <div class="search-bar">
+        <div class="search-input">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+            <input type="text" placeholder="Buscar no cardápio..." (keyup.enter)="onSearch($event)">
+        </div>
+    </div>
+
+    <div class="categories-scroll">
+        @for (cat of categories; track cat.value) {
+        <button class="category-chip" [class.active]="selectedCategory === cat.value" (click)="filterByCategory(cat.value)">
+            <span class="cat-icon">{{ cat.icone }}</span>
+            <span class="cat-name">{{ cat.label }}</span>
+        </button>
+        }
+    </div>
+
+    <div class="product-list">
+        @for (prod of allProducts; track prod.id) {
+        <div class="product-card">
+            <div class="product-info">
+                @if (prod.discount > 0) {
+                <div class="product-tag">PROMOÇÃO</div>
+                }
+                <h3 class="product-name">{{ prod.name }}</h3>
+                <p class="product-desc">{{ prod.description }}</p>
+                <div class="product-price-wrapper">
+                  @if (prod.discount > 0) {
+                      <span class="price-original">{{ prod.price | currency:'BRL':'symbol':'1.2-2' }}</span>
+                      <span class="product-price price-discounted">{{ (prod.price - prod.discount) | currency:'BRL':'symbol':'1.2-2' }}</span>
+                  } @else {
+                      <span class="product-price">{{ prod.price | currency:'BRL':'symbol':'1.2-2' }}</span>
+                  }
+                </div>
+            </div>
+            <div class="product-image-area">
+                <div class="img-placeholder">
+                  @if(prod.mediaPath){ <img [src]="prod.mediaPath" [alt]="prod.name"> }
+                  @else{ {{ prod.name.substring(0,2).toUpperCase() }} }
+
+                  @if (getQuantidadeNoCarrinho(prod.id) > 0) {
+                      <div class="item-qty-badge">{{ getQuantidadeNoCarrinho(prod.id) }}</div>
+                  }
+                </div>
+
+                @if (getQuantidadeNoCarrinho(prod.id) === 0) {
+                    <button class="add-btn" (click)="adicionarItemAoCarrinho(prod)">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M12 4v16m8-8H4" />
+                        </svg>
+                    </button>
+                } @else {
+                    <div class="stepper-controls">
+                        <button class="step-btn remove" (click)="removerItemDoCarrinho(prod)">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                                <path d="M5 12h14" />
+                            </svg>
+                        </button>
+                        <button class="step-btn add" (click)="adicionarItemAoCarrinho(prod)">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                                <path d="M12 5v14m-7-7h14" />
+                            </svg>
+                        </button>
+                    </div>
+                }
+            </div>
+        </div>
+        }
+
+        @if (allProducts.length === 0) {
+          <div style="text-align: center; color: var(--gray-500); padding: 40px 0;">
+            Nenhum produto encontrado.
+          </div>
+        }
+    </div>
+
+    <div class="floating-cart" [class.visible]="carrinho.length > 0" (click)="toggleCart()">
+        <div class="cart-info">
+            <div class="cart-icon">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" class="stroke-white">
+                    <path d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" stroke="currentColor" stroke-width="2" stroke-linejoin="round" />
+                </svg>
+                <span class="badge">{{ totalItemsCart }}</span>
+            </div>
+            <div class="cart-total">
+                <span class="label">Total</span>
+                <strong>{{ getTotalCarrinho() | currency:'BRL':'symbol':'1.2-2' }}</strong>
+            </div>
+        </div>
+        <button class="btn-checkout">Ver Pedido</button>
+    </div>
+
+    <div class="cart-overlay" [class.open]="isCartOpen" (click)="toggleCart()"></div>
+
+    <div class="cart-sheet" [class.open]="isCartOpen">
+        <div class="cart-sheet-header">
+            <div class="drag-handle"></div>
+            <h2>Seu Pedido</h2>
+            <button class="close-sheet-btn" (click)="toggleCart()">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M18 6L6 18M6 6l12 12"/>
+                </svg>
+            </button>
+        </div>
+
+        <div class="cart-sheet-content">
+            @for (item of carrinho; track item.product.id) {
+            <div class="cart-item-row">
+                <div class="cart-item-img">
+                    @if(item.product.mediaPath) {
+                        <img [src]="item.product.mediaPath" [alt]="item.product.name">
+                    } @else {
+                        {{ item.product.name.substring(0,2).toUpperCase() }}
+                    }
+                </div>
+                <div class="cart-item-details">
+                    <div class="cart-item-name">{{ item.product.name }}</div>
+                    @if (item.product.discount > 0) {
+                        <div class="cart-item-price-wrapper">
+                            <span class="cart-item-price-old">{{ item.product.price | currency:'BRL':'symbol':'1.2-2' }}</span>
+                            <span class="cart-item-price">{{ (item.product.price - item.product.discount) | currency:'BRL':'symbol':'1.2-2' }}</span>
+                        </div>
+                    } @else {
+                        <div class="cart-item-price">{{ item.product.price | currency:'BRL':'symbol':'1.2-2' }}</div>
+                    }
+                </div>
+                <div class="stepper-controls cart-stepper">
+                    <button class="step-btn remove" (click)="removerItemDoCarrinho(item.product)">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                            <path d="M5 12h14" />
+                        </svg>
+                    </button>
+                    <span class="item-qty">{{ item.quantity }}</span>
+                    <button class="step-btn add" (click)="adicionarItemAoCarrinho(item.product)">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                            <path d="M12 5v14m-7-7h14" />
+                        </svg>
+                    </button>
+                </div>
+            </div>
+            }
+        </div>
+
+        <div class="cart-sheet-footer">
+            <div class="cart-summary-line">
+                <span>Total do Pedido</span>
+                <span>{{ getTotalCarrinho() | currency:'BRL':'symbol':'1.2-2' }}</span>
+            </div>
+            <button class="btn-confirm-order" (click)="criarPedido()">
+                <span>Confirmar e Preparar</span>
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" class="stroke-white">
+                    <path d="M5 12h14M12 5l7 7-7 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+            </button>
+        </div>
+    </div>
+
+    } @else {
+    <div class="no-table-screen">
+        <div class="illustration-wrapper">
+            <div class="qr-scan-anim">
+                <svg width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                    <path d="M4 7V4h3M17 4h3v3M4 17v3h3M17 20h3v-3M9 9h6v6H9z" stroke-linecap="round" stroke-linejoin="round" />
+                    <circle cx="12" cy="12" r="2" fill="currentColor"/>
+                </svg>
+            </div>
+        </div>
+        <h2>Mesa não identificada!</h2>
+        <p>Para acessar o cardápio e fazer seus pedidos, precisamos saber onde você está sentado.</p>
+        <div class="help-box"> Feche esta página, abra o <strong>aplicativo de câmera</strong> do seu próprio celular e aponte para o QR Code colado na sua mesa. </div>
+    </div>
+    }
+</div>
+
+<!-- Success Modal -->
+@if (showSuccessModal()) {
+<div class="modal-overlay success-overlay" (click)="closeSuccessModal()">
+    <div class="modal-box success-modal" (click)="$event.stopPropagation()">
+        <div class="success-icon-wrap">
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" class="stroke-primary">
+                <path d="M5 13l4 4L19 7" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+        </div>
+        <h2>Pedido Realizado!</h2>
+        <p>Seu pedido foi enviado para a cozinha com sucesso. Aguarde que logo será servido.</p>
+        <button class="btn-confirm-success" (click)="closeSuccessModal()">Voltar ao Cardápio</button>
+    </div>
+</div>
+}

@@ -8,6 +8,7 @@ import { NewProduct } from './pages/new-product/new-product';
 import { Orders } from './pages/orders/orders';
 import { Login } from './pages/login/login';
 import { authGuard } from './guards/auth-guard';
+import { Cardapio } from './pages/cardapio/cardapio';
 
 export const routes: Routes = [
 
@@ -22,8 +23,14 @@ export const routes: Routes = [
         title: 'Login - GarçomVeloz CRM'
     },
     {
+        path: 'cardapio',
+        component: Cardapio,
+        title: 'Faça seu Pedido - Garçom Veloz'
+    },
+    {
         path: 'home',
-        component: Home
+        component: Home,
+        title: 'GarçomVeloz CRM'
     },
     {
         path: 'produtos',

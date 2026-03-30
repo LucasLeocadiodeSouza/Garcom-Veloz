@@ -14,7 +14,7 @@ import lombok.Setter;
 @Setter
 public class ItemMediaId implements Serializable {
 
-    private Long idItem;
+    private Long    idItem;
     private Integer seq;
 
     @Override

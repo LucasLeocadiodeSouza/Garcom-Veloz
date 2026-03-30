@@ -28,7 +28,7 @@ export class Login {
   }
 
   authentication(){
-    this.request.executeRequestPOST('auth/login', { login: this.formLogin, passkey: this.formPasskey }, {}, true).subscribe({
+    this.request.executeRequestPOST('auth/login', { login: this.formLogin, passkey: this.formPasskey }).subscribe({
       next: (response) => {
         localStorage.setItem('token', response.token);
 

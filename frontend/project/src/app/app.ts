@@ -18,6 +18,8 @@ export class App {
   ngOnInit(){ this.validarAutenticacao() }
 
   validarAutenticacao() {
+    if (this.isPublicPage()) return;
+
     this.request.executeRequestGET('api/validarAutenticacao').subscribe({
       next: (response: boolean) => {
         if(!response) this.router.navigate(['/login']);
@@ -29,7 +31,12 @@ export class App {
     });
   }
 
-  isLoginPage() {
-    return this.router.url === '/login';
+  isPublicPage() {
+    const url = this.router.url;
+
+    // O router inicia no '/' antes de redirecionar para o '/login' na configuração inicial.
+    // Ignorá-lo evita que o Sidebar seja renderizado por uma fração de segundo e faça as consultas na API sem token.
+
+    return url === '/' || url === '' || url === '/login' || url.startsWith('/cardapio');
   }
 }

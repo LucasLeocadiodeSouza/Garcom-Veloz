@@ -153,6 +153,13 @@ public class Api {
         return itemService.getListItem(search, status, idCategoria);
     }
 
+    @GetMapping("/getItensForCardapio")
+    private List<ItemDTO> getItensForCardapio(@RequestParam(name  = "search", required = false)      String search, 
+                                              @RequestParam(value = "idCategoria", required = false) Long idCategoria, 
+                                              @RequestParam(value = "status", required = false)      String status){
+        return itemService.getItensForCardapio(search, status, idCategoria);
+    }
+
     @GetMapping("/getItemInfo")
     private Item getItemInfo(@RequestParam(name  = "idItem", required = true) Long idItem){
         return itemService.getItemInfo(idItem);
@@ -252,15 +259,26 @@ public class Api {
     }
 
     @PostMapping("/criarAlterarPedido")
-    private ResponseEntity<?> criarAlterarPedido(@RequestBody PedidoDTO dto, HttpServletRequest request){
-        String ideusu = genService.getUserName(request);
+    private ResponseEntity<?> criarAlterarPedido(@RequestBody PedidoDTO dto){
 
         pedidoSvc.criarAlterarPedido(dto.getId(), 
                                      dto.getObservacao(), 
                                      dto.getGorgeta(), 
-                                     dto.getMesa(), 
-                                     genService.getCodEmpresaByIdeusu(ideusu), 
-                                     ideusu);
+                                     dto.getMesa());
+
+        return ResponseEntity.ok(Map.of(
+            "status", "success",
+            "message", "Pedido Criado/Alterado com sucesso"
+        ));
+    }
+
+    @PostMapping("/adapterCriarPedido")
+    private ResponseEntity<?> adapterCriarPedido(@RequestBody PedidoDTO dto){
+
+        pedidoSvc.adapterCriarPedido(dto.getObservacao(), 
+                                     dto.getMesa(),
+                                     dto.getItens(),
+                                     dto.getIdeusu());
 
         return ResponseEntity.ok(Map.of(
             "status", "success",

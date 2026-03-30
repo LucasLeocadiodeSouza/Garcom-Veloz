@@ -15,6 +15,7 @@ import com.back.demo.exception.PedidoItemNotFoundException;
 import com.back.demo.exception.PedidoNotFoundException;
 import com.back.demo.model.Empresa;
 import com.back.demo.model.Item;
+import com.back.demo.model.ItemDTO;
 import com.back.demo.model.Pedido;
 import com.back.demo.model.PedidoItem;
 import com.back.demo.model.PedidoItemDTO;
@@ -152,29 +153,27 @@ public class PedidoSvc {
     // CRIAR, ALTERAR e EXCLUIR os pedidos
 
     @Transactional
-    public void criarAlterarPedido(Long       id,
+    public Long criarAlterarPedido(Long       id,
                                    String     observacao,
                                    BigDecimal gorgeta,
-                                   Integer    mesa,
-                                   Long       idEmpresa,
-                                   String     ideusu) {
+                                   Integer    mesa){
 
-        genSvc.validaUsuarioByIdeusu(ideusu);
+        // genSvc.validaUsuarioByIdeusu(ideusu);
 
         if (mesa == null || mesa == 0) throw new PedidoException("É preciso informar o número da mesa para criar o pedido!");
 
-        Empresa empresa = empresaRepo.findEmpresaById(idEmpresa);
-        if (empresa == null) throw new EmpresaNotFoundException("Empresa informada não encontrado!");
+        // Empresa empresa = empresaRepo.findEmpresaById(idEmpresa);
+        // if (empresa == null) throw new EmpresaNotFoundException("Empresa informada não encontrado!");
 
         Pedido pedido = pedidoRepo.findPedidoById(id);
 
         if (pedido == null) {
             pedido = new Pedido();
             pedido.setEstado(1);
-            pedido.setIdeusu(ideusu);
+            // pedido.setIdeusu(ideusu);
             pedido.setCriadoEm(LocalDate.now());
             pedido.setHorario(LocalTime.now());
-            pedido.setEmpresa(empresa);
+            // pedido.setEmpresa(empresa);
         }
 
         pedido.setGorgeta(gorgeta);
@@ -182,6 +181,8 @@ public class PedidoSvc {
         pedido.setObservacao(observacao);
 
         pedidoRepo.save(pedido);
+
+        return pedido.getId();
     }
 
     @Transactional
@@ -232,7 +233,7 @@ public class PedidoSvc {
         if (pedidoId == null || pedidoId == Long.valueOf(0)) throw new PedidoException("É preciso informar o número do pedido para vincular ao item!");
         if (itemId == null || itemId == Long.valueOf(0)) throw new PedidoException("É preciso informar o código do item para vincular ao pedido!");
 
-        genSvc.validaUsuarioByIdeusu(ideusu);
+        // genSvc.validaUsuarioByIdeusu(ideusu);
 
         Pedido pedido = pedidoRepo.findPedidoById(pedidoId);
         if (pedido == null) throw new PedidoNotFoundException("Não encontrado o Pedido");
@@ -269,12 +270,12 @@ public class PedidoSvc {
                                        Long    itemId,
                                        Long    seq,
                                        Integer quantidade,
-                                       String ideusu){
+                                       String  ideusu){
                                            
         if (pedidoId == null || pedidoId == Long.valueOf(0)) throw new PedidoException("É preciso informar o número do pedido para vincular ao item!");
         if (itemId == null || itemId == Long.valueOf(0)) throw new PedidoException("É preciso informar o código do item para vincular ao pedido!");
         
-        genSvc.validaUsuarioByIdeusu(ideusu);
+        // genSvc.validaUsuarioByIdeusu(ideusu);
 
         Pedido pedido = pedidoRepo.findPedidoById(pedidoId);
         if (pedido == null) throw new PedidoNotFoundException("Não encontrado o Pedido");
@@ -341,7 +342,7 @@ public class PedidoSvc {
                                         Long    itemId,
                                         Long    seq,
                                         Integer estado,
-                                        String ideusu){
+                                        String  ideusu){
 
                                             
         if (pedidoId == null || pedidoId == Long.valueOf(0)) throw new PedidoException("É preciso informar o número do pedido alterar o estado do item!");
@@ -368,4 +369,16 @@ public class PedidoSvc {
         pedidoItemRepo.save(vinculoPedidoItem);
     }
 
+    @Transactional
+    public void adapterCriarPedido(String              observacao,
+                                   Integer             mesa,
+                                   List<PedidoItemDTO> itens,
+                                   String              ideusu){
+
+        Long pedidoId = criarAlterarPedido(null, observacao, null, mesa);
+
+        for (PedidoItemDTO itemDTO : itens) {
+            criarAlterarItemPedido(pedidoId, itemDTO.getIdItem(), null, itemDTO.getQuantidade(), ideusu);
+        }
+    }
 }

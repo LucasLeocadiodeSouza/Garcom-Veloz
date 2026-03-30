@@ -176,6 +176,14 @@ public class ItemSvc {
         return itens;
     }
 
+    
+    public List<ItemDTO> getItensForCardapio(String nome, String ativo, Long categoriaId){
+        List<ItemDTO> itens = itemDTORepo.getItensForCardapio(nome, ativo, categoriaId);
+
+        return itens;
+    }
+
+
     //CRIAR, ALTERAR e EXCLUIR os itens
 
     @Transactional

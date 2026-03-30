@@ -1,5 +1,6 @@
 import { HttpClient } from '@angular/common/http';
-import { inject, Injectable } from '@angular/core';
+import { inject, Injectable, PLATFORM_ID } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
 import { Router } from '@angular/router';
 import { catchError, map, Observable, of } from 'rxjs';
 
@@ -8,26 +9,18 @@ import { catchError, map, Observable, of } from 'rxjs';
 })
 export class RequestForm {
   private apiUrl = 'http://localhost:8080';
+  private platformId = inject(PLATFORM_ID);
 
   constructor(private http: HttpClient) {}
 
   router = inject(Router);
 
-  // getProdutos(): Observable<any[]> {
-  //   return this.http.get<any[]>(`${this.apiUrl}/produtos`);
-  // }
-
-  // // POST - Criar dados
-  // criarProduto(produto: any): Observable<any> {
-  //   return this.http.post(`${this.apiUrl}/produtos`, produto);
-  // }
-
   executeRequestGET(path: string, params?: any): Observable<any> {
       let url = `${this.apiUrl}/${path}`;
+      let token = '';
 
-      const token = localStorage.getItem('token');
+      if (isPlatformBrowser(this.platformId)) token = localStorage.getItem('token') || '';
 
-      // Adiciona query parameters se existirem
       if (params) {
           const queryParams = new URLSearchParams(params).toString();
           url += '?' + queryParams;
@@ -39,16 +32,16 @@ export class RequestForm {
                                 });
   }
 
-  executeRequestPOST(path: string, body: any, params?: any, ignoreAuteTran?: boolean): Observable<any> {
+  executeRequestPOST(path: string, body: any, params?: any): Observable<any> {
     let url = `${this.apiUrl}/${path}`;
 
-    // Adiciona query parameters se existirem
     if (params) {
       const queryParams = new URLSearchParams(params).toString();
       url += '?' + queryParams;
     }
 
-    const token = localStorage.getItem('token');
+    let token = '';
+    if (isPlatformBrowser(this.platformId)) token = localStorage.getItem('token') || '';
 
     return this.http.post(url, body, {withCredentials: true, headers: {
                                                                         Authorization: `Bearer ${token}`
@@ -64,8 +57,7 @@ export class RequestForm {
   }
 
   logout() {
-    localStorage.setItem('token', "");
+    if (isPlatformBrowser(this.platformId)) localStorage.setItem('token', "");
     this.router.navigate(['/login']);
-    //this.http.post(`${this.apiUrl}/auth/logout`, { withCredentials: true });
   }
 }

@@ -1,5 +1,6 @@
 package com.back.demo.repository;
 
+import java.math.BigDecimal;
 import java.util.List;
 import org.springframework.stereotype.Repository;
 import com.back.demo.model.ItemDTO;
@@ -73,4 +74,44 @@ public class ItemDTORepository {
 
         return q.getResultList();
     }
+
+    public List<ItemDTO> getItensForCardapio(String nome, String ativo, Long idCategoria){
+        String query = "SELECT new ItemDTO(" + 
+                       "i.id, " +
+                       "i.nome, " +
+                       "i.descricao, " +
+                       "cat.id, " +
+                       "cat.descricao, " +
+                       "i.estoque, " +
+                       "i.valor, " +
+                       "i.desconto, " +
+                       "(SELECT image.descricao FROM ItemMedia image WHERE image.id.idItem = i.id ORDER BY image.id.seq ASC LIMIT 1) " +
+                       ") " +
+                       " FROM Item i JOIN i.categoria cat ";
+
+        Boolean filtroPorDescricao = nome != null && !nome.isBlank();
+        Boolean filtroPorCategoria = idCategoria != null && idCategoria != 0;
+        Boolean filtroPorStatus    = ativo != null && !ativo.isBlank();
+
+        Boolean temAnd = false;
+
+        if(filtroPorDescricao){
+            query += " WHERE i.nome LIKE CONCAT('%', :nomeItem ,'%') ";
+            temAnd = true;
+        }
+        if(filtroPorCategoria){
+            query += (temAnd?" AND ":" WHERE ") + "cat.id = :idCategoria";
+            temAnd = true;
+        }
+        if(filtroPorStatus) query += (temAnd?" AND ":" WHERE ") + "i.ativo = :isActive";
+
+        var q = em.createQuery(query, ItemDTO.class);
+
+        if(filtroPorDescricao) q.setParameter("nomeItem", nome);
+        if(filtroPorStatus)    q.setParameter("isActive", ativo.equals("A"));
+        if(filtroPorCategoria) q.setParameter("idCategoria", idCategoria);
+
+        return q.getResultList();
+    }
+
 }
