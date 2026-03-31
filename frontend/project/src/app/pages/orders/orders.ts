@@ -65,7 +65,7 @@ export class Orders implements OnInit {
 
   private getDefaultDateTo(): string { return new Date().toISOString().slice(0, 10) }
 
-  private getDefaultDateFrom(): string { return new Date().toISOString().slice(0, 10) }
+  private getDefaultDateFrom(): string { return new Date().toLocaleDateString('en-CA').slice(0, 10) }
 
 
 
