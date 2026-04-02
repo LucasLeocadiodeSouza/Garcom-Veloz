@@ -490,7 +490,14 @@
                 <div class="zoom-card" (click)="selectZoomProduct(prod)">
                     <div class="zoom-card-header">
                         <span class="zoom-card-code">#{{ prod.idItem }}</span>
-                            <span class="zoom-card-price">R$ {{ prod.valor | number:'1.2-2' }}</span>
+                        <div class="product-price-wrapper">
+                          @if (prod.desconto > 0) {
+                              <span class="price-original">R$ {{ prod.valor }}</span>
+                              <span class="zoom-card-price">R$ {{ prod.valor - prod.desconto }}</span>
+                          } @else {
+                              <span class="zoom-card-price">R$ {{ prod.valor | number:'1.2-2' }}</span>
+                          }
+                        </div>
                     </div>
                     <div class="zoom-card-name">{{ prod.nome }}</div>
                     @if (prod.categoria) {

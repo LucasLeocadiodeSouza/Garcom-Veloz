@@ -43,6 +43,7 @@ export interface ZoomProduct {
   nome:      string;
   descricao: string;
   valor:     number;
+  desconto:  number;
   estoque:   number;
   categoria: string;
 }
@@ -122,6 +123,7 @@ export class Orders implements OnInit {
               nome:      item.nome,
               descricao: item.descricao,
               valor:     item.valor,
+              desconto:  item.desconto,
               estoque:   item.estoque,
               categoria: item.categDecricao
             }));
@@ -378,6 +380,7 @@ export class Orders implements OnInit {
         this.formQuantity = res == null ? 1 : 1;
         this.formEstoque  = res == null ? 0 : res.estoque;
         this.formValor    = res == null ? 0 : res.valor;
+        this.formDiscount = res == null ? 0 : res.desconto;
       },
       error: (err) => {
         console.error('Erro ao buscar informações do item:', err);
