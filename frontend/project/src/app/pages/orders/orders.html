@@ -222,7 +222,14 @@
                             </div>
                             <div class="item-info">
                                 <span class="item-qty">{{ item.quantidade }}x</span>
-                                <span class="item-price">R$ {{ item.valorItem }}</span>
+                                <div class="product-price-wrapper">
+                                  @if (item.descontoItem > 0) {
+                                      <span class="price-original">R$ {{ item.valorItem }}</span>
+                                      <span class="item-price">R$ {{ (item.valorItem - item.descontoItem) }}</span>
+                                  } @else {
+                                      <span class="item-price">R$ {{ item.valorItem }}</span>
+                                  }
+                                </div>
                             </div>
                         </li>
                         }
@@ -338,29 +345,40 @@
               </div>
                 <div class="form-group" style="flex: 4">
                     <label for="user-item">Item</label>
-                    <input id="user-item" type="text" [(ngModel)]="formItem" disabled />
+                    <input id="user-item" type="text" class="input-disabled" [(ngModel)]="formItem" disabled />
                 </div>
             </div>
 
             <div class="form-row">
                 <div class="form-group" style="flex: 2;">
                     <label for="user-descitem">Descrição do Item</label>
-                    <textarea id="user-descitem" [(ngModel)]="formDescItem" disabled></textarea>
+                    <textarea id="user-descitem" class="input-disabled" [(ngModel)]="formDescItem" disabled></textarea>
                 </div>
             </div>
 
             <div class="form-row">
                 <div class="form-group" style="flex: 2;">
                     <label for="user-estoque">Estoque</label>
-                    <input id="user-estoque" type="text" [(ngModel)]="formEstoque" placeholder="Ex: 10" disabled />
-                </div>
-                <div class="form-group" style="flex: 2;">
-                    <label for="user-valor">Valor</label>
-                    <input id="user-valor" type="text" [(ngModel)]="formValor" placeholder="Ex: 15.90" disabled />
+                    <input id="user-estoque" type="text" class="input-disabled" [(ngModel)]="formEstoque" placeholder="Ex: 10" disabled />
                 </div>
                 <div class="form-group" style="flex: 2;">
                     <label for="user-quantity">Quantidade <span class="required">*</span></label>
                     <input id="user-quantity" type="number" [(ngModel)]="formQuantity" placeholder="Ex: 2" />
+                </div>
+            </div>
+
+              <div class="form-row">
+                <div class="form-group" style="flex: 2;">
+                    <label for="user-pricetot">Preço Bruto</label>
+                    <input id="user-pricetot" type="text" class="input-disabled" [(ngModel)]="formValor" placeholder="Ex: 30.0" disabled />
+                </div>
+                <div class="form-group" style="flex: 2;">
+                    <label for="user-discount">Desconto</label>
+                    <input id="user-discount" type="text" class="input-disabled" [(ngModel)]="formDiscount" placeholder="Ex: 5.0" disabled />
+                </div>
+                <div class="form-group" style="flex: 2;">
+                    <label for="user-valor">Valor</label>
+                    <input id="user-valor" type="number" [value]="formValor - formDiscount" class="input-disabled" placeholder="Ex: 25.0" disabled />
                 </div>
             </div>
         </div>

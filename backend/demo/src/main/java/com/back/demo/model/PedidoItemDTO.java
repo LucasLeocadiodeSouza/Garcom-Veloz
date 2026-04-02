@@ -20,4 +20,5 @@ public class PedidoItemDTO {
     private Integer    estado;
     private String     descEstado;
     private BigDecimal valorItem;
+    private BigDecimal descontoItem;
 }

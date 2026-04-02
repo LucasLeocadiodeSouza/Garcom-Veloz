@@ -13,6 +13,7 @@ export interface PedidoItemDTO {
   descricaoItem: string;
   quantidade:    number;
   valorItem:     number;
+  descontoItem:  number;
   estado:        number;
   descEstado:    string;
 }
@@ -146,6 +147,7 @@ export class Orders implements OnInit {
   formDescItem   = '';
   formEstoque    = 0;
   formValor      = 0;
+  formDiscount   = 0;
   formMesa       = 0;
   formGorgeta    = 0;
   formObservacao = '';
@@ -233,7 +235,9 @@ export class Orders implements OnInit {
   getSumValueItens(): number {
     var sum = 0;
     this.selectedOrder()?.itens.forEach(item => {
-      sum = sum + (item.valorItem * item.quantidade);
+      const valueProd = item.descontoItem > 0 ? item.valorItem - item.descontoItem : item.valorItem;
+
+      sum = sum + (valueProd * item.quantidade);
     });
 
     return parseFloat(sum.toFixed(2));
@@ -255,6 +259,7 @@ export class Orders implements OnInit {
     this.formDescItem   = '';
     this.formEstoque    = 0;
     this.formValor      = 0;
+    this.formDiscount   = 0;
     this.formMesa       = 0;
     this.formGorgeta    = 0;
     this.formObservacao = '';
@@ -340,6 +345,7 @@ export class Orders implements OnInit {
     this.formDescItem = '';
     this.formEstoque  = 0;
     this.formValor    = 0;
+    this.formDiscount = 0;
     this.showItensModal.set(null);
     this.isEditModal.set(false);
   }
@@ -409,6 +415,7 @@ export class Orders implements OnInit {
     this.formDescItem = item.descricaoItem;
     this.formQuantity = item.quantidade;
     this.formValor    = item.valorItem;
+    this.formDiscount = item.descontoItem;
     this.showItensModal.set(true);
     this.isEditModal.set(true);
   }

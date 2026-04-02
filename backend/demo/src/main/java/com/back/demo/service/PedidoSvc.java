@@ -129,11 +129,7 @@ public class PedidoSvc {
         List<PedidoItemDTO> itemDTOs = new ArrayList<>();
 
         for (PedidoItem pi : pedido.getItens()) {
-            BigDecimal valorItem = pi.getItem().getValor();
-            if (pi.getItem().getDesconto() != null) {
-                valorItem = valorItem.subtract(pi.getItem().getDesconto());
-            }
-            total = total.add(valorItem);
+            total = total.add(pi.getItem().getValor());
 
             itemDTOs.add(new PedidoItemDTO(
                          pedido.getId(),
@@ -144,7 +140,8 @@ public class PedidoSvc {
                          pi.getQuantidade(),
                          pi.getEstado(),
                          getDescEstadoItem(pi.getEstado()),
-                         valorItem));
+                         pi.getItem().getValor(),
+                         pi.getItem().getDesconto()));
         }
 
         return itemDTOs;
