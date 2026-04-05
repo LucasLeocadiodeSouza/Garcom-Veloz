@@ -68,9 +68,9 @@ public class PedidoSvc {
         return "";
     }
 
-    private Integer getCodEstadoItemAberto(){ return 1; }
+    private Integer getCodEstadoItemAberto()    { return 1; }
     private Integer getCodEstadoItemAguardando(){ return 2; }
-    //private Integer getCodEstadoItemEntregue(){ return 3; }
+    private Integer getCodEstadoItemEntregue()  { return 3; }
 
     public List<PedidoItem> getItensPedidos(Long pedidoId) {
         return pedidoItemRepo.findAllItensByPedido(pedidoId);
@@ -153,7 +153,8 @@ public class PedidoSvc {
     public Long criarAlterarPedido(Long       id,
                                    String     observacao,
                                    BigDecimal gorgeta,
-                                   Integer    mesa){
+                                   Integer    mesa,
+                                   String     ideusu){
 
         // genSvc.validaUsuarioByIdeusu(ideusu);
 
@@ -167,7 +168,7 @@ public class PedidoSvc {
         if (pedido == null) {
             pedido = new Pedido();
             pedido.setEstado(1);
-            // pedido.setIdeusu(ideusu);
+            pedido.setIdeusu(ideusu);
             pedido.setCriadoEm(LocalDate.now());
             pedido.setHorario(LocalTime.now());
             // pedido.setEmpresa(empresa);
@@ -206,7 +207,7 @@ public class PedidoSvc {
         if(estado == getCodEstadoPedidoEncerrado()){
           List<PedidoItem> itens = pedidoItemRepo.findAllItensByPedido(pedidoId);
           for (PedidoItem pedidoItem : itens) {
-            if(pedidoItem.getEstado() == getCodEstadoItemAguardando()) throw new PedidoItemException("Não é possível encerrar um Pedido sem que todos seus itens estejam finalizados!");
+            if(pedidoItem.getEstado() != getCodEstadoItemEntregue()) throw new PedidoItemException("Não é possível encerrar um Pedido sem que todos seus itens estejam finalizados!");
           }
         }
 
@@ -372,7 +373,7 @@ public class PedidoSvc {
                                    List<PedidoItemDTO> itens,
                                    String              ideusu){
 
-        Long pedidoId = criarAlterarPedido(null, observacao, null, mesa);
+        Long pedidoId = criarAlterarPedido(null, observacao, null, mesa, ideusu);
 
         for (PedidoItemDTO itemDTO : itens) {
             criarAlterarItemPedido(pedidoId, itemDTO.getIdItem(), null, itemDTO.getQuantidade(), ideusu);

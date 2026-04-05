@@ -435,10 +435,7 @@ export class Orders implements OnInit {
     });
   }
 
-  temItemConfirmadoOuEntregue(): boolean {
-    return this.selectedOrder()?.itens.some(item => item.estado === 2 || item.estado === 3) ?? false;
-  }
-
+  temItemConfirmadoOuEntregue(): boolean { return this.selectedOrder()?.itens.some(item => item.estado === 2 || item.estado === 3) ?? false; }
 
   askDelete(dto: PedidoItemDTO) {
     if(this.selectedOrder()!.estado !== 1){

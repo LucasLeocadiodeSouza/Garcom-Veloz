@@ -259,12 +259,13 @@ public class Api {
     }
 
     @PostMapping("/criarAlterarPedido")
-    private ResponseEntity<?> criarAlterarPedido(@RequestBody PedidoDTO dto){
+    private ResponseEntity<?> criarAlterarPedido(@RequestBody PedidoDTO dto, HttpServletRequest request){
 
         pedidoSvc.criarAlterarPedido(dto.getId(), 
                                      dto.getObservacao(), 
                                      dto.getGorgeta(), 
-                                     dto.getMesa());
+                                     dto.getMesa(),
+                                     genService.getUserName(request));
 
         return ResponseEntity.ok(Map.of(
             "status", "success",
