@@ -1,5 +1,7 @@
-import { Component, inject } from '@angular/core';
-import { RouterOutlet, Router } from '@angular/router';
+import { Component, inject, PLATFORM_ID } from '@angular/core';
+import { RouterOutlet, Router, NavigationEnd } from '@angular/router';
+import { isPlatformBrowser } from '@angular/common';
+import { filter } from 'rxjs';
 import { Sidebar } from './layout/sidebar/sidebar';
 import { AlertService } from './service/alert-service';
 import { RequestForm } from './service/request-form';

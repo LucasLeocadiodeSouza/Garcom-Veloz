@@ -17,6 +17,12 @@ export const authGuard: CanActivateFn = (route, state) => {
     return true;
   }
 
+  // Se não tem token no localStorage, redireciona direto para login
+  const token = localStorage.getItem('token');
+  if (!token) {
+    return router.createUrlTree(['/login']);
+  }
+
   const targetRoute = '/' + state.url.split('/').filter(Boolean)[0];
 
   return request.executeRequestGET('api/getTelasByPerfil').pipe(
@@ -32,8 +38,13 @@ export const authGuard: CanActivateFn = (route, state) => {
       alertSvc.show('Você não tem permissão para acessar esta tela.');
       return router.createUrlTree(['/home']);
     }),
-    catchError(() => {
-      return of(router.createUrlTree(['/home']));
+    catchError((error) => {
+      // Se o backend retorna 401 ou 403, o token expirou ou é inválido
+      if (error?.status === 401 || error?.status === 403) {
+        localStorage.removeItem('token');
+        return of(router.createUrlTree(['/login']));
+      }
+      return of(router.createUrlTree(['/login']));
     })
   );
 };

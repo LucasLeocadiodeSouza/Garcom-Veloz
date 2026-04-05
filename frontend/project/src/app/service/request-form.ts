@@ -57,7 +57,7 @@ export class RequestForm {
   }
 
   logout() {
-    if (isPlatformBrowser(this.platformId)) localStorage.setItem('token', "");
+    if (isPlatformBrowser(this.platformId)) localStorage.removeItem('token');
     this.router.navigate(['/login']);
   }
 }
