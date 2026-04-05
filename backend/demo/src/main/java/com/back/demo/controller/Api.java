@@ -127,7 +127,12 @@ public class Api {
 
     @PostMapping("/criarAlterarCategoria")
     private ResponseEntity<?> criarAlterarCategoria(@RequestBody CategoriaDTO dto, HttpServletRequest request){
-        itemService.criarAlterarCategoria(dto.getIdCategoria(), dto.getDescricao(), dto.getIcone(), dto.getCor(), null, genService.getUserName(request));
+        itemService.criarAlterarCategoria(dto.getIdCategoria(), 
+                                          dto.getDescricao(), 
+                                          dto.getIcone(), 
+                                          dto.getCor(), 
+                                          null, 
+                                          genService.getUserName(request));
         
         return ResponseEntity.ok(Map.of(
             "status", "success",

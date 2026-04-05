@@ -13,12 +13,13 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
 
   return next(req).pipe(
     catchError((error: HttpErrorResponse) => {
-      if (error.status === 401 || error.status === 403) {
-        // Evita redirecionar se já está na página de login ou em rotas de autenticação
-        const currentUrl = router.url;
-        const isAuthRoute = req.url.includes('auth/login');
 
-        if (!isAuthRoute && currentUrl !== '/login') {
+      if (error.status === 401 || error.status === 403) {
+
+        const currentUrl  = router.url;
+        const isAuthRoute = req.url.includes('api/validarAutenticacao');
+
+        if (isAuthRoute && currentUrl !== '/login') {
           localStorage.removeItem('token');
           router.navigate(['/login']);
         }

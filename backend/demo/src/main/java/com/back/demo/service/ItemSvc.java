@@ -106,7 +106,7 @@ public class ItemSvc {
 
         if(id != null){
             Categoria categoriaNome = categoriaRepo.findCategoriaByDescricao(descricao);
-            if(categoriaNome != null) throw new CategoriaException("Categoria '" + categoriaNome.getDescricao() + "' já está vinculada [código '" + categoriaNome.getId() + "'].");
+            if(categoriaNome != null && categoriaNome.getId() != id) throw new CategoriaException("Categoria '" + categoriaNome.getDescricao() + "' já está vinculada [código '" + categoriaNome.getId() + "'].");
         }
         
         Categoria categoria = categoriaRepo.findCategoriaById(id);
