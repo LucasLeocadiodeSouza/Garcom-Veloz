@@ -358,6 +358,31 @@
 .check-icon,
 .cross-icon {
     display: inline-block;
+    transition: transform 0.15s ease;
+}
+
+.perm-cell-clickable {
+    cursor: pointer;
+    transition: background 0.15s ease;
+}
+
+.perm-cell-clickable:hover {
+    background: var(--blue-50);
+}
+
+.perm-cell-clickable:hover .check-icon,
+.perm-cell-clickable:hover .cross-icon {
+    transform: scale(1.2);
+}
+
+.perm-cell-clickable:active .check-icon,
+.perm-cell-clickable:active .cross-icon {
+    transform: scale(0.9);
+}
+
+.badge-green {
+    background: #d1fae5;
+    color: #059669;
 }
 
 /* Modal */

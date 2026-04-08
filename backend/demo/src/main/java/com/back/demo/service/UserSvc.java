@@ -14,15 +14,24 @@ import com.back.demo.exception.PerfilNotFoundException;
 import com.back.demo.exception.UsuarioException;
 import com.back.demo.exception.UsuarioNotFoundException;
 import com.back.demo.model.Empresa;
+import com.back.demo.model.FormTela;
 import com.back.demo.model.Login;
 import com.back.demo.model.Perfil;
+import com.back.demo.model.Restricao;
+import com.back.demo.model.RestricaoPerfil;
+import com.back.demo.model.RestricaoPerfilId;
+import com.back.demo.model.RestricaoTela;
+import com.back.demo.model.RestricaoTelaId;
 import com.back.demo.model.UserDTO;
 import com.back.demo.model.Usuario;
 import com.back.demo.model.UsuarioHistorico;
 import com.back.demo.model.UsuarioHistoricoId;
 import com.back.demo.repository.EmpresaRepository;
+import com.back.demo.repository.FormTelaRepository;
 import com.back.demo.repository.LoginRepository;
 import com.back.demo.repository.PerfilRepository;
+import com.back.demo.repository.RestricaoPerfilRepository;
+import com.back.demo.repository.RestricaoRepository;
 import com.back.demo.repository.RestricaoTelaRepository;
 import com.back.demo.repository.UserDTORepository;
 import com.back.demo.repository.UsuarioHistoricoRepository;
@@ -52,6 +61,15 @@ public class UserSvc implements UserDetailsService  {
 
     @Autowired
     private UsuarioHistoricoRepository userHistRepo;
+
+    @Autowired
+    private RestricaoPerfilRepository restricaoPerfilRepo;
+
+    @Autowired
+    private RestricaoRepository restricaoRepo;
+
+    @Autowired
+    private FormTelaRepository formTelaRepo;
     
     @Autowired
     private GenSvc genSvc;
@@ -241,5 +259,59 @@ public class UserSvc implements UserDetailsService  {
         historico.setHorario(LocalTime.now());
         
         userHistRepo.save(historico);
+    }
+
+    @Transactional
+    public void toggleRestricaoPerfil(Long idPerfil, Long idRestricao, String ideusu) {
+        genSvc.usuarioTemPermissao("Gerenciar Usuários", ideusu);
+
+        RestricaoPerfil rp = restricaoPerfilRepo.findRestricaoPerfilById(idPerfil, idRestricao);
+
+        if (rp != null) {
+            rp.setAtivo(!rp.getAtivo());
+            restricaoPerfilRepo.save(rp);
+        } else {
+            Perfil perfil = perfilRepo.findPerfilById(idPerfil);
+            Restricao restricao = restricaoRepo.findRestricaoById(idRestricao);
+
+            RestricaoPerfilId newId = new RestricaoPerfilId(idPerfil, idRestricao);
+            RestricaoPerfil newRp = new RestricaoPerfil();
+            newRp.setId(newId);
+            newRp.setPerfil(perfil);
+            newRp.setRestricao(restricao);
+            newRp.setAtivo(true);
+            newRp.setCriadoEm(LocalDate.now());
+
+            restricaoPerfilRepo.save(newRp);
+        }
+
+        salvarHistoricoUsuario("Permissão de perfil alterada", ideusu);
+    }
+
+    @Transactional
+    public void toggleRestricaoTela(Long idPerfil, Long idTela, String ideusu) {
+        genSvc.usuarioTemPermissao("Gerenciar Usuários", ideusu);
+
+        RestricaoTela rt = restricaoTelaRepo.findByIdPerfilAndIdTela(idPerfil, idTela);
+
+        if (rt != null) {
+            rt.setAtivo(rt.getAtivo() == 1 ? 0 : 1);
+            restricaoTelaRepo.save(rt);
+        } else {
+            Perfil perfil = perfilRepo.findPerfilById(idPerfil);
+            FormTela tela = formTelaRepo.findById(idTela).orElse(null);
+
+            RestricaoTelaId newId = new RestricaoTelaId(idPerfil, idTela);
+            RestricaoTela newRt = new RestricaoTela();
+            newRt.setId(newId);
+            newRt.setPerfil(perfil);
+            newRt.setTela(tela);
+            newRt.setAtivo(1);
+            newRt.setCriadoEm(LocalDate.now());
+
+            restricaoTelaRepo.save(newRt);
+        }
+
+        salvarHistoricoUsuario("Restrição de tela alterada", ideusu);
     }
 }

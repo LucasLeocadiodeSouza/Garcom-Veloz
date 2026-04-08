@@ -138,7 +138,11 @@
         <div class="card permissions-card">
             <div class="card-header">
                 <h3>Matriz de Permissões por Perfil</h3>
+                @if (isAdmin) {
+                <span class="badge badge-green">Editável</span>
+                } @else {
                 <span class="badge badge-blue">Somente leitura</span>
+                }
             </div>
             <div class="permissions-table-wrap">
                 <table class="permissions-table">
@@ -155,7 +159,7 @@
                         <tr>
                             <td class="perm-name">{{ perm.name }}</td>
                             @for (role of roles; track role.value) {
-                            <td class="perm-cell">
+                            <td class="perm-cell" [class.perm-cell-clickable]="isAdmin" (click)="togglePermissao(perm.id, role.value, role.label)">
                                 @if (perm.roles.includes(role.label)) {
                                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" class="check-icon">
                                     <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" fill="#d1fae5"
@@ -179,7 +183,11 @@
         <div class="card permissions-card">
             <div class="card-header">
                 <h3>Matriz de Restrições de Tela por Perfil</h3>
+                @if (isAdmin) {
+                <span class="badge badge-green">Editável</span>
+                } @else {
                 <span class="badge badge-blue">Telas bloqueadas por perfil</span>
+                }
             </div>
             <div class="permissions-table-wrap">
                 @if (telas.length === 0) {
@@ -202,7 +210,7 @@
                         <tr>
                             <td class="perm-name">{{ rest.name }}</td>
                             @for (tela of telas; track tela.value) {
-                            <td class="perm-cell">
+                            <td class="perm-cell" [class.perm-cell-clickable]="isAdmin" (click)="toggleRestricaoTela(rest.idPerfil, tela.value)">
                                 @if (rest.telas.includes(tela.value)) {
                                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" class="cross-icon">
                                     <path d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"

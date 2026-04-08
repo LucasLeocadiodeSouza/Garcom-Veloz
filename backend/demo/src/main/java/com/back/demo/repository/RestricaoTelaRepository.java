@@ -18,4 +18,7 @@ public interface RestricaoTelaRepository extends JpaRepository<RestricaoTela, Re
     @Query("SELECT rt.id.idPerfil, rt.perfil.descricao, rt.id.idTela, rt.tela.label " +
            "FROM RestricaoTela rt WHERE rt.ativo = 1 ORDER BY rt.tela.label")
     List<Object[]> findAllFlat();
+
+    @Query("SELECT rt FROM RestricaoTela rt WHERE rt.id.idPerfil = :idPerfil AND rt.id.idTela = :idTela")
+    RestricaoTela findByIdPerfilAndIdTela(@Param("idPerfil") Long idPerfil, @Param("idTela") Long idTela);
 }

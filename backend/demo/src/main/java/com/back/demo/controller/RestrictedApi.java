@@ -92,4 +92,28 @@ public class RestrictedApi {
                 "status", "success",
                 "message", "Usuário ativado/desativado com sucesso"));
     }
+
+    @PostMapping("/toggleRestricaoPerfil")
+    private ResponseEntity<?> toggleRestricaoPerfil(@RequestParam(name = "idPerfil", required = true) Long idPerfil,
+                                                    @RequestParam(name = "idRestricao", required = true) Long idRestricao,
+                                                    HttpServletRequest request) {
+        String ideusu = genSvc.getUserName(request);
+        userService.toggleRestricaoPerfil(idPerfil, idRestricao, ideusu);
+
+        return ResponseEntity.ok(Map.of(
+                "status", "success",
+                "message", "Permissão alterada com sucesso"));
+    }
+
+    @PostMapping("/toggleRestricaoTela")
+    private ResponseEntity<?> toggleRestricaoTela(@RequestParam(name = "idPerfil", required = true) Long idPerfil,
+                                                   @RequestParam(name = "idTela", required = true) Long idTela,
+                                                   HttpServletRequest request) {
+        String ideusu = genSvc.getUserName(request);
+        userService.toggleRestricaoTela(idPerfil, idTela, ideusu);
+
+        return ResponseEntity.ok(Map.of(
+                "status", "success",
+                "message", "Restrição de tela alterada com sucesso"));
+    }
 }

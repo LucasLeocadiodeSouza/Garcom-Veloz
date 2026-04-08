@@ -1,6 +1,5 @@
 package com.back.demo.repository;
 
-import java.math.BigDecimal;
 import java.util.List;
 import org.springframework.stereotype.Repository;
 import com.back.demo.model.ItemDTO;

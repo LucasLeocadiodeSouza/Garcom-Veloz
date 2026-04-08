@@ -4,6 +4,7 @@ import { forkJoin } from 'rxjs';
 import { FormsModule } from '@angular/forms';
 import { Topbar } from '../../layout/topbar/topbar';
 import { AlertService } from '../../service/alert-service';
+import { UserService } from '../../service/user-service';
 
 interface User {
   id:          number;
@@ -25,8 +26,13 @@ interface User {
   styleUrl: './users.css'
 })
 export class Users implements OnInit {
-  private request = inject(RequestForm);
-  private alert   = inject(AlertService);
+  private request  = inject(RequestForm);
+  private alert    = inject(AlertService);
+  private userSvc  = inject(UserService);
+
+  get isAdmin(): boolean {
+    return this.userSvc.getUser()().perfil === 'Administrador';
+  }
 
   searchQuery    = '';
   selectedRole   = 0;
@@ -275,5 +281,61 @@ export class Users implements OnInit {
     ]
 
     return colors[idx % colors.length];
+  }
+
+  togglePermissao(permId: number, roleValue: number, roleLabel: string) {
+    if (!this.isAdmin) return;
+
+    // Atualização otimista na UI
+    const perm = this.permissions.find(p => p.id === permId);
+    if (!perm) return;
+
+    const hadRole = perm.roles.includes(roleLabel);
+    if (hadRole) {
+      perm.roles = perm.roles.filter(r => r !== roleLabel);
+    } else {
+      perm.roles.push(roleLabel);
+    }
+
+    this.request.executeRequestPOST('restrictedApi/toggleRestricaoPerfil', null, { idPerfil: roleValue, idRestricao: permId }).subscribe({
+      error: (error) => {
+        console.error('Erro:', error);
+        // Reverte a mudança otimista
+        if (hadRole) {
+          perm.roles.push(roleLabel);
+        } else {
+          perm.roles = perm.roles.filter(r => r !== roleLabel);
+        }
+        this.alert.show('Erro ao alterar permissão. Tente novamente.');
+      }
+    });
+  }
+
+  toggleRestricaoTela(idPerfil: number, idTela: number) {
+    if (!this.isAdmin) return;
+
+    // Atualização otimista na UI
+    const rest = this.restricoes.find(r => r.idPerfil === idPerfil);
+    if (!rest) return;
+
+    const hadTela = rest.telas.includes(idTela);
+    if (hadTela) {
+      rest.telas = rest.telas.filter(t => t !== idTela);
+    } else {
+      rest.telas.push(idTela);
+    }
+
+    this.request.executeRequestPOST('restrictedApi/toggleRestricaoTela', null, { idPerfil: idPerfil, idTela: idTela }).subscribe({
+      error: (error) => {
+        console.error('Erro:', error);
+        // Reverte a mudança otimista
+        if (hadTela) {
+          rest.telas.push(idTela);
+        } else {
+          rest.telas = rest.telas.filter(t => t !== idTela);
+        }
+        this.alert.show('Erro ao alterar restrição de tela. Tente novamente.');
+      }
+    });
   }
 }
